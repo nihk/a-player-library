@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="library">
+
+    <application>
+        <activity
+            android:name="library.LibraryActivity"
+            android:launchMode="singleTask"
+            android:supportsPictureInPicture="true"
+            android:theme="@style/Theme.MaterialComponents.DayNight.NoActionBar" />
+    </application>
+
+</manifest>
