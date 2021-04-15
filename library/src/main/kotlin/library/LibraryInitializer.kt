@@ -25,6 +25,7 @@ object LibraryInitializer {
         shareDelegate: ShareDelegate? = null,
         pictureInPictureConfig: PictureInPictureConfig? = null
     ) {
+        check(!initialized) { "initialize should only be called once" }
         initialized = true
         this.playerModule = playerModule
         this.telemetry = telemetry

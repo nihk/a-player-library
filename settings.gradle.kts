@@ -1,5 +1,5 @@
 include(
-    ":app",
+    ":sample",
     ":library",
     ":library-common",
     ":library-exoplayer",

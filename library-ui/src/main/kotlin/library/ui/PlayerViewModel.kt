@@ -99,7 +99,8 @@ class PlayerViewModel(
 
     private fun tearDown() {
         tracksStates.value = TracksState.NotAvailable
-        // These can be null if the user kills the task from their recents screen after closing PiP.
+        // These can be null when closing PiP, due to PiP creating/destroying the host activity
+        // briefly after PiP is closed by the user.
         listening?.cancel()
         listening = null
         appPlayer?.release()

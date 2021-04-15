@@ -19,8 +19,8 @@ class App : Application() {
             telemetry = LoggingPlayerTelemetry(),
             shareDelegate = AndroidShareDelegate(),
             pictureInPictureConfig = PictureInPictureConfig(
-                onBackPresses = false,
-                onUserLeaveHints = false
+                onBackPresses = true,
+                onUserLeaveHints = true
             )
         )
     }
