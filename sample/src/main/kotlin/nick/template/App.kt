@@ -3,10 +3,9 @@ package nick.template
 import android.app.Application
 import dagger.hilt.android.HiltAndroidApp
 import library.LibraryInitializer
-import library.common.PictureInPictureConfig
+import library.exoplayer.ExoPlayerModule
 import nick.template.data.AndroidShareDelegate
 import nick.template.data.LoggingPlayerTelemetry
-import library.exoplayer.ExoPlayerModule
 
 @HiltAndroidApp
 class App : Application() {
@@ -17,11 +16,7 @@ class App : Application() {
             // Uncomment to use MediaPlayer APIs instead of ExoPlayer
 //            playerModule = MediaPlayerModule(),
             telemetry = LoggingPlayerTelemetry(),
-            shareDelegate = AndroidShareDelegate(),
-            pictureInPictureConfig = PictureInPictureConfig(
-                onBackPresses = true,
-                onUserLeaveHints = true
-            )
+            shareDelegate = AndroidShareDelegate()
         )
     }
 }

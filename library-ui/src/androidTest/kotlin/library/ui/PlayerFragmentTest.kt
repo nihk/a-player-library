@@ -70,8 +70,8 @@ class PlayerFragmentTest {
             playerViewWrapper ?: FakePlayerViewWrapper(ApplicationProvider.getApplicationContext())
         )
 
-        return launchFragmentInContainer(fragmentArgs = PlayerFragment.args(url)) {
-            PlayerFragment(vmFactory, playerViewWrapperFactory, shareDelegate, pipConfig)
+        return launchFragmentInContainer(fragmentArgs = PlayerFragment.args(url, pipConfig)) {
+            PlayerFragment(vmFactory, playerViewWrapperFactory, shareDelegate)
         }
     }
 }

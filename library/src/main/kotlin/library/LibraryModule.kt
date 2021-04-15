@@ -16,8 +16,7 @@ internal class LibraryModule {
             PlayerFragment(
                 vmFactory = playerViewModelFactory,
                 playerViewWrapperFactory = module.playerViewWrapperFactory,
-                shareDelegate = LibraryInitializer.shareDelegate(),
-                pictureInPictureConfig = LibraryInitializer.pictureInPictureConfig()
+                shareDelegate = LibraryInitializer.shareDelegate()
             )
         },
         TracksPickerFragment::class.java to { TracksPickerFragment() }

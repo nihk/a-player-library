@@ -6,6 +6,7 @@ import androidx.fragment.app.Fragment
 import androidx.navigation.NavController
 import library.LibraryActivity
 import library.LibraryFragment
+import library.common.PictureInPictureConfig
 import nick.template.R
 import nick.template.databinding.MainFragmentBinding
 import nick.template.navigation.AppNavigation
@@ -24,7 +25,11 @@ class MainFragment @Inject constructor(
         }
 
         binding.toPlayerActivity.setOnClickListener {
-            LibraryActivity.start(view.context, url)
+            LibraryActivity.start(
+                view.context,
+                url,
+                PictureInPictureConfig(onBackPresses = true, onUserLeaveHints = true)
+            )
         }
     }
 }

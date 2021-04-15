@@ -26,14 +26,14 @@ import library.ui.databinding.PlayerFragmentBinding
 class PlayerFragment(
     private val vmFactory: PlayerViewModel.Factory,
     private val playerViewWrapperFactory: PlayerViewWrapper.Factory,
-    private val shareDelegate: ShareDelegate?,
-    private val pictureInPictureConfig: PictureInPictureConfig?
+    private val shareDelegate: ShareDelegate?
 ) : Fragment(R.layout.player_fragment) {
 
     private val playerViewModel: PlayerViewModel by viewModels { vmFactory.create(this) }
     private val onUserLeaveHintViewModel: OnUserLeaveHintViewModel by activityViewModels()
     private var playerViewWrapper: PlayerViewWrapper? = null
     private val url: String get() = requireArguments().getString(Constants.KEY_URL).requireNotNull()
+    private val pictureInPictureConfig: PictureInPictureConfig? get() = requireArguments().getParcelable(Constants.KEY_PIP_CONFIG)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -139,8 +139,14 @@ class PlayerFragment(
     }
 
     companion object {
-        fun args(url: String): Bundle {
-            return bundleOf(Constants.KEY_URL to url)
+        fun args(
+            url: String,
+            pictureInPictureConfig: PictureInPictureConfig?
+        ): Bundle {
+            return bundleOf(
+                Constants.KEY_URL to url,
+                Constants.KEY_PIP_CONFIG to pictureInPictureConfig
+            )
         }
     }
 }
