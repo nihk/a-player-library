@@ -18,10 +18,9 @@ import library.common.PlayerException
 private interface Listener : Player.EventListener, AnalyticsListener
 
 internal class ExoPlayerEventStream : PlayerEventStream {
-    private var tracksChangedFirstTime: Boolean = false
+    private val oneTimeEvents = mutableSetOf<Class<out PlayerEvent>>()
 
     override fun listen(appPlayer: AppPlayer): Flow<PlayerEvent> = callbackFlow {
-        tracksChangedFirstTime = false
         appPlayer as? ExoPlayerWrapper ?: error("$appPlayer was not a ${ExoPlayerWrapper::class.java}")
 
         val listener = object : Listener {
@@ -41,8 +40,8 @@ internal class ExoPlayerEventStream : PlayerEventStream {
                 trackGroups: TrackGroupArray,
                 trackSelections: TrackSelectionArray
             ) {
-                if (!tracksChangedFirstTime) {
-                    tracksChangedFirstTime = true
+                if (PlayerEvent.OnTracksAvailable::class.java !in oneTimeEvents) {
+                    oneTimeEvents += PlayerEvent.OnTracksAvailable::class.java
                     offer(PlayerEvent.OnTracksAvailable)
                 }
                 offer(PlayerEvent.OnTracksChanged)
@@ -68,6 +67,7 @@ internal class ExoPlayerEventStream : PlayerEventStream {
                 removeListener(listener)
                 removeAnalyticsListener(listener)
             }
+            oneTimeEvents.clear()
         }
     }
 }
