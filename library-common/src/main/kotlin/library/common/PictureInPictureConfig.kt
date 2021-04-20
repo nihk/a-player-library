@@ -5,6 +5,6 @@ import kotlinx.parcelize.Parcelize
 
 @Parcelize
 data class PictureInPictureConfig(
-    val onBackPresses: Boolean = false,
-    val onUserLeaveHints: Boolean = false
+    val enabled: Boolean = true,
+    val onBackPresses: Boolean = false
 ) : Parcelable

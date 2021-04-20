@@ -1,4 +1,4 @@
-package library
+package library.core
 
 import library.common.PlayerModule
 import library.common.PlayerTelemetry
@@ -21,11 +21,11 @@ object LibraryInitializer {
         telemetry: PlayerTelemetry? = null,
         shareDelegate: ShareDelegate? = null
     ) {
-        check(!initialized) { "initialize should only be called once" }
+        check(!initialized) { "initialize() must only be called once "}
         initialized = true
-        this.playerModule = playerModule
-        this.telemetry = telemetry
-        this.shareDelegate = shareDelegate
+        LibraryInitializer.playerModule = playerModule
+        LibraryInitializer.telemetry = telemetry
+        LibraryInitializer.shareDelegate = shareDelegate
     }
 
     private fun <T> T?.requireInitialized(): T {

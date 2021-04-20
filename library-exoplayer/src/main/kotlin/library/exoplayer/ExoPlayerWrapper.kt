@@ -3,6 +3,7 @@ package library.exoplayer
 import android.content.Context
 import com.google.android.exoplayer2.C
 import com.google.android.exoplayer2.MediaItem
+import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.SimpleExoPlayer
 import com.google.android.exoplayer2.ui.TrackNameProvider
 import library.common.AppPlayer
@@ -11,7 +12,7 @@ import library.common.PlayerViewWrapper
 import library.common.TrackInfo
 
 internal class ExoPlayerWrapper(
-    internal val player: SimpleExoPlayer,
+    internal val player: Player,
     private val trackNameProvider: TrackNameProvider
 ) : AppPlayer {
 
@@ -68,10 +69,10 @@ internal class ExoPlayerWrapper(
         private val appContext: Context,
         private val trackNameProvider: TrackNameProvider
     ) : AppPlayer.Factory {
-        override fun create(url: String): AppPlayer {
+        override fun create(uri: String): AppPlayer {
             val player = SimpleExoPlayer.Builder(appContext)
                 .build()
-                .apply { setMediaItem(MediaItem.fromUri(url)) }
+                .apply { setMediaItem(MediaItem.fromUri(uri)) }
             return ExoPlayerWrapper(player, trackNameProvider)
         }
     }

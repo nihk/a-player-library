@@ -6,7 +6,7 @@ import androidx.navigation.NavController
 import androidx.navigation.createGraph
 import androidx.navigation.fragment.fragment
 import dagger.hilt.android.AndroidEntryPoint
-import library.LibraryFragment
+import library.core.LibraryFragment
 import nick.template.R
 import nick.template.di.MainEntryPoint
 import nick.template.navigation.AppNavigation

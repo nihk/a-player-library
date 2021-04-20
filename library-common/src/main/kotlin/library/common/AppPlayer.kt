@@ -2,6 +2,7 @@ package library.common
 
 interface AppPlayer {
     val state: PlayerState
+    // fixme: can these just be exposed via `state`?
     val textTracks: List<TrackInfo>
     val audioTracks: List<TrackInfo>
     val videoTracks: List<TrackInfo>
@@ -15,6 +16,6 @@ interface AppPlayer {
     fun onEvent(playerEvent: PlayerEvent) = Unit
 
     interface Factory {
-        fun create(url: String): AppPlayer
+        fun create(uri: String): AppPlayer
     }
 }

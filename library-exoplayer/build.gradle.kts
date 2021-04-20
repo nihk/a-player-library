@@ -14,9 +14,13 @@ dependencies {
     implementation(Dependency.constraintLayout)
     implementation(Dependency.multidex)
     implementation(Dependency.Kotlin.coroutines)
-    implementation(Dependency.ExoPlayer.runtime) // Might want to make this api() for easier Exception type access
+    implementation(Dependency.ExoPlayer.runtime) // Consider making this api() for easier Exception type access
 
     testImplementation(Dependency.junit)
     testImplementation(Dependency.ArchCore.testing)
     testImplementation(Dependency.Kotlin.coroutinesTest)
+    testImplementation(Dependency.ExoPlayer.testUtils)
+
+    androidTestImplementation(project(":library-test"))
+    defaultAndroidTestDependencies()
 }

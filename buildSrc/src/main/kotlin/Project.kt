@@ -63,15 +63,23 @@ private fun <T : BaseExtension> Project.androidConfig() = android<T>().apply {
             jvmTarget = JavaVersion.VERSION_1_8.toString()
             useIR = true
             freeCompilerArgs = listOf(
-                "-Xuse-experimental=kotlinx.coroutines.ExperimentalCoroutinesApi"
+                "-Xuse-experimental=kotlinx.coroutines.ExperimentalCoroutinesApi",
+                "-Xuse-experimental=kotlin.time.ExperimentalTime"
             )
         }
     }
 
     sourceSets {
+        val sharedTestDir = "src/sharedTest/kotlin"
         getByName("main").java.srcDir("src/main/kotlin")
-        getByName("test").java.srcDir("src/test/kotlin")
-        getByName("androidTest").java.srcDir("src/androidTest/kotlin")
+        getByName("test").java.srcDirs(
+            "src/test/kotlin",
+            sharedTestDir
+        )
+        getByName("androidTest").java.srcDirs(
+            "src/androidTest/kotlin",
+            sharedTestDir
+        )
     }
 
     testOptions {

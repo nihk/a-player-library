@@ -2,7 +2,7 @@ package nick.template
 
 import android.app.Application
 import dagger.hilt.android.HiltAndroidApp
-import library.LibraryInitializer
+import library.core.LibraryInitializer
 import library.exoplayer.ExoPlayerModule
 import nick.template.data.AndroidShareDelegate
 import nick.template.data.LoggingPlayerTelemetry

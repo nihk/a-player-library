@@ -3,6 +3,7 @@ package library.exoplayer
 import android.util.Log
 import com.google.android.exoplayer2.ExoPlaybackException
 import com.google.android.exoplayer2.Player
+import com.google.android.exoplayer2.SimpleExoPlayer
 import com.google.android.exoplayer2.analytics.AnalyticsListener
 import com.google.android.exoplayer2.source.TrackGroupArray
 import com.google.android.exoplayer2.trackselection.TrackSelectionArray
@@ -18,7 +19,7 @@ import library.common.PlayerException
 private interface Listener : Player.EventListener, AnalyticsListener
 
 internal class ExoPlayerEventStream : PlayerEventStream {
-    private val oneTimeEvents = mutableSetOf<Class<out PlayerEvent>>()
+    private val oneTimeEvents = mutableSetOf<PlayerEvent>()
 
     override fun listen(appPlayer: AppPlayer): Flow<PlayerEvent> = callbackFlow {
         appPlayer as? ExoPlayerWrapper ?: error("$appPlayer was not a ${ExoPlayerWrapper::class.java}")
@@ -40,8 +41,8 @@ internal class ExoPlayerEventStream : PlayerEventStream {
                 trackGroups: TrackGroupArray,
                 trackSelections: TrackSelectionArray
             ) {
-                if (PlayerEvent.OnTracksAvailable::class.java !in oneTimeEvents) {
-                    oneTimeEvents += PlayerEvent.OnTracksAvailable::class.java
+                if (PlayerEvent.OnTracksAvailable !in oneTimeEvents) {
+                    oneTimeEvents += PlayerEvent.OnTracksAvailable
                     offer(PlayerEvent.OnTracksAvailable)
                 }
                 offer(PlayerEvent.OnTracksChanged)
@@ -58,14 +59,14 @@ internal class ExoPlayerEventStream : PlayerEventStream {
 
         appPlayer.player.run {
             addListener(listener)
-            addAnalyticsListener(listener)
+            (this as? SimpleExoPlayer)?.addAnalyticsListener(listener)
         }
 
         awaitClose {
             Log.d(TAG, "Removing player listeners")
             appPlayer.player.run {
                 removeListener(listener)
-                removeAnalyticsListener(listener)
+                (this as? SimpleExoPlayer)?.removeAnalyticsListener(listener)
             }
             oneTimeEvents.clear()
         }

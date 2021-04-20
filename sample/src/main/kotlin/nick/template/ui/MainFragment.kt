@@ -4,9 +4,10 @@ import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.Fragment
 import androidx.navigation.NavController
-import library.LibraryActivity
-import library.LibraryFragment
+import library.core.LibraryActivity
 import library.common.PictureInPictureConfig
+import library.common.PlayerArguments
+import library.common.bundle
 import nick.template.R
 import nick.template.databinding.MainFragmentBinding
 import nick.template.navigation.AppNavigation
@@ -18,18 +19,28 @@ class MainFragment @Inject constructor(
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         val binding = MainFragmentBinding.bind(view)
-        val url = "https://devstreaming-cdn.apple.com/videos/streaming/examples/bipbop_16x9/bipbop_16x9_variant.m3u8"
 
         binding.toPlayerFragment.setOnClickListener {
-            navController.navigate(AppNavigation.library, LibraryFragment.args(url))
+            val playerArguments = createPlayerArguments(binding.enablePip.isChecked)
+            navController.navigate(AppNavigation.library, playerArguments.bundle())
         }
 
         binding.toPlayerActivity.setOnClickListener {
+            val playerArguments = createPlayerArguments(binding.enablePip.isChecked)
             LibraryActivity.start(
-                view.context,
-                url,
-                PictureInPictureConfig(onBackPresses = true, onUserLeaveHints = true)
+                context = view.context,
+                playerArguments = playerArguments
             )
         }
+    }
+
+    private fun createPlayerArguments(isPipEnabled: Boolean): PlayerArguments {
+        return PlayerArguments(
+            uri = "https://devstreaming-cdn.apple.com/videos/streaming/examples/bipbop_16x9/bipbop_16x9_variant.m3u8",
+            pipConfig = PictureInPictureConfig(
+                enabled = isPipEnabled,
+                onBackPresses = true
+            )
+        )
     }
 }

@@ -93,6 +93,7 @@ object Dependency {
         const val smoothstreaming = "com.google.android.exoplayer:exoplayer-smoothstreaming:${Version.exoPlayer}"
         const val ui = "com.google.android.exoplayer:exoplayer-ui:${Version.exoPlayer}"
         const val mediaSession = "com.google.android.exoplayer:extension-mediasession:${Version.exoPlayer}"
+        const val testUtils = "com.google.android.exoplayer:exoplayer-testutils:${Version.exoPlayer}"
     }
 
     object Fragment {

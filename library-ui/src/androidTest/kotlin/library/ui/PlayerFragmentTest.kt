@@ -8,60 +8,67 @@ import androidx.fragment.app.testing.FragmentScenario
 import androidx.fragment.app.testing.launchFragmentInContainer
 import androidx.lifecycle.Lifecycle
 import androidx.test.core.app.ApplicationProvider
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.emptyFlow
-import library.common.AppPlayer
 import library.common.PictureInPictureConfig
-import library.common.PlayerEvent
-import library.common.PlayerEventStream
-import library.common.PlayerState
-import library.common.PlayerTelemetry
+import library.common.PlayerArguments
 import library.common.PlayerViewWrapper
 import library.common.ShareDelegate
-import library.common.TrackInfo
+import library.common.bundle
+import library.test.NoOpPlayerViewWrapper
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class PlayerFragmentTest {
-
     @Test
-    fun appPlayerWasTornDownWhenFragmentIsDestroyed() {
-        val appPlayer = FakeAppPlayer()
-
-        val scenario = launchPlayerFragment(appPlayer)
-
-        assertFalse(appPlayer.didRelease)
-        scenario.moveToState(Lifecycle.State.DESTROYED)
-        assertTrue(appPlayer.didRelease)
+    fun appPlayerWasTornDownWhenFragmentIsDestroyed() = playerFragment {
+        assertPlayerCreated(times = 1)
+        assertPlayerNotReleased()
+        destroy()
+        assertPlayerReleased()
     }
 
     @Test
-    fun appPlayerWasNotReleasedAcrossFragmentRecreation() {
-        val appPlayer = FakeAppPlayer()
-        val fakePlayerViewWrapper = FakePlayerViewWrapper(ApplicationProvider.getApplicationContext())
-
-        val scenario = launchPlayerFragment(
-            appPlayer = appPlayer,
-            playerViewWrapper = fakePlayerViewWrapper
-        )
-        scenario.recreate()
-
-        assertTrue(fakePlayerViewWrapper.didDetach)
-        assertFalse(appPlayer.didRelease)
+    fun appPlayerWasNotReleasedAcrossFragmentRecreation() = playerFragment {
+        assertPlayerCreated(times = 1)
+        recreate()
+        assertPlayerCreated(times = 1)
+        assertViewDetached()
+        assertPlayerNotReleased()
     }
+}
 
-    private fun launchPlayerFragment(
-        appPlayer: AppPlayer = FakeAppPlayer(),
-        playerViewWrapper: PlayerViewWrapper? = null,
-        playerEventStream: PlayerEventStream = FakePlayerEventStream(),
-        url: String = "",
-        telemetry: PlayerTelemetry? = null,
-        shareDelegate: ShareDelegate? = null,
-        pipConfig: PictureInPictureConfig = PictureInPictureConfig(false, false)
-    ): FragmentScenario<PlayerFragment> {
+class FakePlayerViewWrapper(context: Context) : NoOpPlayerViewWrapper() {
+    override val view: View = FrameLayout(context)
+
+    override fun detach() {
+        super.detach()
+        // Support reusing the same test View across Fragment recreation.
+        (view.parent as? ViewGroup)?.removeView(view)
+    }
+}
+
+class FakePlayerViewWrapperFactory(val playerViewWrapper: PlayerViewWrapper) : PlayerViewWrapper.Factory {
+    override fun create(context: Context) = playerViewWrapper
+}
+
+fun playerFragment(block: PlayerFragmentRobot.() -> Unit) {
+    PlayerFragmentRobot().block()
+}
+
+class PlayerFragmentRobot {
+    private val appPlayer = FakeAppPlayer()
+    private val appPlayerFactory = FakeAppPlayerFactory(appPlayer)
+    private val playerViewWrapper = FakePlayerViewWrapper(ApplicationProvider.getApplicationContext())
+    private val playerEventStream = FakePlayerEventStream()
+    private val telemetry = FakePlayerTelemetry()
+    private val shareDelegate: ShareDelegate? = null
+    private val pipConfig = PictureInPictureConfig(false, false)
+    private val scenario: FragmentScenario<PlayerFragment>
+
+    init {
         val vmFactory = PlayerViewModel.Factory(
-            FakeAppPlayerFactory(appPlayer),
+            appPlayerFactory,
             playerEventStream,
             telemetry
         )
@@ -70,78 +77,36 @@ class PlayerFragmentTest {
             playerViewWrapper ?: FakePlayerViewWrapper(ApplicationProvider.getApplicationContext())
         )
 
-        return launchFragmentInContainer(fragmentArgs = PlayerFragment.args(url, pipConfig)) {
+        val args = PlayerArguments(
+            uri = "",
+            pipConfig = pipConfig
+        )
+        scenario = launchFragmentInContainer(fragmentArgs = args.bundle()) {
             PlayerFragment(vmFactory, playerViewWrapperFactory, shareDelegate)
         }
     }
-}
 
-class FakeAppPlayerFactory(val appPlayer: AppPlayer) : AppPlayer.Factory {
-    override fun create(url: String) = appPlayer
-}
-
-class FakeAppPlayer : AppPlayer {
-    var boundState: PlayerState? = null
-    var didRelease: Boolean = false
-
-    override val state: PlayerState get() = PlayerState.INITIAL
-    override val textTracks: List<TrackInfo>
-        get() = error("unused")
-    override val audioTracks: List<TrackInfo>
-        get() = error("unused")
-    override val videoTracks: List<TrackInfo>
-        get() = error("unused")
-
-    override fun bind(playerViewWrapper: PlayerViewWrapper, playerState: PlayerState?) {
-        boundState = playerState
+    fun destroy() {
+        scenario.moveToState(Lifecycle.State.DESTROYED)
     }
 
-    override fun play() {
-        error("unused")
+    fun recreate() {
+        scenario.recreate()
     }
 
-    override fun pause() {
-        error("unused")
+    fun assertPlayerCreated(times: Int) {
+        assertEquals(times, appPlayerFactory.createCount)
     }
 
-    override fun release() {
-        didRelease = true
+    fun assertViewDetached() {
+        assertTrue(playerViewWrapper.didDetach)
     }
 
-    override fun handleTrackInfoAction(action: TrackInfo.Action) {
-        error("unused")
-    }
-}
-
-class FakePlayerEventStream(val flow: Flow<PlayerEvent> = emptyFlow()) : PlayerEventStream {
-    override fun listen(appPlayer: AppPlayer) = flow
-}
-
-class FakePlayerViewWrapperFactory(val playerViewWrapper: PlayerViewWrapper) : PlayerViewWrapper.Factory {
-    override fun create(context: Context) = playerViewWrapper
-}
-
-class FakePlayerViewWrapper(context: Context) : PlayerViewWrapper {
-    var didAttach: Boolean = false
-    var didDetach: Boolean = false
-
-    override val view: View = FrameLayout(context)
-
-    override fun bindTextTracksPicker(textTracks: (View) -> Unit) = Unit
-    override fun bindAudioTracksPicker(audioTracks: (View) -> Unit) = Unit
-    override fun bindVideoTracksPicker(videoTracks: (View) -> Unit) = Unit
-    override fun bindPlay(play: (View) -> Unit) = Unit
-    override fun bindPause(pause: (View) -> Unit) = Unit
-    override fun bindShare(onClick: (View) -> Unit) = Unit
-    override fun onEvent(playerEvent: PlayerEvent) = Unit
-
-    override fun attachTo(appPlayer: AppPlayer) {
-        didAttach = true
+    fun assertPlayerReleased() {
+        assertTrue(appPlayer.didRelease)
     }
 
-    override fun detach() {
-        // Support reusing the same test View across Fragment recreation.
-        (view.parent as? ViewGroup)?.removeView(view)
-        didDetach = true
+    fun assertPlayerNotReleased() {
+        assertFalse(appPlayer.didRelease)
     }
 }

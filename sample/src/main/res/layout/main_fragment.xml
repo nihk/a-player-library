@@ -22,4 +22,11 @@
         android:text="to player activity"
         tools:ignore="HardcodedText" />
 
+    <CheckBox
+        android:id="@+id/enable_pip"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Enable PiP (for Activity)"
+        tools:ignore="HardcodedText" />
+
 </LinearLayout>

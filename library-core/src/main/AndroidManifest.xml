@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    package="library.core">
+
+    <application>
+        <activity
+            android:name="library.core.DefaultLibraryActivity"
+            android:theme="@style/Theme.MaterialComponents.DayNight.NoActionBar" />
+
+        <!--
+            https://stackoverflow.com/a/46179686/2997980
+            https://developer.android.com/guide/topics/manifest/activity-element
+            Known issue: Window leaks when PiP is closed.
+        -->
+        <activity
+            android:name="library.core.PipLibraryActivity"
+            android:autoRemoveFromRecents="true"
+            android:excludeFromRecents="true"
+            android:launchMode="singleTask"
+            android:noHistory="true"
+            android:resizeableActivity="true"
+            android:supportsPictureInPicture="true"
+            android:taskAffinity="library.LibraryActivity"
+            android:theme="@style/Theme.MaterialComponents.DayNight.NoActionBar"
+            tools:targetApi="24" />
+    </application>
+
+</manifest>

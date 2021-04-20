@@ -1,9 +1,10 @@
 include(
     ":sample",
-    ":library",
+    ":library-core",
     ":library-common",
     ":library-exoplayer",
     ":library-mediaplayer",
-    ":library-ui"
+    ":library-ui",
+    ":library-test"
 )
 rootProject.name = "a-player-library"

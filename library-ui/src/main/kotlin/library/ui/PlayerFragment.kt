@@ -5,7 +5,6 @@ import android.os.Build
 import android.os.Bundle
 import android.view.View
 import androidx.activity.OnBackPressedCallback
-import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.setFragmentResultListener
@@ -16,11 +15,11 @@ import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import library.common.OnUserLeaveHintViewModel
-import library.common.PictureInPictureConfig
+import library.common.PlayerArguments
 import library.common.PlayerViewWrapper
 import library.common.ShareDelegate
 import library.common.TrackInfo
-import library.common.requireNotNull
+import library.common.toPlayerArguments
 import library.ui.databinding.PlayerFragmentBinding
 
 class PlayerFragment(
@@ -32,8 +31,7 @@ class PlayerFragment(
     private val playerViewModel: PlayerViewModel by viewModels { vmFactory.create(this) }
     private val onUserLeaveHintViewModel: OnUserLeaveHintViewModel by activityViewModels()
     private var playerViewWrapper: PlayerViewWrapper? = null
-    private val url: String get() = requireArguments().getString(Constants.KEY_URL).requireNotNull()
-    private val pictureInPictureConfig: PictureInPictureConfig? get() = requireArguments().getParcelable(Constants.KEY_PIP_CONFIG)
+    private val playerArguments: PlayerArguments get() = requireArguments().toPlayerArguments()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -42,7 +40,7 @@ class PlayerFragment(
             playerViewModel.handleTrackInfoAction(action)
         }
 
-        val enterPipOnBackPresses = pictureInPictureConfig?.onBackPresses == true
+        val enterPipOnBackPresses = playerArguments.pipConfig?.onBackPresses == true
         val onBackPressed = object : OnBackPressedCallback(enterPipOnBackPresses) {
             override fun handleOnBackPressed() {
                 enterPip { abort() }
@@ -57,8 +55,8 @@ class PlayerFragment(
             return
         }
 
-        // Didn't find any better way to check at runtime for PIP Activity flag set
         try {
+            // Didn't find any better way to check at runtime for PIP Activity flag set
             requireActivity().enterPictureInPictureMode(
                 PictureInPictureParams
                     .Builder()
@@ -81,7 +79,7 @@ class PlayerFragment(
         binding.container.addView(playerViewWrapper.view)
 
         shareDelegate?.run {
-            playerViewWrapper.bindShare { share(requireActivity(), url) }
+            playerViewWrapper.bindShare { share(requireActivity(), playerArguments.uri) }
         }
 
         playerViewWrapper.bindPlay { playerViewModel.play() }
@@ -111,7 +109,7 @@ class PlayerFragment(
             .launchIn(viewLifecycleOwner.lifecycleScope)
 
         onUserLeaveHintViewModel.onUserLeaveHints()
-            .onEach { if (pictureInPictureConfig?.onUserLeaveHints == true) enterPip() }
+            .onEach { if (playerArguments.pipConfig?.enabled == true) enterPip() }
             .launchIn(viewLifecycleOwner.lifecycleScope)
 
         this.playerViewWrapper = playerViewWrapper
@@ -125,7 +123,7 @@ class PlayerFragment(
 
     override fun onStart() {
         super.onStart()
-        playerViewModel.bind(requireNotNull(playerViewWrapper), url)
+        playerViewModel.bind(requireNotNull(playerViewWrapper), playerArguments.uri)
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -136,17 +134,5 @@ class PlayerFragment(
     override fun onDestroyView() {
         super.onDestroyView()
         playerViewWrapper = null
-    }
-
-    companion object {
-        fun args(
-            url: String,
-            pictureInPictureConfig: PictureInPictureConfig?
-        ): Bundle {
-            return bundleOf(
-                Constants.KEY_URL to url,
-                Constants.KEY_PIP_CONFIG to pictureInPictureConfig
-            )
-        }
     }
 }

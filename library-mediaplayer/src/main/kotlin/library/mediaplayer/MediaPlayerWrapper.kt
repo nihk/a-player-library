@@ -73,9 +73,9 @@ class MediaPlayerWrapper(
     }
 
     class Factory : AppPlayer.Factory {
-        override fun create(url: String): AppPlayer {
+        override fun create(uri: String): AppPlayer {
             val mediaPlayer = MediaPlayer().apply {
-                setDataSource(url)
+                setDataSource(uri)
                 prepareAsync()
             }
             return MediaPlayerWrapper(mediaPlayer)

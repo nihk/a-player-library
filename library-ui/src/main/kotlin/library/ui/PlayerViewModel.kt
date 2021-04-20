@@ -20,7 +20,7 @@ import library.common.PlayerViewWrapper
 import library.common.TrackInfo
 
 class PlayerViewModel(
-    private val handle: SavedStateHandle,
+    private val playerSavedState: PlayerSavedState,
     private val appPlayerFactory: AppPlayer.Factory,
     private val playerEventStream: PlayerEventStream,
     private val telemetry: PlayerTelemetry?
@@ -38,15 +38,11 @@ class PlayerViewModel(
     private val errors = MutableSharedFlow<String>()
     fun errors(): Flow<String> = errors
 
-    private var savedPlayerState: PlayerState?
-        get() = handle[KEY_PLAYER_STATE]
-        set(value) { handle[KEY_PLAYER_STATE] = value }
-
-    fun bind(playerViewWrapper: PlayerViewWrapper, url: String) {
+    fun bind(playerViewWrapper: PlayerViewWrapper, uri: String) {
         if (appPlayer == null) {
-            appPlayer = appPlayerFactory.create(url)
+            appPlayer = appPlayerFactory.create(uri)
             listening = listenToPlayerEvents(requireNotNull(appPlayer))
-            requireNotNull(appPlayer).bind(playerViewWrapper, savedPlayerState ?: PlayerState.INITIAL)
+            requireNotNull(appPlayer).bind(playerViewWrapper, playerSavedState.value ?: PlayerState.INITIAL)
         } else {
             // This will get hit when the UI is going thru a config change; we don't need to set any
             // state here because the player is still active, in memory with up-to-date state.
@@ -55,16 +51,17 @@ class PlayerViewModel(
     }
 
     fun unbind(playerViewWrapper: PlayerViewWrapper, isChangingConfigurations: Boolean) {
+        val appPlayer = requireNotNull(appPlayer)
         playerViewWrapper.detach()
 
         if (isChangingConfigurations) {
-            // We're only interested in saving state when the app is backgrounded.
+            // We're only interested in saving state/tearing down the player when the app is backgrounded.
             return
         }
 
         // When a user backgrounds the app, then later foregrounds it back to the video, a good UX is
         // to have the player be paused upon return.
-        savedPlayerState = requireNotNull(appPlayer).state.copy(isPlaying = false)
+        playerSavedState.value = appPlayer.state.copy(isPlaying = false)
         tearDown()
     }
 
@@ -76,7 +73,7 @@ class PlayerViewModel(
             .onEach { playerEvent ->
                 when (playerEvent) {
                     is PlayerEvent.OnTracksAvailable -> {
-                        savedPlayerState?.trackInfos?.let { appPlayer.handleTrackInfoAction(TrackInfo.Action.Set(it)) }
+                        playerSavedState.value?.trackInfos?.let { appPlayer.handleTrackInfoAction(TrackInfo.Action.Set(it)) }
                         tracksStates.value = TracksState.Available
                     }
                     is PlayerEvent.OnPlayerError -> errors.emit(playerEvent.exception.message.toString())
@@ -99,8 +96,8 @@ class PlayerViewModel(
 
     private fun tearDown() {
         tracksStates.value = TracksState.NotAvailable
-        // These can be null when closing PiP, due to PiP creating/destroying the host activity
-        // briefly after PiP is closed by the user.
+        // These can be nullable when closing PiP. PiP can recreate/destroy the Activity without
+        // creating an AppPlayer instance in this ViewModel.
         listening?.cancel()
         listening = null
         appPlayer?.release()
@@ -137,7 +134,7 @@ class PlayerViewModel(
                 ): T {
                     @Suppress("UNCHECKED_CAST")
                     return PlayerViewModel(
-                        handle,
+                        PlayerSavedState(handle),
                         appPlayerFactory,
                         playerEventStream,
                         telemetry
@@ -145,10 +142,6 @@ class PlayerViewModel(
                 }
             }
         }
-    }
-
-    companion object {
-        private const val KEY_PLAYER_STATE = "player_state"
     }
 }
 

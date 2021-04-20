@@ -21,7 +21,7 @@ androidAppConfig {
 }
 
 dependencies {
-    implementation(project(":library"))
+    implementation(project(":library-core"))
     implementation(project(":library-exoplayer"))
     implementation(project(":library-mediaplayer"))
 

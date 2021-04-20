@@ -12,7 +12,7 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.components.ActivityComponent
 import dagger.multibindings.IntoMap
-import library.LibraryFragment
+import library.core.LibraryFragment
 import nick.template.R
 import nick.template.ui.AppFragmentFactory
 import nick.template.ui.MainFragment
