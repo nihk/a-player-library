@@ -40,6 +40,15 @@ class ExoPlayerWrapperTest {
         assertEquals(1, textTracks.size)
         assertEquals(1, audioTracks.size)
     }
+
+    @Test
+    fun validateTracksForOfflineHls() = player {
+        play(uri = "offline_hls/master.m3u8")
+
+        assertEquals(4, videoTracks.size)
+        assertEquals(0, textTracks.size)
+        assertEquals(1, audioTracks.size)
+    }
 }
 
 class FakeTrackNameProvider : TrackNameProvider {
@@ -48,13 +57,13 @@ class FakeTrackNameProvider : TrackNameProvider {
     }
 }
 
-fun player(block: suspend ExoPlayerRobot.() -> Unit) = runBlocking {
-    ExoPlayerRobot()
+fun player(block: suspend ExoPlayerWrapperRobot.() -> Unit) = runBlocking {
+    ExoPlayerWrapperRobot()
         .apply { block() }
         .release()
 }
 
-class ExoPlayerRobot {
+class ExoPlayerWrapperRobot {
     private val appContext: Context get() = ApplicationProvider.getApplicationContext()
     private var appPlayer: AppPlayer? = null
 
