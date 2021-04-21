@@ -9,7 +9,7 @@ open class NoOpPlayerViewWrapper : PlayerViewWrapper {
     var didAttach: Boolean = false
     var didDetach: Boolean = false
 
-    override val view: View get() = error("unused)")
+    override val view: View get() = error("unused")
 
     override fun bindTextTracksPicker(textTracks: (View) -> Unit) = Unit
     override fun bindAudioTracksPicker(audioTracks: (View) -> Unit) = Unit
