@@ -1,5 +1,6 @@
 package library.exoplayer
 
+import android.app.Application
 import android.content.Context
 import androidx.core.net.toUri
 import androidx.test.core.app.ApplicationProvider
@@ -16,8 +17,11 @@ import kotlinx.coroutines.withTimeout
 import library.common.AppPlayer
 import library.common.PlayerState
 import library.test.NoOpPlayerViewWrapper
+import okhttp3.mockwebserver.MockResponse
+import okhttp3.mockwebserver.MockWebServer
 import org.junit.Assert.assertEquals
 import org.junit.Test
+import java.io.BufferedReader
 import kotlin.time.Duration
 import kotlin.time.milliseconds
 import kotlin.time.seconds
@@ -25,7 +29,7 @@ import kotlin.time.seconds
 class ExoPlayerWrapperTest {
     @Test
     fun validateTracksForSimpleMp4() = player {
-        play(uri = "dizzy.mp4")
+        play(uri = "dizzy.mp4".asset())
 
         assertEquals(1, videoTracks.size)
         assertEquals(0, textTracks.size)
@@ -34,7 +38,7 @@ class ExoPlayerWrapperTest {
 
     @Test
     fun validateTracksForMp4WithSubtitles() = player {
-        play(uri = "dizzy.mp4", vttCaptions = "vtt-captions")
+        play(uri = "dizzy.mp4".asset(), vttCaptions = "vtt-captions".asset())
 
         assertEquals(1, videoTracks.size)
         assertEquals(1, textTracks.size)
@@ -42,12 +46,30 @@ class ExoPlayerWrapperTest {
     }
 
     @Test
-    fun validateTracksForOfflineHls() = player {
-        play(uri = "offline_hls/master.m3u8")
+    fun validateTracksForHls() = player {
+        play(uri = "offline_hls/master.m3u8".asset())
 
         assertEquals(4, videoTracks.size)
         assertEquals(0, textTracks.size)
         assertEquals(1, audioTracks.size)
+    }
+
+    @Test
+    fun validateTracksForHls_onLocalWebServer() {
+        webServer {
+            serveAsset("offline_hls/master.m3u8")
+            player {
+                play(uri = this@webServer.uri)
+
+                assertEquals(4, videoTracks.size)
+                assertEquals(0, textTracks.size)
+                assertEquals(1, audioTracks.size)
+            }
+        }
+    }
+
+    private fun String.asset(): String {
+        return "asset:///$this"
     }
 }
 
@@ -57,10 +79,45 @@ class FakeTrackNameProvider : TrackNameProvider {
     }
 }
 
+fun webServer(block: suspend MockWebServerRobot.() -> Unit) = runBlocking {
+    val robot = MockWebServerRobot()
+    try {
+        robot.block()
+    } finally {
+        robot.release()
+    }
+}
+
+class MockWebServerRobot {
+    private val server = MockWebServer()
+    private lateinit var path: String
+    private val httpUrl by lazy { server.url(path) }
+    val uri: String get() = httpUrl.toString()
+
+    fun serveAsset(assetName: String) {
+        path = "/$assetName"
+
+        val body = ApplicationProvider.getApplicationContext<Application>()
+            .assets
+            .open(assetName)
+            .bufferedReader()
+            .use(BufferedReader::readText)
+        server.enqueue(MockResponse().setBody(body))
+        server.start(port = 8080)
+    }
+
+    fun release() {
+        server.shutdown()
+    }
+}
+
 fun player(block: suspend ExoPlayerWrapperRobot.() -> Unit) = runBlocking {
-    ExoPlayerWrapperRobot()
-        .apply { block() }
-        .release()
+    val robot = ExoPlayerWrapperRobot()
+    try {
+        robot.block()
+    } finally {
+        robot.release()
+    }
 }
 
 class ExoPlayerWrapperRobot {
@@ -91,11 +148,11 @@ class ExoPlayerWrapperRobot {
         vttCaptions: String? = null
     ): Player {
         val mediaItem = MediaItem.Builder()
-            .setUri(uri.asset())
+            .setUri(uri)
             .apply {
                 if (vttCaptions != null) {
                     val subtitle = MediaItem.Subtitle(
-                        vttCaptions.asset().toUri(),
+                        vttCaptions.toUri(),
                         MimeTypes.TEXT_VTT,
                         "en",
                         C.SELECTION_FLAG_DEFAULT
@@ -111,10 +168,6 @@ class ExoPlayerWrapperRobot {
                 setThrowsWhenUsingWrongThread(false)
                 setMediaItem(mediaItem)
             }
-    }
-
-    private fun String.asset(): String {
-        return "asset:///$this"
     }
 
     private suspend fun waitUntil(

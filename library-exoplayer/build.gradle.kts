@@ -23,4 +23,6 @@ dependencies {
 
     androidTestImplementation(project(":library-test"))
     defaultAndroidTestDependencies()
+    androidTestImplementation(Dependency.OkHttp.mockWebServer)
+    androidTestImplementation(Dependency.ExoPlayer.runtime)
 }

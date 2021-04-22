@@ -146,6 +146,7 @@ object Dependency {
     object OkHttp {
         const val runtime = "com.squareup.okhttp3:okhttp:${Version.okHttp}"
         const val loggingInterceptor = "com.squareup.okhttp3:logging-interceptor:${Version.okHttp}"
+        const val mockWebServer = "com.squareup.okhttp3:mockwebserver:${Version.okHttp}"
     }
 
     object Retrofit {
