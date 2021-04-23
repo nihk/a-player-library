@@ -244,11 +244,13 @@ class ExoPlayerWrapperRobot(private val context: CoroutineContext = Dispatchers.
         val listener = object : Player.EventListener {
             override fun onIsPlayingChanged(isPlaying: Boolean) {
                 if (isPlaying) {
+                    removeListener(this)
                     continuation.resume(Unit)
                 }
             }
 
             override fun onPlayerError(error: ExoPlaybackException) {
+                removeListener(this)
                 continuation.cancel(error)
             }
         }
