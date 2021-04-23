@@ -77,7 +77,18 @@ class ExoPlayerWrapperTest {
             serveAsset("offline_hls/master_with_missing_file.m3u8")
             player {
                 play(uri = this@webServer.uri)
-                fail()
+                fail("Expected exception was not thrown")
+            }
+        }
+    }
+
+    @Test(expected = ExoPlaybackException::class)
+    fun playerThrowsWhenLocalServerRespondsWith404() {
+        webServer {
+            serveAsset("offline_hls/master.m3u8", responseCode = 404)
+            player {
+                play(uri = this@webServer.uri)
+                fail("Expected exception was not thrown")
             }
         }
     }
@@ -108,7 +119,10 @@ class MockWebServerRobot {
     private val httpUrl by lazy { server.url(path) }
     val uri: String get() = httpUrl.toString()
 
-    fun serveAsset(assetName: String) {
+    fun serveAsset(
+        assetName: String,
+        responseCode: Int? = null
+    ) {
         path = "/$assetName"
 
         val body = ApplicationProvider.getApplicationContext<Application>()
@@ -116,7 +130,16 @@ class MockWebServerRobot {
             .open(assetName)
             .bufferedReader()
             .use(BufferedReader::readText)
-        server.enqueue(MockResponse().setBody(body))
+
+        val response = MockResponse()
+            .setBody(body)
+            .apply {
+                if (responseCode != null) {
+                    setResponseCode(responseCode)
+                }
+            }
+
+        server.enqueue(response)
         server.start(port = 8080)
     }
 
