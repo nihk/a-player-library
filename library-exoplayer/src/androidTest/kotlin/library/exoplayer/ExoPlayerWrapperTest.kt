@@ -5,6 +5,7 @@ import android.content.Context
 import androidx.core.net.toUri
 import androidx.test.core.app.ApplicationProvider
 import com.google.android.exoplayer2.C
+import com.google.android.exoplayer2.ExoPlaybackException
 import com.google.android.exoplayer2.Format
 import com.google.android.exoplayer2.MediaItem
 import com.google.android.exoplayer2.Player
@@ -12,22 +13,20 @@ import com.google.android.exoplayer2.SimpleExoPlayer
 import com.google.android.exoplayer2.ui.TrackNameProvider
 import com.google.android.exoplayer2.util.MimeTypes
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
-import kotlinx.coroutines.withTimeout
 import library.common.AppPlayer
 import library.common.PlayerState
 import library.test.NoOpPlayerViewWrapper
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
 import org.junit.Assert.assertEquals
+import org.junit.Assert.fail
 import org.junit.Test
 import java.io.BufferedReader
 import kotlin.coroutines.CoroutineContext
-import kotlin.time.Duration
-import kotlin.time.milliseconds
-import kotlin.time.seconds
+import kotlin.coroutines.resume
 
 class ExoPlayerWrapperTest {
     @Test
@@ -67,6 +66,18 @@ class ExoPlayerWrapperTest {
                 assertVideoTracks(count = 4)
                 assertTextTracks(count = 0)
                 assertAudioTracks(count = 1)
+            }
+            assertAssetWasRequested()
+        }
+    }
+
+    @Test(expected = ExoPlaybackException::class)
+    fun missingM3u8Throws_onLocalWebServer() {
+        webServer {
+            serveAsset("offline_hls/master_with_missing_file.m3u8")
+            player {
+                play(uri = this@webServer.uri)
+                fail()
             }
         }
     }
@@ -109,6 +120,11 @@ class MockWebServerRobot {
         server.start(port = 8080)
     }
 
+    fun assertAssetWasRequested() {
+        val recordedRequest = server.takeRequest()
+        assertEquals(httpUrl, recordedRequest.requestUrl)
+    }
+
     fun release() {
         server.shutdown()
     }
@@ -146,7 +162,7 @@ class ExoPlayerWrapperRobot(private val context: CoroutineContext = Dispatchers.
         val player = createPlayer(uri, vttCaptions)
         appPlayer = ExoPlayerWrapper(player, FakeTrackNameProvider())
         appPlayer!!.bind(NoOpPlayerViewWrapper(), PlayerState.INITIAL)
-        waitUntil { appPlayer!!.state.isPlaying }
+        player.awaitPlaying()
     }
 
     suspend fun release() = withContext(context) {
@@ -180,15 +196,21 @@ class ExoPlayerWrapperRobot(private val context: CoroutineContext = Dispatchers.
             }
     }
 
-    private suspend fun waitUntil(
-        howLong: Duration = 5.seconds,
-        pollDelay: Duration = 1.milliseconds,
-        condition: () -> Boolean
-    ) {
-        withTimeout(howLong) {
-            while (!condition()) {
-                delay(pollDelay)
+    private suspend fun Player.awaitPlaying() = suspendCancellableCoroutine<Unit> { continuation ->
+        val listener = object : Player.EventListener {
+            override fun onIsPlayingChanged(isPlaying: Boolean) {
+                if (isPlaying) {
+                    continuation.resume(Unit)
+                }
+            }
+
+            override fun onPlayerError(error: ExoPlaybackException) {
+                continuation.cancel(error)
             }
         }
+
+        addListener(listener)
+
+        continuation.invokeOnCancellation { removeListener(listener) }
     }
 }
