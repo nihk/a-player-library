@@ -62,9 +62,9 @@ class ExoPlayerWrapperTest {
     @Test
     fun validateTracksForMp4_onLocalWebServer() {
         webServer {
-            start()
+            val baseUrl = start()
             player {
-                play(uri = "${this@webServer.baseUri}dizzy.mp4")
+                play(uri = "${baseUrl}dizzy.mp4")
 
                 assertVideoTracks(count = 1)
                 assertTextTracks(count = 0)
@@ -76,9 +76,9 @@ class ExoPlayerWrapperTest {
     @Test
     fun validateTracksForHls_onLocalWebServer() {
         webServer {
-            start()
+            val baseUrl = start()
             player {
-                play(uri = "${this@webServer.baseUri}offline_hls/master.m3u8")
+                play(uri = "${baseUrl}offline_hls/master.m3u8")
 
                 assertVideoTracks(count = 4)
                 assertTextTracks(count = 0)
@@ -90,9 +90,9 @@ class ExoPlayerWrapperTest {
     @Test(expected = ExoPlaybackException::class)
     fun missingM3u8Throws_onLocalWebServer() {
         webServer {
-            start()
+            val baseUrl = start()
             player {
-                play(uri = "${this@webServer.baseUri}offline_hls/master_with_missing_file.m3u8")
+                play(uri = "${baseUrl}offline_hls/master_with_missing_file.m3u8")
 
                 fail("Expected exception was not thrown")
             }
@@ -103,9 +103,9 @@ class ExoPlayerWrapperTest {
     fun playerThrowsWhenLocalServerRespondsWithClientError() {
         webServer {
             val path = "offline_hls/master.m3u8"
-            start(customResponseCodes = mapOf("/$path" to 404))
+            val baseUrl = start(customResponseCodes = mapOf("/$path" to 404))
             player {
-                play(uri = "${this@webServer.baseUri}$path")
+                play(uri = "$baseUrl$path")
 
                 fail("Expected exception was not thrown")
             }
@@ -134,12 +134,11 @@ fun webServer(block: suspend AssetWebServerRobot.() -> Unit) = runBlocking {
 
 class AssetWebServerRobot {
     private val server = MockWebServer()
-    private val httpUrl by lazy { server.url("/") }
-    val baseUri: String get() = httpUrl.toString()
 
-    fun start(customResponseCodes: Map<String, Int> = emptyMap()) {
+    fun start(customResponseCodes: Map<String, Int> = emptyMap()): String {
         server.dispatcher = createAssetDispatcher(customResponseCodes)
         server.start(port = 8080)
+        return server.url("/").toString()
     }
 
     fun release() {
