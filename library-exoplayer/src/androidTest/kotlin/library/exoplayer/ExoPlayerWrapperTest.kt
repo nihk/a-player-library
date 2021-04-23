@@ -19,18 +19,21 @@ import kotlinx.coroutines.withContext
 import library.common.AppPlayer
 import library.common.PlayerState
 import library.test.NoOpPlayerViewWrapper
+import okhttp3.mockwebserver.Dispatcher
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
+import okhttp3.mockwebserver.RecordedRequest
+import okio.Buffer
+import okio.source
 import org.junit.Assert.assertEquals
 import org.junit.Assert.fail
 import org.junit.Test
-import java.io.BufferedReader
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.resume
 
 class ExoPlayerWrapperTest {
     @Test
-    fun validateTracksForSimpleMp4() = player {
+    fun validateTracksForMp4() = player {
         play(uri = "dizzy.mp4".asset())
 
         assertVideoTracks(count = 1)
@@ -39,7 +42,7 @@ class ExoPlayerWrapperTest {
     }
 
     @Test
-    fun validateTracksForMp4WithSubtitles() = player {
+    fun validateTracksForMp4_withSubtitles() = player {
         play(uri = "dizzy.mp4".asset(), vttCaptions = "vtt-captions".asset())
 
         assertVideoTracks(count = 1)
@@ -57,37 +60,53 @@ class ExoPlayerWrapperTest {
     }
 
     @Test
+    fun validateTracksForMp4_onLocalWebServer() {
+        webServer {
+            start()
+            player {
+                play(uri = "${this@webServer.baseUri}dizzy.mp4")
+
+                assertVideoTracks(count = 1)
+                assertTextTracks(count = 0)
+                assertAudioTracks(count = 1)
+            }
+        }
+    }
+
+    @Test
     fun validateTracksForHls_onLocalWebServer() {
         webServer {
-            serveAsset("offline_hls/master.m3u8")
+            start()
             player {
-                play(uri = this@webServer.uri)
+                play(uri = "${this@webServer.baseUri}offline_hls/master.m3u8")
 
                 assertVideoTracks(count = 4)
                 assertTextTracks(count = 0)
                 assertAudioTracks(count = 1)
             }
-            assertAssetWasRequested()
         }
     }
 
     @Test(expected = ExoPlaybackException::class)
     fun missingM3u8Throws_onLocalWebServer() {
         webServer {
-            serveAsset("offline_hls/master_with_missing_file.m3u8")
+            start()
             player {
-                play(uri = this@webServer.uri)
+                play(uri = "${this@webServer.baseUri}offline_hls/master_with_missing_file.m3u8")
+
                 fail("Expected exception was not thrown")
             }
         }
     }
 
     @Test(expected = ExoPlaybackException::class)
-    fun playerThrowsWhenLocalServerRespondsWith404() {
+    fun playerThrowsWhenLocalServerRespondsWithClientError() {
         webServer {
-            serveAsset("offline_hls/master.m3u8", responseCode = 404)
+            val path = "offline_hls/master.m3u8"
+            start(customResponseCodes = mapOf("/$path" to 404))
             player {
-                play(uri = this@webServer.uri)
+                play(uri = "${this@webServer.baseUri}$path")
+
                 fail("Expected exception was not thrown")
             }
         }
@@ -104,8 +123,8 @@ class FakeTrackNameProvider : TrackNameProvider {
     }
 }
 
-fun webServer(block: suspend MockWebServerRobot.() -> Unit) = runBlocking {
-    val robot = MockWebServerRobot()
+fun webServer(block: suspend AssetWebServerRobot.() -> Unit) = runBlocking {
+    val robot = AssetWebServerRobot()
     try {
         robot.block()
     } finally {
@@ -113,43 +132,45 @@ fun webServer(block: suspend MockWebServerRobot.() -> Unit) = runBlocking {
     }
 }
 
-class MockWebServerRobot {
+class AssetWebServerRobot {
     private val server = MockWebServer()
-    private lateinit var path: String
-    private val httpUrl by lazy { server.url(path) }
-    val uri: String get() = httpUrl.toString()
+    private val httpUrl by lazy { server.url("/") }
+    val baseUri: String get() = httpUrl.toString()
 
-    fun serveAsset(
-        assetName: String,
-        responseCode: Int? = null
-    ) {
-        path = "/$assetName"
-
-        val body = ApplicationProvider.getApplicationContext<Application>()
-            .assets
-            .open(assetName)
-            .bufferedReader()
-            .use(BufferedReader::readText)
-
-        val response = MockResponse()
-            .setBody(body)
-            .apply {
-                if (responseCode != null) {
-                    setResponseCode(responseCode)
-                }
-            }
-
-        server.enqueue(response)
+    fun start(customResponseCodes: Map<String, Int> = emptyMap()) {
+        server.dispatcher = createAssetDispatcher(customResponseCodes)
         server.start(port = 8080)
-    }
-
-    fun assertAssetWasRequested() {
-        val recordedRequest = server.takeRequest()
-        assertEquals(httpUrl, recordedRequest.requestUrl)
     }
 
     fun release() {
         server.shutdown()
+    }
+
+    private fun createAssetDispatcher(customResponseCodes: Map<String, Int>): Dispatcher {
+        return object : Dispatcher() {
+            override fun dispatch(request: RecordedRequest): MockResponse {
+                val path = requireNotNull(request.path)
+
+                val customResponseCode = customResponseCodes[path]
+                if (customResponseCode != null) {
+                    return MockResponse().setResponseCode(customResponseCode)
+                }
+
+                val assetPath = if (path.startsWith("/")) {
+                    path.drop(1)
+                } else {
+                    path
+                }
+
+                val stream = ApplicationProvider.getApplicationContext<Application>()
+                    .assets
+                    .open(assetPath)
+                val buffer = Buffer().apply {
+                    writeAll(stream.source())
+                }
+                return MockResponse().setBody(buffer)
+            }
+        }
     }
 }
 
