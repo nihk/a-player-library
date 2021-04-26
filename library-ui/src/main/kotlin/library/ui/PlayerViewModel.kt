@@ -20,12 +20,13 @@ import library.common.PlayerViewWrapper
 import library.common.TrackInfo
 
 class PlayerViewModel(
-    private val playerSavedState: PlayerSavedState,
+    handle: SavedStateHandle,
     private val appPlayerFactory: AppPlayer.Factory,
     private val playerEventStream: PlayerEventStream,
     private val telemetry: PlayerTelemetry?
 ) : ViewModel() {
 
+    private var playerState by PlayerSavedState(handle)
     private var appPlayer: AppPlayer? = null
     private var listening: Job? = null
 
@@ -42,7 +43,7 @@ class PlayerViewModel(
         if (appPlayer == null) {
             appPlayer = appPlayerFactory.create(uri)
             listening = listenToPlayerEvents(requireNotNull(appPlayer))
-            requireNotNull(appPlayer).bind(playerViewWrapper, playerSavedState.value ?: PlayerState.INITIAL)
+            requireNotNull(appPlayer).bind(playerViewWrapper, playerState ?: PlayerState.INITIAL)
         } else {
             // This will get hit when the UI is going thru a config change; we don't need to set any
             // state here because the player is still active, in memory with up-to-date state.
@@ -61,7 +62,7 @@ class PlayerViewModel(
 
         // When a user backgrounds the app, then later foregrounds it back to the video, a good UX is
         // to have the player be paused upon return.
-        playerSavedState.value = appPlayer.state.copy(isPlaying = false)
+        playerState = appPlayer.state.copy(isPlaying = false)
         tearDown()
     }
 
@@ -73,7 +74,7 @@ class PlayerViewModel(
             .onEach { playerEvent ->
                 when (playerEvent) {
                     is PlayerEvent.OnTracksAvailable -> {
-                        playerSavedState.value?.trackInfos?.let { appPlayer.handleTrackInfoAction(TrackInfo.Action.Set(it)) }
+                        playerState?.trackInfos?.let { appPlayer.handleTrackInfoAction(TrackInfo.Action.Set(it)) }
                         tracksStates.value = TracksState.Available
                     }
                     is PlayerEvent.OnPlayerError -> errors.emit(playerEvent.exception.message.toString())
@@ -134,7 +135,7 @@ class PlayerViewModel(
                 ): T {
                     @Suppress("UNCHECKED_CAST")
                     return PlayerViewModel(
-                        PlayerSavedState(handle),
+                        handle,
                         appPlayerFactory,
                         playerEventStream,
                         telemetry

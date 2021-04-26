@@ -5,12 +5,26 @@ import android.content.Context
 import androidx.core.net.toUri
 import androidx.test.core.app.ApplicationProvider
 import com.google.android.exoplayer2.C
+import com.google.android.exoplayer2.DefaultLoadControl
+import com.google.android.exoplayer2.DefaultRenderersFactory
 import com.google.android.exoplayer2.ExoPlaybackException
+import com.google.android.exoplayer2.ExoPlayerLibraryInfo
 import com.google.android.exoplayer2.Format
 import com.google.android.exoplayer2.MediaItem
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.SimpleExoPlayer
+import com.google.android.exoplayer2.analytics.AnalyticsCollector
+import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory
+import com.google.android.exoplayer2.source.DefaultMediaSourceFactory
+import com.google.android.exoplayer2.trackselection.DefaultTrackSelector
 import com.google.android.exoplayer2.ui.TrackNameProvider
+import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter
+import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
+import com.google.android.exoplayer2.upstream.DefaultHttpDataSource
+import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory
+import com.google.android.exoplayer2.upstream.DefaultLoadErrorHandlingPolicy
+import com.google.android.exoplayer2.upstream.LoadErrorHandlingPolicy
+import com.google.android.exoplayer2.util.Clock
 import com.google.android.exoplayer2.util.MimeTypes
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
@@ -28,6 +42,7 @@ import okio.source
 import org.junit.Assert.assertEquals
 import org.junit.Assert.fail
 import org.junit.Test
+import java.io.Closeable
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.resume
 
@@ -123,26 +138,20 @@ class FakeTrackNameProvider : TrackNameProvider {
     }
 }
 
-fun webServer(block: suspend AssetWebServerRobot.() -> Unit) = runBlocking {
-    val robot = AssetWebServerRobot()
-    try {
-        robot.block()
-    } finally {
-        robot.release()
-    }
+fun webServer(block: AssetWebServerRobot.() -> Unit) {
+    AssetWebServerRobot().use { it.block() }
 }
 
-class AssetWebServerRobot {
-    private val server = MockWebServer()
+class AssetWebServerRobot private constructor(
+    private val server: MockWebServer
+) : Closeable by server {
+
+    constructor() : this(MockWebServer())
 
     fun start(customResponseCodes: Map<String, Int> = emptyMap()): String {
         server.dispatcher = createAssetDispatcher(customResponseCodes)
-        server.start(port = 8080)
+        server.start(port = 8080) // Use a consistent port for easier debugging
         return server.url("/").toString()
-    }
-
-    fun release() {
-        server.shutdown()
     }
 
     private fun createAssetDispatcher(customResponseCodes: Map<String, Int>): Dispatcher {
@@ -155,6 +164,7 @@ class AssetWebServerRobot {
                     return MockResponse().setResponseCode(customResponseCode)
                 }
 
+                // Android asset paths can't start with "/"
                 val assetPath = if (path.startsWith("/")) {
                     path.drop(1)
                 } else {
@@ -164,6 +174,8 @@ class AssetWebServerRobot {
                 val stream = ApplicationProvider.getApplicationContext<Application>()
                     .assets
                     .open(assetPath)
+
+                // Convert the InputStream to okio APIs, which MockResponse uses
                 val buffer = Buffer().apply {
                     writeAll(stream.source())
                 }
@@ -232,7 +244,33 @@ class ExoPlayerWrapperRobot(private val context: CoroutineContext = Dispatchers.
             }
             .build()
 
-        return SimpleExoPlayer.Builder(appContext)
+        val httpDataSourceFactory = DefaultHttpDataSourceFactory(
+            ExoPlayerLibraryInfo.DEFAULT_USER_AGENT,
+            null,
+            DefaultHttpDataSource.DEFAULT_CONNECT_TIMEOUT_MILLIS,
+            500, // Fail fast!
+            false
+        )
+        val dataSourceFactory = DefaultDataSourceFactory(appContext, null, httpDataSourceFactory)
+        val mediaSourceFactory = DefaultMediaSourceFactory(dataSourceFactory, DefaultExtractorsFactory()).apply {
+            // Don't retry at all
+            setLoadErrorHandlingPolicy(object : DefaultLoadErrorHandlingPolicy() {
+                override fun getMinimumLoadableRetryCount(dataType: Int) = 0
+                override fun getRetryDelayMsFor(
+                    loadErrorInfo: LoadErrorHandlingPolicy.LoadErrorInfo
+                ) = C.TIME_UNSET
+            })
+        }
+
+        return SimpleExoPlayer.Builder(
+            appContext,
+            DefaultRenderersFactory(appContext),
+            DefaultTrackSelector(appContext),
+            mediaSourceFactory,
+            DefaultLoadControl(),
+            DefaultBandwidthMeter.getSingletonInstance(appContext),
+            AnalyticsCollector(Clock.DEFAULT)
+        )
             .build()
             .apply {
                 setMediaItem(mediaItem)
