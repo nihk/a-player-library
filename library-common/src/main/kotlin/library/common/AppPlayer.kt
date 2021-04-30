@@ -2,7 +2,6 @@ package library.common
 
 interface AppPlayer {
     val state: PlayerState
-    // fixme: can these just be exposed via `state`?
     val textTracks: List<TrackInfo>
     val audioTracks: List<TrackInfo>
     val videoTracks: List<TrackInfo>

@@ -78,6 +78,10 @@ internal class MediaPlayerViewWrapper(context: Context) : PlayerViewWrapper {
         callback = null
     }
 
+    override fun setControllerUsability(isUsable: Boolean) {
+        // todo
+    }
+
     class Factory : PlayerViewWrapper.Factory {
         override fun create(context: Context): PlayerViewWrapper {
             return MediaPlayerViewWrapper(context)

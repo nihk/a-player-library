@@ -17,6 +17,7 @@ interface PlayerViewWrapper {
     fun detach()
 
     fun onEvent(playerEvent: PlayerEvent) = Unit
+    fun setControllerUsability(isUsable: Boolean)
 
     interface Factory {
         fun create(context: Context): PlayerViewWrapper

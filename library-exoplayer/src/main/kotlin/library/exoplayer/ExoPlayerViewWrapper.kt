@@ -78,6 +78,10 @@ internal class ExoPlayerViewWrapper(context: Context) : PlayerViewWrapper {
         playerView.player = null
     }
 
+    override fun setControllerUsability(isUsable: Boolean) {
+        playerView.useController = isUsable
+    }
+
     class Factory : PlayerViewWrapper.Factory {
         override fun create(context: Context): PlayerViewWrapper {
             return ExoPlayerViewWrapper(context)

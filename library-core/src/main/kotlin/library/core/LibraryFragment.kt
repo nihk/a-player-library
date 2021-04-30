@@ -13,7 +13,7 @@ class LibraryFragment : Fragment(R.layout.library_fragment) {
     private val playerArguments get() = requireArguments().toPlayerArguments()
 
     override fun onAttach(context: Context) {
-        val libraryModule = LibraryModule()
+        val libraryModule = LibraryModule(requireActivity())
         childFragmentManager.fragmentFactory = libraryModule.fragmentFactory
         super.onAttach(context)
     }

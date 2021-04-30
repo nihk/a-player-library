@@ -1,6 +1,6 @@
 package library.ui
 
-import CoroutinesTestRule
+import library.CoroutinesTestRule
 import androidx.lifecycle.SavedStateHandle
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -23,14 +23,15 @@ class PlayerViewModelTest {
     fun `bind creates a new player when there is no active player`() = playerViewModel {
         bind()
         assertBindedToPlayerView()
-        assertBindedWithPlayerState()
         assertPlayerCreated(times = 1)
     }
 
     @Test
-    fun `custom player state is used when binding new player`() = playerViewModel {
-        bind(PlayerState(positionMs = 5000L, isPlaying = false, trackInfos = emptyList()))
-        assertBindedWithPlayerState()
+    fun `player state is used when binding new player`() = playerViewModel {
+        val playerState = PlayerState(positionMs = 5000L, isPlaying = false, trackInfos = emptyList())
+        setPlayerState(playerState)
+        bind()
+        assertPlayerBindedWithState(playerState)
     }
 
     @Test
@@ -142,8 +143,8 @@ class PlayerViewModelRobot(scope: CoroutineScope) {
             .onEach { emittedEvents += it }
             .launchIn(scope)
 
-        jobs += viewModel.tracksStates()
-            .onEach { emittedTrackStates += it }
+        jobs += viewModel.uiStates()
+            .onEach { emittedTrackStates += it.tracksState }
             .launchIn(scope)
     }
 
@@ -155,8 +156,11 @@ class PlayerViewModelRobot(scope: CoroutineScope) {
         events.emit(playerEvent)
     }
 
-    fun bind(playerState: PlayerState = PlayerState.INITIAL) {
+    fun setPlayerState(playerState: PlayerState?) {
         playerSavedState.value = playerState
+    }
+
+    fun bind() {
         viewModel.bind(playerViewWrapper, "https://www.example.com")
     }
 
@@ -168,8 +172,8 @@ class PlayerViewModelRobot(scope: CoroutineScope) {
         assertEquals(times, appPlayerFactory.createCount)
     }
 
-    fun assertBindedWithPlayerState() {
-        assertEquals(playerSavedState.value, appPlayer.boundState)
+    fun assertPlayerBindedWithState(playerState: PlayerState?) {
+        assertEquals(playerState, appPlayer.boundState)
     }
 
     fun assertBindedToPlayerView() {

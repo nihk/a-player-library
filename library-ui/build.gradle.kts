@@ -29,4 +29,5 @@ dependencies {
 
     androidTestImplementation(project(":library-test"))
     defaultAndroidTestDependencies()
+    androidTestImplementation(Dependency.Kotlin.coroutinesTest)
 }

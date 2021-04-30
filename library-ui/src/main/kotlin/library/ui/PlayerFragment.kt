@@ -1,7 +1,5 @@
 package library.ui
 
-import android.app.PictureInPictureParams
-import android.os.Build
 import android.os.Bundle
 import android.view.View
 import androidx.activity.OnBackPressedCallback
@@ -10,8 +8,6 @@ import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.setFragmentResultListener
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
-import com.google.android.material.snackbar.Snackbar
-import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import library.common.OnUserLeaveHintViewModel
@@ -25,7 +21,9 @@ import library.ui.databinding.PlayerFragmentBinding
 class PlayerFragment(
     private val vmFactory: PlayerViewModel.Factory,
     private val playerViewWrapperFactory: PlayerViewWrapper.Factory,
-    private val shareDelegate: ShareDelegate?
+    private val shareDelegate: ShareDelegate?,
+    private val pipController: PipController,
+    private val errorRenderer: ErrorRenderer
 ) : Fragment(R.layout.player_fragment) {
 
     private val playerViewModel: PlayerViewModel by viewModels { vmFactory.create(this) }
@@ -40,36 +38,28 @@ class PlayerFragment(
             playerViewModel.handleTrackInfoAction(action)
         }
 
-        val enterPipOnBackPresses = playerArguments.pipConfig?.onBackPresses == true
-        val onBackPressed = object : OnBackPressedCallback(enterPipOnBackPresses) {
+        setUpBackPressHandling()
+    }
+
+    private fun setUpBackPressHandling() {
+        if (playerArguments.pipConfig?.onBackPresses != true) return
+
+        val onBackPressed = object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
-                enterPip { abort() }
+                enterPip {
+                    isEnabled = false
+                    requireActivity().onBackPressed()
+                }
             }
         }
         requireActivity().onBackPressedDispatcher.addCallback(this, onBackPressed)
     }
 
     private fun enterPip(onFailedToEnterPip: () -> Unit = {}) {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
-            onFailedToEnterPip()
-            return
-        }
-
-        try {
-            // Didn't find any better way to check at runtime for PIP Activity flag set
-            requireActivity().enterPictureInPictureMode(
-                PictureInPictureParams
-                    .Builder()
-                    .build()
-            )
-        } catch (throwable: Throwable) {
+        val result = pipController.enterPip(playerViewModel.isPlaying())
+        if (result == EnterPipResult.DidNotEnterPip) {
             onFailedToEnterPip()
         }
-    }
-
-    private fun OnBackPressedCallback.abort() {
-        isEnabled = false
-        requireActivity().onBackPressed()
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -89,28 +79,42 @@ class PlayerFragment(
             .onEach { playerEvent -> playerViewWrapper.onEvent(playerEvent) }
             .launchIn(viewLifecycleOwner.lifecycleScope)
 
-        playerViewModel.tracksStates()
-            .filter { tracksState -> tracksState == TracksState.Available }
-            .onEach {
-                if (playerViewModel.textTracks().isNotEmpty()) {
-                    playerViewWrapper.bindTextTracksPicker { navigateToTracksPicker(playerViewModel.textTracks()) }
+        playerViewModel.uiStates()
+            .onEach { uiState ->
+                if (uiState.tracksState == TracksState.Available) {
+                    if (playerViewModel.textTracks().isNotEmpty()) {
+                        playerViewWrapper.bindTextTracksPicker { navigateToTracksPicker(playerViewModel.textTracks()) }
+                    }
+                    if (playerViewModel.audioTracks().isNotEmpty()) {
+                        playerViewWrapper.bindAudioTracksPicker { navigateToTracksPicker(playerViewModel.audioTracks()) }
+                    }
+                    if (playerViewModel.videoTracks().isNotEmpty()) {
+                        playerViewWrapper.bindVideoTracksPicker { navigateToTracksPicker(playerViewModel.videoTracks()) }
+                    }
                 }
-                if (playerViewModel.audioTracks().isNotEmpty()) {
-                    playerViewWrapper.bindAudioTracksPicker { navigateToTracksPicker(playerViewModel.audioTracks()) }
-                }
-                if (playerViewModel.videoTracks().isNotEmpty()) {
-                    playerViewWrapper.bindVideoTracksPicker { navigateToTracksPicker(playerViewModel.videoTracks()) }
-                }
+
+                playerViewWrapper.setControllerUsability(uiState.useController)
             }
             .launchIn(viewLifecycleOwner.lifecycleScope)
 
         playerViewModel.errors()
-            .onEach { message -> Snackbar.make(view, message, Snackbar.LENGTH_SHORT).show() }
+            .onEach { message -> errorRenderer.render(view, message) }
             .launchIn(viewLifecycleOwner.lifecycleScope)
 
-        onUserLeaveHintViewModel.onUserLeaveHints()
-            .onEach { if (playerArguments.pipConfig?.enabled == true) enterPip() }
-            .launchIn(viewLifecycleOwner.lifecycleScope)
+        if (playerArguments.pipConfig?.enabled == true) {
+            pipController.events()
+                .onEach { pipAction ->
+                    when (pipAction) {
+                        PipEvent.Pause -> playerViewModel.pause()
+                        PipEvent.Play -> playerViewModel.play()
+                    }
+                }
+                .launchIn(viewLifecycleOwner.lifecycleScope)
+
+            onUserLeaveHintViewModel.onUserLeaveHints()
+                .onEach { enterPip() }
+                .launchIn(viewLifecycleOwner.lifecycleScope)
+        }
 
         this.playerViewWrapper = playerViewWrapper
     }
@@ -129,6 +133,10 @@ class PlayerFragment(
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         playerViewModel.unbind(requireNotNull(playerViewWrapper), requireActivity().isChangingConfigurations)
+    }
+
+    override fun onPictureInPictureModeChanged(isInPictureInPictureMode: Boolean) {
+        playerViewModel.onPipModeChanged(isInPictureInPictureMode)
     }
 
     override fun onDestroyView() {
