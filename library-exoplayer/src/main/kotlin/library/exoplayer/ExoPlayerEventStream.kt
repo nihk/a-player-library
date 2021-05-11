@@ -1,6 +1,7 @@
 package library.exoplayer
 
 import android.util.Log
+import android.view.Surface
 import com.google.android.exoplayer2.ExoPlaybackException
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.SimpleExoPlayer
@@ -16,15 +17,13 @@ import library.common.PlayerEvent
 import library.common.PlayerEventStream
 import library.common.PlayerException
 
-private interface Listener : Player.EventListener, AnalyticsListener
-
 internal class ExoPlayerEventStream : PlayerEventStream {
     private val oneTimeEvents = mutableSetOf<PlayerEvent>()
 
     override fun listen(appPlayer: AppPlayer): Flow<PlayerEvent> = callbackFlow {
         appPlayer as? ExoPlayerWrapper ?: error("$appPlayer was not a ${ExoPlayerWrapper::class.java}")
 
-        val listener = object : Listener {
+        val listener = object : Player.EventListener, AnalyticsListener {
             override fun onIsLoadingChanged(isLoading: Boolean) {
                 offer(PlayerEvent.OnIsLoadingChanged(isLoading))
             }
@@ -54,6 +53,13 @@ internal class ExoPlayerEventStream : PlayerEventStream {
                     cause = error.cause
                 )
                 offer(PlayerEvent.OnPlayerError(exception))
+            }
+
+            override fun onRenderedFirstFrame(
+                eventTime: AnalyticsListener.EventTime,
+                surface: Surface?
+            ) {
+                offer(PlayerEvent.OnPlayerPrepared)
             }
         }
 

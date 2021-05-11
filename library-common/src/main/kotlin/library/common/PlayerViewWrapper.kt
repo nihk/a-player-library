@@ -18,6 +18,7 @@ interface PlayerViewWrapper {
 
     fun onEvent(playerEvent: PlayerEvent) = Unit
     fun setControllerUsability(isUsable: Boolean)
+    fun setLoading(isLoading: Boolean)
 
     interface Factory {
         fun create(context: Context): PlayerViewWrapper

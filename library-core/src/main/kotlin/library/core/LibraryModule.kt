@@ -35,6 +35,7 @@ internal class LibraryModule(private val activity: Activity) {
     private val playerViewModelFactory: PlayerViewModel.Factory get() = PlayerViewModel.Factory(
         appPlayerFactory = module.appPlayerFactory,
         playerEventStream = module.playerEventStream,
-        telemetry = LibraryInitializer.telemetry()
+        telemetry = LibraryInitializer.telemetry(),
+        playbackInfoResolver = LibraryInitializer.playbackInfoResolver()
     )
 }

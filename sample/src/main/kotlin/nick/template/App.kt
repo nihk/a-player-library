@@ -5,6 +5,7 @@ import dagger.hilt.android.HiltAndroidApp
 import library.core.LibraryInitializer
 import library.exoplayer.ExoPlayerModule
 import nick.template.data.AndroidShareDelegate
+import nick.template.data.SlowPlaybackInfoResolver
 import nick.template.data.LoggingPlayerTelemetry
 
 @HiltAndroidApp
@@ -16,7 +17,8 @@ class App : Application() {
             // Uncomment to use MediaPlayer APIs instead of ExoPlayer
 //            playerModule = MediaPlayerModule(),
             telemetry = LoggingPlayerTelemetry(),
-            shareDelegate = AndroidShareDelegate()
+            shareDelegate = AndroidShareDelegate(),
+            playbackInfoResolver = SlowPlaybackInfoResolver()
         )
     }
 }

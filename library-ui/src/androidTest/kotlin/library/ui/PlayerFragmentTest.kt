@@ -92,6 +92,7 @@ class FakePipController(
 ) : PipController {
     override fun events() = flow
     override fun enterPip(isPlaying: Boolean) = EnterPipResult.EnteredPip
+    override fun onEvent(playerEvent: PlayerEvent) = Unit
 }
 
 class FakeErrorRenderer : ErrorRenderer {
@@ -119,13 +120,15 @@ class PlayerFragmentRobot {
     private val pipConfig = PictureInPictureConfig(false, false)
     private val pipController = FakePipController()
     private val errorRenderer = FakeErrorRenderer()
+    private val playbackInfoResolver = NoOpPlaybackInfoResolver()
     private val scenario: FragmentScenario<PlayerFragment>
 
     init {
         val vmFactory = PlayerViewModel.Factory(
-            appPlayerFactory,
-            playerEventStream,
-            telemetry
+            appPlayerFactory = appPlayerFactory,
+            playerEventStream = playerEventStream,
+            telemetry = telemetry,
+            playbackInfoResolver = playbackInfoResolver
         )
 
         val playerViewWrapperFactory = FakePlayerViewWrapperFactory(playerViewWrapper)

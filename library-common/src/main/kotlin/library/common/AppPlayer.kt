@@ -15,6 +15,6 @@ interface AppPlayer {
     fun onEvent(playerEvent: PlayerEvent) = Unit
 
     interface Factory {
-        fun create(uri: String): AppPlayer
+        fun create(playbackInfo: PlaybackInfo): AppPlayer
     }
 }

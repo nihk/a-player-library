@@ -28,6 +28,7 @@ open class NoOpPlayerViewWrapper : PlayerViewWrapper {
     override fun bindShare(onClick: (View) -> Unit) = Unit
     override fun onEvent(playerEvent: PlayerEvent) = Unit
     override fun setControllerUsability(isUsable: Boolean) = Unit
+    override fun setLoading(isLoading: Boolean) = Unit
 
     override fun attachTo(appPlayer: AppPlayer) {
         didAttach = true

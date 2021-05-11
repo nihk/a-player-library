@@ -10,6 +10,7 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
 import library.common.OnUserLeaveHintViewModel
 import library.common.PlayerArguments
 import library.common.PlayerViewWrapper
@@ -26,7 +27,7 @@ class PlayerFragment(
     private val errorRenderer: ErrorRenderer
 ) : Fragment(R.layout.player_fragment) {
 
-    private val playerViewModel: PlayerViewModel by viewModels { vmFactory.create(this) }
+    private val playerViewModel: PlayerViewModel by viewModels { vmFactory.create(this, playerArguments.uri) }
     private val onUserLeaveHintViewModel: OnUserLeaveHintViewModel by activityViewModels()
     private var playerViewWrapper: PlayerViewWrapper? = null
     private val playerArguments: PlayerArguments get() = requireArguments().toPlayerArguments()
@@ -76,7 +77,10 @@ class PlayerFragment(
         playerViewWrapper.bindPause { playerViewModel.pause() }
 
         playerViewModel.playerEvents()
-            .onEach { playerEvent -> playerViewWrapper.onEvent(playerEvent) }
+            .onEach { playerEvent ->
+                playerViewWrapper.onEvent(playerEvent)
+                pipController.onEvent(playerEvent)
+            }
             .launchIn(viewLifecycleOwner.lifecycleScope)
 
         playerViewModel.uiStates()
@@ -94,6 +98,7 @@ class PlayerFragment(
                 }
 
                 playerViewWrapper.setControllerUsability(uiState.useController)
+                playerViewWrapper.setLoading(uiState.isResolvingMedia)
             }
             .launchIn(viewLifecycleOwner.lifecycleScope)
 
@@ -127,7 +132,9 @@ class PlayerFragment(
 
     override fun onStart() {
         super.onStart()
-        playerViewModel.bind(requireNotNull(playerViewWrapper), playerArguments.uri)
+        viewLifecycleOwner.lifecycleScope.launch {
+            playerViewModel.bind(requireNotNull(playerViewWrapper))
+        }
     }
 
     override fun onSaveInstanceState(outState: Bundle) {

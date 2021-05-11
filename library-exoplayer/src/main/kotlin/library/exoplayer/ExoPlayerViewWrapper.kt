@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
+import android.widget.ProgressBar
 import androidx.core.view.isVisible
 import com.google.android.exoplayer2.ui.PlayerView
 import library.common.AppPlayer
@@ -15,10 +16,12 @@ internal class ExoPlayerViewWrapper(context: Context) : PlayerViewWrapper {
     override val view: View = LayoutInflater.from(context)
         .inflate(R.layout.library_exo_player, null)
 
-    private val playerView: PlayerView get() = view as PlayerView
+    private val playerView: PlayerView get() = view.findViewById(R.id.player_view)
 
     private val controllerBinding = view.findViewById<View>(R.id.controller)
         .let(LibraryExoPlayerControllerBinding::bind)
+
+    private val loading: ProgressBar get() = view.findViewById(R.id.loading)
 
     override fun bindTextTracksPicker(textTracks: (View) -> Unit) {
         controllerBinding.captions.run {
@@ -80,6 +83,10 @@ internal class ExoPlayerViewWrapper(context: Context) : PlayerViewWrapper {
 
     override fun setControllerUsability(isUsable: Boolean) {
         playerView.useController = isUsable
+    }
+
+    override fun setLoading(isLoading: Boolean) {
+        loading.isVisible = isLoading
     }
 
     class Factory : PlayerViewWrapper.Factory {

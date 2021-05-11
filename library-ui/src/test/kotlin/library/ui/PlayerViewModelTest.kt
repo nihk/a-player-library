@@ -1,6 +1,5 @@
 package library.ui
 
-import library.CoroutinesTestRule
 import androidx.lifecycle.SavedStateHandle
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -8,10 +7,13 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.test.runBlockingTest
+import library.CoroutinesTestRule
 import library.common.PlayerEvent
 import library.common.PlayerState
 import library.test.NoOpPlayerViewWrapper
-import org.junit.Assert.*
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 
@@ -98,12 +100,6 @@ class PlayerViewModelTest {
         assertDetachedView()
     }
 
-    @Test(expected = IllegalArgumentException::class)
-    fun `calling unbind before binding a player, throws`() = playerViewModel {
-        unbind()
-        fail("Expected IAE was not thrown")
-    }
-
     @Test
     fun `track state changes according to relevant player event emissions`() = playerViewModel {
         bind()
@@ -128,11 +124,14 @@ class PlayerViewModelRobot(scope: CoroutineScope) {
     private val playerEventStream = FakePlayerEventStream(events)
     private val telemetry = FakePlayerTelemetry()
     private val playerViewWrapper = NoOpPlayerViewWrapper()
+    private val playbackInfoResolver = NoOpPlaybackInfoResolver()
     private val viewModel = PlayerViewModel(
         playerSavedState = playerSavedState,
         appPlayerFactory = appPlayerFactory,
         playerEventStream = playerEventStream,
-        telemetry = telemetry
+        telemetry = telemetry,
+        playbackInfoResolver = playbackInfoResolver,
+        uri = "https://www.example.com/video.mp4"
     )
     private val emittedEvents = mutableListOf<PlayerEvent>()
     private val emittedTrackStates = mutableListOf<TracksState>()
@@ -160,8 +159,8 @@ class PlayerViewModelRobot(scope: CoroutineScope) {
         playerSavedState.value = playerState
     }
 
-    fun bind() {
-        viewModel.bind(playerViewWrapper, "https://www.example.com")
+    suspend fun bind() {
+        viewModel.bind(playerViewWrapper)
     }
 
     fun unbind(isChangingConfigurations: Boolean = false) {

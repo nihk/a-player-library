@@ -16,19 +16,24 @@ import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.emptyFlow
+import library.common.PlayerEvent
 
 interface PipController {
     fun events(): Flow<PipEvent>
     fun enterPip(isPlaying: Boolean): EnterPipResult
+    fun onEvent(playerEvent: PlayerEvent)
 }
 
 class NoOpPipController : PipController {
     override fun events(): Flow<PipEvent> = emptyFlow()
     override fun enterPip(isPlaying: Boolean) = EnterPipResult.DidNotEnterPip
+    override fun onEvent(playerEvent: PlayerEvent) = Unit
 }
 
 @RequiresApi(Build.VERSION_CODES.O)
 class AndroidPipController(private val activity: Activity) : PipController {
+    private var canShowActions = false
+
     override fun events(): Flow<PipEvent> = callbackFlow {
         val broadcastReceiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context, intent: Intent?) {
@@ -65,14 +70,28 @@ class AndroidPipController(private val activity: Activity) : PipController {
         }
     }
 
-    private fun pipParams(isPlaying: Boolean): PictureInPictureParams {
-        val actions = listOf(
-            if (isPlaying) {
-                pauseAction()
-            } else {
-                playAction()
+    override fun onEvent(playerEvent: PlayerEvent) {
+        when (playerEvent) {
+            is PlayerEvent.OnPlayerPrepared -> {
+                if (canShowActions || !activity.isInPictureInPictureMode) return
+                canShowActions = true
+                updateActions(isPlaying = true)
             }
-        )
+        }
+    }
+
+    private fun pipParams(isPlaying: Boolean): PictureInPictureParams {
+        val actions = if (canShowActions) {
+            listOf(
+                if (isPlaying) {
+                    pauseAction()
+                } else {
+                    playAction()
+                }
+            )
+        } else {
+            emptyList()
+        }
 
         return PictureInPictureParams.Builder()
             .setActions(actions)

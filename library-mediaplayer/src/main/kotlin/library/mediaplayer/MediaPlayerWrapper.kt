@@ -5,6 +5,7 @@ import library.common.AppPlayer
 import library.common.PlayerEvent
 import library.common.PlayerState
 import library.common.PlayerViewWrapper
+import library.common.PlaybackInfo
 import library.common.TrackInfo
 
 class MediaPlayerWrapper(
@@ -73,9 +74,9 @@ class MediaPlayerWrapper(
     }
 
     class Factory : AppPlayer.Factory {
-        override fun create(uri: String): AppPlayer {
+        override fun create(playbackInfo: PlaybackInfo): AppPlayer {
             val mediaPlayer = MediaPlayer().apply {
-                setDataSource(uri)
+                setDataSource(playbackInfo.uri)
                 prepareAsync()
             }
             return MediaPlayerWrapper(mediaPlayer)
