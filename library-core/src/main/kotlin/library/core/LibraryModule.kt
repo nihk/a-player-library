@@ -1,18 +1,18 @@
 package library.core
 
-import android.app.Activity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentFactory
 import library.common.PlayerModule
 import library.common.isMinOsForPip
 import library.ui.AndroidPipController
+import library.ui.Navigator
 import library.ui.NoOpPipController
 import library.ui.PlayerFragment
 import library.ui.PlayerViewModel
 import library.ui.SnackbarErrorRenderer
 import library.ui.TracksPickerFragment
 
-internal class LibraryModule(private val activity: Activity) {
+internal class LibraryModule(private val fragment: Fragment) {
     val fragmentFactory: FragmentFactory get() = LibraryFragmentFactory(fragmentMap)
 
     private val module: PlayerModule = LibraryInitializer.playerModule()
@@ -23,11 +23,12 @@ internal class LibraryModule(private val activity: Activity) {
                 playerViewWrapperFactory = module.playerViewWrapperFactory,
                 shareDelegate = LibraryInitializer.shareDelegate(),
                 pipController = if (isMinOsForPip) {
-                    AndroidPipController(activity)
+                    AndroidPipController(fragment.requireActivity())
                 } else {
                     NoOpPipController()
                 },
-                errorRenderer = SnackbarErrorRenderer()
+                errorRenderer = SnackbarErrorRenderer(),
+                navigator
             )
         },
         TracksPickerFragment::class.java to { TracksPickerFragment() }
@@ -37,5 +38,9 @@ internal class LibraryModule(private val activity: Activity) {
         playerEventStream = module.playerEventStream,
         telemetry = LibraryInitializer.telemetry(),
         playbackInfoResolver = LibraryInitializer.playbackInfoResolver()
+    )
+    private val navigator: Navigator get() = LibraryNavigator(
+        fragment.childFragmentManager,
+        R.id.container
     )
 }

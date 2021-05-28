@@ -1,9 +1,11 @@
 package library.ui
 
 import android.content.Context
+import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.testing.FragmentScenario
 import androidx.fragment.app.testing.launchFragmentInContainer
 import androidx.lifecycle.Lifecycle
@@ -103,6 +105,11 @@ class FakeErrorRenderer : ErrorRenderer {
     }
 }
 
+class NoOpNavigator : Navigator {
+    override fun toDialog(clazz: Class<out Fragment>, bundle: Bundle?) = Unit
+    override fun replace(clazz: Class<out Fragment>, bundle: Bundle?) = Unit
+}
+
 fun playerFragment(block: PlayerFragmentRobot.() -> Unit) {
     PlayerFragmentRobot().block()
 }
@@ -119,6 +126,7 @@ class PlayerFragmentRobot {
     private val pipController = FakePipController()
     private val errorRenderer = FakeErrorRenderer()
     private val playbackInfoResolver = NoOpPlaybackInfoResolver()
+    private val navigator = NoOpNavigator()
     private val scenario: FragmentScenario<PlayerFragment>
 
     init {
@@ -136,7 +144,7 @@ class PlayerFragmentRobot {
             pipConfig = pipConfig
         )
         scenario = launchFragmentInContainer(fragmentArgs = args.bundle()) {
-            PlayerFragment(vmFactory, playerViewWrapperFactory, shareDelegate, pipController, errorRenderer)
+            PlayerFragment(vmFactory, playerViewWrapperFactory, shareDelegate, pipController, errorRenderer, navigator)
         }
     }
 

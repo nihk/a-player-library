@@ -24,7 +24,8 @@ class PlayerFragment(
     private val playerViewWrapperFactory: PlayerViewWrapper.Factory,
     private val shareDelegate: ShareDelegate?,
     private val pipController: PipController,
-    private val errorRenderer: ErrorRenderer
+    private val errorRenderer: ErrorRenderer,
+    private val navigator: Navigator
 ) : Fragment(R.layout.player_fragment) {
 
     private val playerViewModel: PlayerViewModel by viewModels { vmFactory.create(this, playerArguments.uri) }
@@ -125,9 +126,7 @@ class PlayerFragment(
     }
 
     private fun navigateToTracksPicker(trackInfos: List<TrackInfo>) {
-        parentFragmentManager.beginTransaction()
-            .add(TracksPickerFragment::class.java, TracksPickerFragment.args(trackInfos), null)
-            .commit()
+        navigator.toDialog(TracksPickerFragment::class.java, TracksPickerFragment.args(trackInfos))
     }
 
     override fun onStart() {
