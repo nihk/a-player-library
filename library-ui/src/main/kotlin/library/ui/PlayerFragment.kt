@@ -84,10 +84,7 @@ class PlayerFragment(
         playerViewModel.uiStates()
             .onEach { uiState ->
                 if (uiState.tracksState == TracksState.Available) {
-                    val tracks = playerViewModel.tracks()
-                    playerViewWrapper.bindTracksToPicker(TrackInfo.Type.TEXT, tracks)
-                    playerViewWrapper.bindTracksToPicker(TrackInfo.Type.AUDIO, tracks)
-                    playerViewWrapper.bindTracksToPicker(TrackInfo.Type.VIDEO, tracks)
+                    playerViewWrapper.bindTracksToPicker(playerViewModel.tracks())
                 }
 
                 playerViewWrapper.setControllerUsability(uiState.useController)
@@ -117,8 +114,10 @@ class PlayerFragment(
         this.playerViewWrapper = playerViewWrapper
     }
 
-    private fun PlayerViewWrapper.bindTracksToPicker(type: TrackInfo.Type, tracks: List<TrackInfo>) {
-        tracks.filter { it.type == type }.let { filtered ->
+    private fun PlayerViewWrapper.bindTracksToPicker(tracks: List<TrackInfo>) {
+        val typesToBind = listOf(TrackInfo.Type.VIDEO, TrackInfo.Type.AUDIO, TrackInfo.Type.TEXT)
+        typesToBind.forEach { type ->
+            val filtered = tracks.filter { it.type == type }
             if (filtered.isNotEmpty()) {
                 bindTracks(type) { navigateToTracksPicker(filtered) }
             }
