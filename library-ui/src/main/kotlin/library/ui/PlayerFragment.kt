@@ -47,7 +47,8 @@ class PlayerFragment(
 
         val onBackPressed = object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
-                enterPip {
+                val result = enterPip()
+                if (result == EnterPipResult.DidNotEnterPip) {
                     isEnabled = false
                     requireActivity().onBackPressed()
                 }
@@ -56,11 +57,8 @@ class PlayerFragment(
         requireActivity().onBackPressedDispatcher.addCallback(this, onBackPressed)
     }
 
-    private fun enterPip(onFailedToEnterPip: () -> Unit = {}) {
-        val result = pipController.enterPip(playerViewModel.isPlaying())
-        if (result == EnterPipResult.DidNotEnterPip) {
-            onFailedToEnterPip()
-        }
+    private fun enterPip(): EnterPipResult {
+        return pipController.enterPip(playerViewModel.isPlaying())
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
