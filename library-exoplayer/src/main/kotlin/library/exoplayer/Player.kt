@@ -60,7 +60,7 @@ internal fun Player.getTrackInfos(trackType: Int, trackNameProvider: TrackNamePr
                         trackInfos.add(
                             TrackInfo(
                                 name = name,
-                                type = trackType,
+                                type = trackType.toTrackInfoType(),
                                 index = trackIndex,
                                 groupIndex = groupIndex,
                                 rendererIndex = rendererIndex,
@@ -77,4 +77,13 @@ internal fun Player.getTrackInfos(trackType: Int, trackNameProvider: TrackNamePr
     }
 
     return trackInfos
+}
+
+private fun Int.toTrackInfoType(): TrackInfo.Type {
+    return when (this) {
+        C.TRACK_TYPE_VIDEO -> TrackInfo.Type.VIDEO
+        C.TRACK_TYPE_AUDIO -> TrackInfo.Type.AUDIO
+        C.TRACK_TYPE_TEXT -> TrackInfo.Type.TEXT
+        else -> error("Unknown ExoPlayer track type: $this")
+    }
 }

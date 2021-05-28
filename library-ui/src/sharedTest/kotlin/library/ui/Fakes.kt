@@ -21,9 +21,7 @@ class FakeAppPlayerFactory(val appPlayer: AppPlayer) : AppPlayer.Factory {
 }
 
 class FakeAppPlayer(
-    val fakeTextTracks: MutableList<TrackInfo> = mutableListOf(),
-    val fakeAudioTracks: MutableList<TrackInfo> = mutableListOf(),
-    val fakeVideoTracks: MutableList<TrackInfo> = mutableListOf()
+    val fakeTracks: MutableList<TrackInfo> = mutableListOf()
 ) : AppPlayer {
     var boundState: PlayerState? = null
     var boundPlayerViewWrapper: PlayerViewWrapper? = null
@@ -31,9 +29,7 @@ class FakeAppPlayer(
     val collectedEvents = mutableListOf<PlayerEvent>()
 
     override val state: PlayerState get() = PlayerState.INITIAL
-    override val textTracks: List<TrackInfo> get() = fakeTextTracks
-    override val audioTracks: List<TrackInfo> get() = fakeAudioTracks
-    override val videoTracks: List<TrackInfo> get() = fakeVideoTracks
+    override val tracks: List<TrackInfo> get() = fakeTracks
 
     override fun bind(playerViewWrapper: PlayerViewWrapper, playerState: PlayerState?) {
         boundPlayerViewWrapper = playerViewWrapper

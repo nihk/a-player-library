@@ -6,7 +6,7 @@ import kotlinx.parcelize.Parcelize
 @Parcelize
 data class TrackInfo(
     val name: String,
-    val type: Int,
+    val type: Type,
     val index: Int,
     val groupIndex: Int,
     val rendererIndex: Int,
@@ -19,5 +19,11 @@ data class TrackInfo(
     sealed class Action {
         data class Clear(val rendererIndex: Int) : Action()
         data class Set(val trackInfos: List<TrackInfo>) : Action()
+    }
+
+    enum class Type {
+        VIDEO,
+        AUDIO,
+        TEXT
     }
 }

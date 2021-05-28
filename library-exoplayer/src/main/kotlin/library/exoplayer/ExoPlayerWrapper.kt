@@ -26,18 +26,21 @@ internal class ExoPlayerWrapper(
             return PlayerState(
                 positionMs = player.currentPosition,
                 isPlaying = player.isPlaying,
-                trackInfos = (textTracks + audioTracks + videoTracks).filter(TrackInfo::isManuallySet)
+                trackInfos = tracks.filter(TrackInfo::isManuallySet)
             )
         }
 
-    override val textTracks: List<TrackInfo>
-        get() = player.getTrackInfos(C.TRACK_TYPE_TEXT, trackNameProvider)
-
-    override val audioTracks: List<TrackInfo>
-        get() = player.getTrackInfos(C.TRACK_TYPE_AUDIO, trackNameProvider)
-
-    override val videoTracks: List<TrackInfo>
-        get() = player.getTrackInfos(C.TRACK_TYPE_VIDEO, trackNameProvider)
+    override val tracks: List<TrackInfo>
+        get() = player.getTrackInfos(
+            C.TRACK_TYPE_TEXT,
+            trackNameProvider
+        ) + player.getTrackInfos(
+            C.TRACK_TYPE_AUDIO,
+            trackNameProvider
+        ) + player.getTrackInfos(
+            C.TRACK_TYPE_VIDEO,
+            trackNameProvider
+        )
 
     override fun bind(playerViewWrapper: PlayerViewWrapper, playerState: PlayerState?) {
         playerState?.run {

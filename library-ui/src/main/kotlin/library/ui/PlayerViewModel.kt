@@ -14,13 +14,13 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import library.common.AppPlayer
+import library.common.PlaybackInfo
 import library.common.PlaybackInfoResolver
 import library.common.PlayerEvent
 import library.common.PlayerEventStream
 import library.common.PlayerState
 import library.common.PlayerTelemetry
 import library.common.PlayerViewWrapper
-import library.common.PlaybackInfo
 import library.common.TrackInfo
 
 class PlayerViewModel(
@@ -129,16 +129,8 @@ class PlayerViewModel(
         appPlayer = null
     }
 
-    fun textTracks(): List<TrackInfo> {
-        return requireNotNull(appPlayer).textTracks
-    }
-
-    fun audioTracks(): List<TrackInfo> {
-        return requireNotNull(appPlayer).audioTracks
-    }
-
-    fun videoTracks(): List<TrackInfo> {
-        return requireNotNull(appPlayer).videoTracks
+    fun tracks(): List<TrackInfo> {
+        return requireNotNull(appPlayer).tracks
     }
 
     fun handleTrackInfoAction(action: TrackInfo.Action) {

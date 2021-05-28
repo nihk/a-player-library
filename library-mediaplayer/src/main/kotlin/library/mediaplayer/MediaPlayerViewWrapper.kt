@@ -12,6 +12,7 @@ import androidx.core.view.isVisible
 import library.common.AppPlayer
 import library.common.PlayerEvent
 import library.common.PlayerViewWrapper
+import library.common.TrackInfo
 import library.mediaplayer.databinding.LibraryMediaPlayerBinding
 
 internal class MediaPlayerViewWrapper(context: Context) : PlayerViewWrapper {
@@ -42,15 +43,7 @@ internal class MediaPlayerViewWrapper(context: Context) : PlayerViewWrapper {
         }
     }
 
-    override fun bindTextTracksPicker(textTracks: (View) -> Unit) {
-        TODO("Not yet implemented")
-    }
-
-    override fun bindAudioTracksPicker(audioTracks: (View) -> Unit) {
-        TODO("Not yet implemented")
-    }
-
-    override fun bindVideoTracksPicker(videoTracks: (View) -> Unit) {
+    override fun bindTracks(type: TrackInfo.Type, onClick: (View) -> Unit) {
         TODO("Not yet implemented")
     }
 

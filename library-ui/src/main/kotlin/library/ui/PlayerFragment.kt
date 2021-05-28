@@ -84,15 +84,10 @@ class PlayerFragment(
         playerViewModel.uiStates()
             .onEach { uiState ->
                 if (uiState.tracksState == TracksState.Available) {
-                    if (playerViewModel.textTracks().isNotEmpty()) {
-                        playerViewWrapper.bindTextTracksPicker { navigateToTracksPicker(playerViewModel.textTracks()) }
-                    }
-                    if (playerViewModel.audioTracks().isNotEmpty()) {
-                        playerViewWrapper.bindAudioTracksPicker { navigateToTracksPicker(playerViewModel.audioTracks()) }
-                    }
-                    if (playerViewModel.videoTracks().isNotEmpty()) {
-                        playerViewWrapper.bindVideoTracksPicker { navigateToTracksPicker(playerViewModel.videoTracks()) }
-                    }
+                    val tracks = playerViewModel.tracks()
+                    playerViewWrapper.bindTracksToPicker(TrackInfo.Type.TEXT, tracks)
+                    playerViewWrapper.bindTracksToPicker(TrackInfo.Type.AUDIO, tracks)
+                    playerViewWrapper.bindTracksToPicker(TrackInfo.Type.VIDEO, tracks)
                 }
 
                 playerViewWrapper.setControllerUsability(uiState.useController)
@@ -120,6 +115,14 @@ class PlayerFragment(
         }
 
         this.playerViewWrapper = playerViewWrapper
+    }
+
+    private fun PlayerViewWrapper.bindTracksToPicker(type: TrackInfo.Type, tracks: List<TrackInfo>) {
+        tracks.filter { it.type == type }.let { filtered ->
+            if (filtered.isNotEmpty()) {
+                bindTracks(type) { navigateToTracksPicker(filtered) }
+            }
+        }
     }
 
     private fun navigateToTracksPicker(trackInfos: List<TrackInfo>) {

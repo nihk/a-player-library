@@ -19,18 +19,12 @@ class MediaPlayerWrapper(
             return PlayerState(
                 positionMs = mediaPlayer.currentPosition.toLong(),
                 isPlaying = mediaPlayer.isPlaying,
-                trackInfos = (textTracks + audioTracks + videoTracks).filter(TrackInfo::isManuallySet)
+                trackInfos = tracks.filter(TrackInfo::isManuallySet)
             )
         }
 
-    override val textTracks: List<TrackInfo>
-        get() = mediaPlayer.getTrackInfos(MediaPlayer.TrackInfo.MEDIA_TRACK_TYPE_SUBTITLE)
-
-    override val audioTracks: List<TrackInfo>
-        get() = mediaPlayer.getTrackInfos(MediaPlayer.TrackInfo.MEDIA_TRACK_TYPE_AUDIO)
-
-    override val videoTracks: List<TrackInfo>
-        get() = mediaPlayer.getTrackInfos(MediaPlayer.TrackInfo.MEDIA_TRACK_TYPE_VIDEO)
+    override val tracks: List<TrackInfo>
+        get() = emptyList()
 
     override fun bind(playerViewWrapper: PlayerViewWrapper, playerState: PlayerState?) {
         // Cache until MediaPlayer is ready to have this state set.

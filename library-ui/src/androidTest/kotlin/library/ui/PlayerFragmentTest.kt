@@ -22,9 +22,7 @@ import library.common.ShareDelegate
 import library.common.TrackInfo
 import library.common.bundle
 import library.test.NoOpPlayerViewWrapper
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
-import org.junit.Assert.assertTrue
+import org.junit.Assert.*
 import org.junit.Rule
 import org.junit.Test
 
@@ -155,14 +153,14 @@ class PlayerFragmentRobot {
     }
 
     fun setTrackCount(text: Int = 0, audio: Int = 0, video: Int = 0) {
-        addTracks(appPlayer.fakeTextTracks, text)
-        addTracks(appPlayer.fakeAudioTracks, audio)
-        addTracks(appPlayer.fakeVideoTracks, video)
+        addTracks(TrackInfo.Type.TEXT, text)
+        addTracks(TrackInfo.Type.AUDIO, audio)
+        addTracks(TrackInfo.Type.VIDEO, video)
     }
 
-    private fun addTracks(list: MutableList<TrackInfo>, amount: Int) {
+    private fun addTracks(type: TrackInfo.Type, amount: Int) {
         repeat(amount) {
-            list += TrackInfo("", 0, 0, 0, 0, false, false, false, false)
+            appPlayer.fakeTracks += TrackInfo("", type, 0, 0, 0, false, false, false, false)
         }
     }
 
@@ -183,15 +181,15 @@ class PlayerFragmentRobot {
     }
 
     fun assertTextTracks(wereBinded: Boolean) {
-        assertEquals(wereBinded, playerViewWrapper.didBindTextTracks)
+        assertEquals(wereBinded, TrackInfo.Type.TEXT in playerViewWrapper.boundTrackTypes)
     }
 
     fun assertAudioTracks(wereBinded: Boolean) {
-        assertEquals(wereBinded, playerViewWrapper.didBindAudioTracks)
+        assertEquals(wereBinded, TrackInfo.Type.AUDIO in playerViewWrapper.boundTrackTypes)
     }
 
     fun assertVideoTracks(wereBinded: Boolean) {
-        assertEquals(wereBinded, playerViewWrapper.didBindVideoTracks)
+        assertEquals(wereBinded, TrackInfo.Type.VIDEO in playerViewWrapper.boundTrackTypes)
     }
 
     fun assertErrorMessageRendered(string: String) {

@@ -9,6 +9,7 @@ import androidx.core.view.isVisible
 import com.google.android.exoplayer2.ui.PlayerView
 import library.common.AppPlayer
 import library.common.PlayerViewWrapper
+import library.common.TrackInfo
 import library.exoplayer.databinding.LibraryExoPlayerControllerBinding
 
 internal class ExoPlayerViewWrapper(context: Context) : PlayerViewWrapper {
@@ -23,24 +24,20 @@ internal class ExoPlayerViewWrapper(context: Context) : PlayerViewWrapper {
 
     private val loading: ProgressBar get() = view.findViewById(R.id.loading)
 
-    override fun bindTextTracksPicker(textTracks: (View) -> Unit) {
-        controllerBinding.captions.run {
-            isVisible = true
-            setOnClickListener(textTracks)
-        }
-    }
-
-    override fun bindAudioTracksPicker(audioTracks: (View) -> Unit) {
-        controllerBinding.audio.run {
-            isVisible = true
-            setOnClickListener(audioTracks)
-        }
-    }
-
-    override fun bindVideoTracksPicker(videoTracks: (View) -> Unit) {
-        controllerBinding.video.run {
-            isVisible = true
-            setOnClickListener(videoTracks)
+    override fun bindTracks(type: TrackInfo.Type, onClick: (View) -> Unit) {
+        when (type) {
+            TrackInfo.Type.VIDEO -> controllerBinding.video.run {
+                isVisible = true
+                setOnClickListener(onClick)
+            }
+            TrackInfo.Type.AUDIO -> controllerBinding.audio.run {
+                isVisible = true
+                setOnClickListener(onClick)
+            }
+            TrackInfo.Type.TEXT -> controllerBinding.captions.run {
+                isVisible = true
+                setOnClickListener(onClick)
+            }
         }
     }
 

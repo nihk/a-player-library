@@ -6,9 +6,7 @@ import android.view.View
 interface PlayerViewWrapper {
     val view: View
 
-    fun bindTextTracksPicker(textTracks: (View) -> Unit)
-    fun bindAudioTracksPicker(audioTracks: (View) -> Unit)
-    fun bindVideoTracksPicker(videoTracks: (View) -> Unit)
+    fun bindTracks(type: TrackInfo.Type, onClick: (View) -> Unit)
     fun bindShare(onClick: (View) -> Unit)
     fun bindPlay(play: (View) -> Unit)
     fun bindPause(pause: (View) -> Unit)
