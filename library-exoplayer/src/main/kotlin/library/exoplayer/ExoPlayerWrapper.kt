@@ -31,16 +31,7 @@ internal class ExoPlayerWrapper(
         }
 
     override val tracks: List<TrackInfo>
-        get() = player.getTrackInfos(
-            C.TRACK_TYPE_TEXT,
-            trackNameProvider
-        ) + player.getTrackInfos(
-            C.TRACK_TYPE_AUDIO,
-            trackNameProvider
-        ) + player.getTrackInfos(
-            C.TRACK_TYPE_VIDEO,
-            trackNameProvider
-        )
+        get() = player.getTrackInfos(listOf(C.TRACK_TYPE_TEXT, C.TRACK_TYPE_AUDIO, C.TRACK_TYPE_VIDEO), trackNameProvider)
 
     override fun bind(playerViewWrapper: PlayerViewWrapper, playerState: PlayerState?) {
         playerState?.run {

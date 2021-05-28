@@ -34,14 +34,15 @@ internal fun Player.clearTrackOverrides(rendererIndex: Int) {
 }
 
 // MappedTrackInfo[rendererIndex] > TrackGroupArray[groupIndex] > TrackGroup[trackIndex] > Format
-internal fun Player.getTrackInfos(trackType: Int, trackNameProvider: TrackNameProvider): List<TrackInfo> {
+internal fun Player.getTrackInfos(trackTypes: List<Int>, trackNameProvider: TrackNameProvider): List<TrackInfo> {
     val mappedTrackInfo = defaultTrackSelector.currentMappedTrackInfo
         ?: return emptyList()
     val parameters = defaultTrackSelector.parameters
     val trackInfos = mutableListOf<TrackInfo>()
 
     for (rendererIndex in 0 until mappedTrackInfo.rendererCount) {
-        if (mappedTrackInfo.getRendererType(rendererIndex) == trackType) {
+        val trackType = mappedTrackInfo.getRendererType(rendererIndex)
+        if (trackType in trackTypes) {
             val trackGroupArray = mappedTrackInfo.getTrackGroups(rendererIndex)
             val selectionOverride = parameters.getSelectionOverride(rendererIndex, trackGroupArray)
             val trackSelectionArray = currentTrackSelections
