@@ -18,7 +18,7 @@ import library.common.PlayerEventStream
 import library.common.PlayerException
 
 internal class ExoPlayerEventStream : PlayerEventStream {
-    private val oneTimeEvents = mutableSetOf<PlayerEvent>()
+    private val oneTimeEvents = mutableSetOf<Class<out PlayerEvent>>()
 
     override fun listen(appPlayer: AppPlayer): Flow<PlayerEvent> = callbackFlow {
         appPlayer as? ExoPlayerWrapper ?: error("$appPlayer was not a ${ExoPlayerWrapper::class.java}")
@@ -40,8 +40,8 @@ internal class ExoPlayerEventStream : PlayerEventStream {
                 trackGroups: TrackGroupArray,
                 trackSelections: TrackSelectionArray
             ) {
-                if (PlayerEvent.OnTracksAvailable !in oneTimeEvents) {
-                    oneTimeEvents += PlayerEvent.OnTracksAvailable
+                if (PlayerEvent.OnTracksAvailable::class.java !in oneTimeEvents) {
+                    oneTimeEvents += PlayerEvent.OnTracksAvailable::class.java
                     offer(PlayerEvent.OnTracksAvailable)
                 }
                 offer(PlayerEvent.OnTracksChanged)
