@@ -52,7 +52,8 @@ abstract class LibraryActivity : AppCompatActivity(R.layout.library_activity) {
         private fun Context.isPipAllowed(): Boolean {
             return isMinOsForPip && run {
                 val appOpsManager = getSystemService(Context.APP_OPS_SERVICE) as AppOpsManager
-                appOpsManager.unsafeCheckOpNoThrow(
+                @Suppress("DEPRECATION")
+                appOpsManager.checkOpNoThrow(
                     AppOpsManager.OPSTR_PICTURE_IN_PICTURE,
                     Process.myUid(),
                     packageName
