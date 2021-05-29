@@ -115,7 +115,7 @@ class PlayerFragment(
             playerViewModel.seekRelative(amount)
         }
         binding.seekForward.setOnClickListener {
-            val amount = playerArguments.seekConfiguration.backwardAmount.toDuration(DurationUnit.MILLISECONDS)
+            val amount = playerArguments.seekConfiguration.forwardAmount.toDuration(DurationUnit.MILLISECONDS)
             playerViewModel.seekRelative(amount)
         }
     }
