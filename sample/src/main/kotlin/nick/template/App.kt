@@ -5,8 +5,8 @@ import dagger.hilt.android.HiltAndroidApp
 import library.core.LibraryInitializer
 import library.exoplayer.ExoPlayerModule
 import nick.template.data.AndroidShareDelegate
-import nick.template.data.SamplePlaybackInfoResolver
 import nick.template.data.LoggingPlayerTelemetry
+import nick.template.data.SamplePlaybackInfoResolver
 
 @HiltAndroidApp
 class App : Application() {

@@ -11,19 +11,20 @@ import library.common.PlayerEventStream
 import library.common.PlayerException
 import library.common.TAG
 
-private interface Listener :
-    MediaPlayer.OnErrorListener,
-    MediaPlayer.OnBufferingUpdateListener,
-    MediaPlayer.OnCompletionListener,
-    MediaPlayer.OnInfoListener,
-    MediaPlayer.OnPreparedListener,
-    MediaPlayer.OnVideoSizeChangedListener
-
 internal class MediaPlayerEventStream : PlayerEventStream {
     override fun listen(appPlayer: AppPlayer): Flow<PlayerEvent> = callbackFlow {
         appPlayer as? MediaPlayerWrapper ?: error("$appPlayer was not a ${MediaPlayerWrapper::class.java}")
+        val mediaPlayer = appPlayer.mediaPlayer
 
-        val listener = object : Listener {
+        offer(PlayerEvent.Initial)
+
+        val listener = object :
+            MediaPlayer.OnErrorListener,
+            MediaPlayer.OnBufferingUpdateListener,
+            MediaPlayer.OnCompletionListener,
+            MediaPlayer.OnInfoListener,
+            MediaPlayer.OnPreparedListener,
+            MediaPlayer.OnVideoSizeChangedListener {
             override fun onError(mp: MediaPlayer, what: Int, extra: Int): Boolean {
                 val exception = PlayerException(message = "what: $what, extra: $extra")
                 offer(PlayerEvent.OnPlayerError(exception))
@@ -53,7 +54,7 @@ internal class MediaPlayerEventStream : PlayerEventStream {
             }
         }
 
-        appPlayer.mediaPlayer.run {
+        mediaPlayer.run {
             setOnErrorListener(listener)
             setOnBufferingUpdateListener(listener)
             setOnCompletionListener(listener)
@@ -63,7 +64,7 @@ internal class MediaPlayerEventStream : PlayerEventStream {
         }
 
         awaitClose {
-            appPlayer.mediaPlayer.run {
+            mediaPlayer.run {
                 Log.d(TAG, "Closing player event stream")
                 setOnErrorListener(null)
                 setOnBufferingUpdateListener(null)

@@ -7,7 +7,10 @@ import library.common.PlayerState
 import library.common.PlayerViewWrapper
 import library.common.PlaybackInfo
 import library.common.TrackInfo
+import kotlin.math.roundToInt
 import kotlin.time.Duration
+import kotlin.time.DurationUnit
+import kotlin.time.toDuration
 
 class MediaPlayerWrapper(
     val mediaPlayer: MediaPlayer
@@ -60,11 +63,13 @@ class MediaPlayerWrapper(
     }
 
     override fun seekRelative(duration: Duration) {
-        // todo
+        val current = mediaPlayer.currentPosition.toDuration(DurationUnit.MILLISECONDS)
+        val seekTo = current + duration
+        seekTo(seekTo)
     }
 
     override fun seekTo(duration: Duration) {
-        // todo
+        mediaPlayer.seekTo(duration.inMilliseconds.roundToInt())
     }
 
     override fun release() {
