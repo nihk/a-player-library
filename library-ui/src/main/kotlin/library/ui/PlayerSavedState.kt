@@ -9,8 +9,8 @@ class PlayerSavedState(private val handle: SavedStateHandle) {
         return handle[KEY_MANUALLY_SET_TRACK_INFOS] ?: emptyList()
     }
 
-    fun playerState(): PlayerState? {
-        return handle[KEY_PLAYER_STATE]
+    fun playerState(): PlayerState {
+        return handle[KEY_PLAYER_STATE] ?:PlayerState.INITIAL
     }
 
     fun save(playerState: PlayerState?, tracks: List<TrackInfo>) {

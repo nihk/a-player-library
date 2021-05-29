@@ -14,14 +14,13 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import library.common.AppPlayer
-import library.common.SeekData
 import library.common.PlaybackInfo
 import library.common.PlaybackInfoResolver
 import library.common.PlayerEvent
 import library.common.PlayerEventStream
-import library.common.PlayerState
 import library.common.PlayerTelemetry
 import library.common.PlayerViewWrapper
+import library.common.SeekData
 import library.common.SeekDataUpdater
 import library.common.TrackInfo
 import kotlin.time.Duration
@@ -75,7 +74,7 @@ class PlayerViewModel(
                 playerJobs += seekDataUpdater.seekData(requireNotNull(appPlayer))
                     .onEach { opSeekData -> uiStates.value = uiStates.value.copy(seekData = opSeekData) }
                     .launchIn(viewModelScope)
-                requireNotNull(appPlayer).bind(playerViewWrapper, playerSavedState.playerState() ?: PlayerState.INITIAL)
+                requireNotNull(appPlayer).bind(playerViewWrapper, playerSavedState.playerState())
             } catch (throwable: Throwable) {
                 errors.emit(throwable.message.toString())
             }
@@ -110,7 +109,8 @@ class PlayerViewModel(
                 when (playerEvent) {
                     is PlayerEvent.Initial -> uiStates.value = uiStates.value.copy(showController = true)
                     is PlayerEvent.OnTracksAvailable -> {
-                        playerSavedState.manuallySetTracks().let { appPlayer.handleTrackInfoAction(TrackInfo.Action.Set(it)) }
+                        val action = TrackInfo.Action.Set(playerSavedState.manuallySetTracks())
+                        appPlayer.handleTrackInfoAction(action)
                         tracksStates.value = TracksState.Available
                     }
                     is PlayerEvent.OnPlayerError -> errors.emit(playerEvent.exception.message.toString())
