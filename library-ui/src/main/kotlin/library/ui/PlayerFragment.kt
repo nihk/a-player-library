@@ -129,7 +129,7 @@ class PlayerFragment(
                     is PlayerEvent.Initial -> {
                         setPlayPause(
                             imageView = binding.playPause,
-                            isPlaying = playerEvent.playerState.isPlaying
+                            isPlaying = playerViewModel.isPlaying()
                         )
                     }
                     is PlayerEvent.OnIsPlayingChanged -> {
