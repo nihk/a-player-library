@@ -14,7 +14,6 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import library.common.OnUserLeaveHintViewModel
-import library.common.PlaybackUiFactory
 import library.common.PlayerArguments
 import library.common.PlayerEvent
 import library.common.PlayerViewWrapper
@@ -84,8 +83,12 @@ class PlayerFragment(
         binding.playerContainer.addView(requirePlayerViewWrapper().view)
 
         shareDelegate?.run {
-            // todo
-//            playerViewWrapper.bindShare { share(requireActivity(), playerArguments.uri) }
+            binding.share.apply {
+                isVisible = true
+                setOnClickListener {
+                    share(requireActivity(), playerArguments.uri)
+                }
+            }
         }
 
         bindControls(binding)
@@ -142,8 +145,7 @@ class PlayerFragment(
         playerViewModel.uiStates()
             .onEach { uiState ->
                 binding.playerController.isVisible = uiState.showController && !pipController.isInPip()
-                // todo: port over OP progress bar loading UI
-//                playerViewWrapper.setLoading(uiState.isResolvingMedia)
+                binding.progressBar.isVisible = uiState.isResolvingMedia
                 if (!seekBarListener.isSeekBarBeingTouched) {
                     updateSeekData(binding, uiState.seekData)
                 }
@@ -153,7 +155,7 @@ class PlayerFragment(
         playerViewModel.tracksStates()
             .onEach { tracksState ->
                 if (tracksState == TracksState.Available) {
-                    bindTracksToPicker()
+                    bindTracksToPicker(binding)
                 }
             }
             .launchIn(viewLifecycleOwner.lifecycleScope)
@@ -204,12 +206,20 @@ class PlayerFragment(
         imageView.setImageResource(resource)
     }
 
-    private fun bindTracksToPicker() {
-        val typesToBind = listOf(TrackInfo.Type.VIDEO, TrackInfo.Type.AUDIO, TrackInfo.Type.TEXT)
-        typesToBind.forEach { type ->
-            if (playerViewModel.tracks().any { it.type == type }) {
-                // todo: add cc/video/audio track buttons
-//                bindTracks(type) { navigateToTracksPicker(playerViewModel.tracks().filter { it.type == type }) }
+    private fun bindTracksToPicker(binding: PlayerFragmentBinding) {
+        val typesToBind = mapOf(
+            binding.videoTracks to TrackInfo.Type.VIDEO,
+            binding.audioTracks to TrackInfo.Type.AUDIO,
+            binding.textTracks to TrackInfo.Type.TEXT
+        )
+        typesToBind.forEach { entry ->
+            if (playerViewModel.tracks().any { it.type == entry.value }) {
+                entry.key.apply {
+                    isVisible = true
+                    setOnClickListener {
+                        navigateToTracksPicker(playerViewModel.tracks().filter { it.type == entry.value })
+                    }
+                }
             }
         }
     }
