@@ -7,6 +7,7 @@ plugins {
 
 androidAppConfig {
     defaultConfig {
+        minSdkVersion(26) // For sample only -- to support PiP
         applicationId = "nick.a_player_library"
         versionCode = 1
         versionName = "1.0"

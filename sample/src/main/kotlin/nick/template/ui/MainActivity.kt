@@ -1,11 +1,13 @@
 package nick.template.ui
 
 import android.os.Bundle
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.NavController
 import androidx.navigation.createGraph
 import androidx.navigation.fragment.fragment
 import dagger.hilt.android.AndroidEntryPoint
+import library.common.OnUserLeaveHintViewModel
 import library.core.LibraryFragment
 import nick.template.R
 import nick.template.di.MainEntryPoint
@@ -13,6 +15,7 @@ import nick.template.navigation.AppNavigation
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity(R.layout.main_activity) {
+    private val viewModel by viewModels<OnUserLeaveHintViewModel>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         val entryPoint = entryPoint<MainEntryPoint>()
@@ -29,5 +32,9 @@ class MainActivity : AppCompatActivity(R.layout.main_activity) {
             fragment<MainFragment>(AppNavigation.main)
             fragment<LibraryFragment>(AppNavigation.library)
         }
+    }
+
+    override fun onUserLeaveHint() {
+        viewModel.onUserLeaveHint()
     }
 }

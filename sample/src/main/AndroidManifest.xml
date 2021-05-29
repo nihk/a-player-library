@@ -13,6 +13,8 @@
         android:supportsRtl="true">
         <activity
             android:name=".ui.MainActivity"
+            android:launchMode="singleTask"
+            android:supportsPictureInPicture="true"
             android:theme="@style/Theme.Template">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

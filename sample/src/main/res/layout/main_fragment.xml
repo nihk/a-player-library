@@ -6,6 +6,13 @@
     android:layout_gravity="center"
     android:orientation="vertical">
 
+    <com.google.android.material.switchmaterial.SwitchMaterial
+        android:id="@+id/enable_pip"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Enable PiP"
+        tools:ignore="HardcodedText" />
+
     <Button
         android:id="@+id/to_player_fragment"
         android:layout_width="wrap_content"
@@ -14,31 +21,12 @@
         android:text="fragment"
         tools:ignore="HardcodedText" />
 
-    <Space
-        android:layout_width="wrap_content"
-        android:layout_height="24dp" />
-
-    <LinearLayout
+    <Button
+        android:id="@+id/to_player_activity"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:gravity="center"
-        android:orientation="horizontal">
-
-        <Button
-            android:id="@+id/to_player_activity"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:text="activity"
-            tools:ignore="HardcodedText" />
-
-        <CheckBox
-            android:id="@+id/enable_pip"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="with PiP"
-            tools:ignore="HardcodedText" />
-
-    </LinearLayout>
+        android:layout_gravity="center"
+        android:text="activity"
+        tools:ignore="HardcodedText" />
 
 </LinearLayout>

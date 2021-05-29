@@ -58,7 +58,9 @@ class PlayerFragment(
     }
 
     private fun setUpBackPressHandling() {
-        if (playerArguments.pipConfig?.onBackPresses != true) return
+        val pipConfig = playerArguments.pipConfig
+        val pipOnBackPress = pipConfig?.enabled == true && pipConfig.onBackPresses
+        if (!pipOnBackPress) return
 
         val onBackPressed = object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
