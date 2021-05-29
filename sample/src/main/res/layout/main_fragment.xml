@@ -11,22 +11,34 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:text="to player fragment"
+        android:text="fragment"
         tools:ignore="HardcodedText" />
 
-    <Button
-        android:id="@+id/to_player_activity"
+    <Space
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:text="to player activity"
-        tools:ignore="HardcodedText" />
+        android:layout_height="24dp" />
 
-    <CheckBox
-        android:id="@+id/enable_pip"
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Enable PiP (for Activity)"
-        tools:ignore="HardcodedText" />
+        android:gravity="center"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/to_player_activity"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="activity"
+            tools:ignore="HardcodedText" />
+
+        <CheckBox
+            android:id="@+id/enable_pip"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="with PiP"
+            tools:ignore="HardcodedText" />
+
+    </LinearLayout>
 
 </LinearLayout>
