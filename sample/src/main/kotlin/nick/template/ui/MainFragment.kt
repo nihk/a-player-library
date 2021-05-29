@@ -7,7 +7,7 @@ import androidx.navigation.NavController
 import library.core.LibraryActivity
 import library.common.PictureInPictureConfig
 import library.common.PlayerArguments
-import library.common.bundle
+import library.common.toBundle
 import nick.template.R
 import nick.template.databinding.MainFragmentBinding
 import nick.template.navigation.AppNavigation
@@ -22,7 +22,7 @@ class MainFragment @Inject constructor(
 
         binding.toPlayerFragment.setOnClickListener {
             val playerArguments = createPlayerArguments(binding.enablePip.isChecked)
-            navController.navigate(AppNavigation.library, playerArguments.bundle())
+            navController.navigate(AppNavigation.library, playerArguments.toBundle())
         }
 
         binding.toPlayerActivity.setOnClickListener {

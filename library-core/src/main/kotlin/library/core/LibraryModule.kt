@@ -16,6 +16,7 @@ internal class LibraryModule(private val fragment: Fragment) {
     val fragmentFactory: FragmentFactory get() = LibraryFragmentFactory(fragmentMap)
 
     private val module: PlayerModule = LibraryInitializer.playerModule()
+
     private val fragmentMap: Map<Class<out Fragment>, () -> Fragment> get() = mapOf(
         PlayerFragment::class.java to {
             PlayerFragment(
@@ -28,17 +29,21 @@ internal class LibraryModule(private val fragment: Fragment) {
                     NoOpPipController()
                 },
                 errorRenderer = SnackbarErrorRenderer(),
-                navigator
+                navigator = navigator,
+                timeFormatter = LibraryInitializer.timeFormatter()
             )
         },
         TracksPickerFragment::class.java to { TracksPickerFragment() }
     )
+
     private val playerViewModelFactory: PlayerViewModel.Factory get() = PlayerViewModel.Factory(
         appPlayerFactory = module.appPlayerFactory,
         playerEventStream = module.playerEventStream,
         telemetry = LibraryInitializer.telemetry(),
-        playbackInfoResolver = LibraryInitializer.playbackInfoResolver()
+        playbackInfoResolver = LibraryInitializer.playbackInfoResolver(),
+        seekDataUpdater = module.seekDataUpdater
     )
+
     private val navigator: Navigator get() = LibraryNavigator(
         fragment.childFragmentManager,
         R.id.container

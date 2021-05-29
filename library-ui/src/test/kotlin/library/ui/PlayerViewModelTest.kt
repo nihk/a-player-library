@@ -30,7 +30,7 @@ class PlayerViewModelTest {
 
     @Test
     fun `player state is used when binding new player`() = playerViewModel {
-        val playerState = PlayerState(positionMs = 5000L, isPlaying = false, trackInfos = emptyList())
+        val playerState = PlayerState(positionMs = 5000L, isPlaying = false)
         setPlayerState(playerState)
         bind()
         assertPlayerBindedWithState(playerState)
@@ -125,13 +125,15 @@ class PlayerViewModelRobot(scope: CoroutineScope) {
     private val telemetry = FakePlayerTelemetry()
     private val playerViewWrapper = NoOpPlayerViewWrapper()
     private val playbackInfoResolver = NoOpPlaybackInfoResolver()
+    private val seekDataUpdater = FakeSeekDataUpdater()
     private val viewModel = PlayerViewModel(
         playerSavedState = playerSavedState,
         appPlayerFactory = appPlayerFactory,
         playerEventStream = playerEventStream,
         telemetry = telemetry,
         playbackInfoResolver = playbackInfoResolver,
-        uri = "https://www.example.com/video.mp4"
+        uri = "https://www.example.com/video.mp4",
+        seekDataUpdater = seekDataUpdater
     )
     private val emittedEvents = mutableListOf<PlayerEvent>()
     private val emittedTrackStates = mutableListOf<TracksState>()
@@ -142,8 +144,8 @@ class PlayerViewModelRobot(scope: CoroutineScope) {
             .onEach { emittedEvents += it }
             .launchIn(scope)
 
-        jobs += viewModel.uiStates()
-            .onEach { emittedTrackStates += it.tracksState }
+        jobs += viewModel.tracksStates()
+            .onEach { emittedTrackStates += it }
             .launchIn(scope)
     }
 
@@ -156,7 +158,7 @@ class PlayerViewModelRobot(scope: CoroutineScope) {
     }
 
     fun setPlayerState(playerState: PlayerState?) {
-        playerSavedState.value = playerState
+        playerSavedState.save(playerState, emptyList())
     }
 
     suspend fun bind() {

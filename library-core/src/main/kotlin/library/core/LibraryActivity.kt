@@ -9,7 +9,7 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import library.common.OnUserLeaveHintViewModel
 import library.common.PlayerArguments
-import library.common.bundle
+import library.common.toBundle
 import library.common.isMinOsForPip
 import library.common.toPlayerArguments
 
@@ -45,7 +45,7 @@ abstract class LibraryActivity : AppCompatActivity(R.layout.library_activity) {
                 DefaultLibraryActivity::class.java
             }
             val intent = Intent(context, clazz)
-                .putExtras(playerArguments.bundle())
+                .putExtras(playerArguments.toBundle())
             context.startActivity(intent)
         }
 

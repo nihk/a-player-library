@@ -22,9 +22,11 @@ import library.common.PlayerException
 import library.common.PlayerViewWrapper
 import library.common.ShareDelegate
 import library.common.TrackInfo
-import library.common.bundle
+import library.common.toBundle
 import library.test.NoOpPlayerViewWrapper
-import org.junit.Assert.*
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 
@@ -47,23 +49,6 @@ class PlayerFragmentTest {
         assertPlayerCreated(times = 1)
         assertViewDetached()
         assertPlayerNotReleased()
-    }
-
-    @Test
-    fun didNotBindTracksWhenTracksWereNotAvailable() = playerFragment {
-        setTrackCount(text = 1, audio = 0, video = 1)
-        assertTextTracks(wereBinded = false)
-        assertAudioTracks(wereBinded = false)
-        assertVideoTracks(wereBinded = false)
-    }
-
-    @Test
-    fun didBindTracksWhenTracksBecameAvailable() = playerFragment {
-        setTrackCount(text = 1, audio = 0, video = 1)
-        emit(PlayerEvent.OnTracksAvailable)
-        assertTextTracks(wereBinded = true)
-        assertAudioTracks(wereBinded = false)
-        assertVideoTracks(wereBinded = true)
     }
 
     @Test
@@ -92,6 +77,7 @@ class FakePipController(
 ) : PipController {
     override fun events() = flow
     override fun enterPip(isPlaying: Boolean) = EnterPipResult.EnteredPip
+    override fun isInPip(): Boolean = false
     override fun onEvent(playerEvent: PlayerEvent) = Unit
 }
 
@@ -126,6 +112,8 @@ class PlayerFragmentRobot {
     private val pipController = FakePipController()
     private val errorRenderer = FakeErrorRenderer()
     private val playbackInfoResolver = NoOpPlaybackInfoResolver()
+    private val seekDataUpdater = FakeSeekDataUpdater()
+    private val timeFormatter = FakeTimeFormatter()
     private val navigator = NoOpNavigator()
     private val scenario: FragmentScenario<PlayerFragment>
 
@@ -134,7 +122,8 @@ class PlayerFragmentRobot {
             appPlayerFactory = appPlayerFactory,
             playerEventStream = playerEventStream,
             telemetry = telemetry,
-            playbackInfoResolver = playbackInfoResolver
+            playbackInfoResolver = playbackInfoResolver,
+            seekDataUpdater = seekDataUpdater
         )
 
         val playerViewWrapperFactory = FakePlayerViewWrapperFactory(playerViewWrapper)
@@ -143,8 +132,8 @@ class PlayerFragmentRobot {
             uri = "",
             pipConfig = pipConfig
         )
-        scenario = launchFragmentInContainer(fragmentArgs = args.bundle()) {
-            PlayerFragment(vmFactory, playerViewWrapperFactory, shareDelegate, pipController, errorRenderer, navigator)
+        scenario = launchFragmentInContainer(fragmentArgs = args.toBundle()) {
+            PlayerFragment(vmFactory, playerViewWrapperFactory, shareDelegate, pipController, errorRenderer, navigator, timeFormatter)
         }
     }
 
@@ -186,18 +175,6 @@ class PlayerFragmentRobot {
 
     fun assertPlayerNotReleased() {
         assertFalse(appPlayer.didRelease)
-    }
-
-    fun assertTextTracks(wereBinded: Boolean) {
-        assertEquals(wereBinded, TrackInfo.Type.TEXT in playerViewWrapper.boundTrackTypes)
-    }
-
-    fun assertAudioTracks(wereBinded: Boolean) {
-        assertEquals(wereBinded, TrackInfo.Type.AUDIO in playerViewWrapper.boundTrackTypes)
-    }
-
-    fun assertVideoTracks(wereBinded: Boolean) {
-        assertEquals(wereBinded, TrackInfo.Type.VIDEO in playerViewWrapper.boundTrackTypes)
     }
 
     fun assertErrorMessageRendered(string: String) {

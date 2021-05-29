@@ -10,7 +10,11 @@ import library.common.PlayerState
 import library.common.PlayerTelemetry
 import library.common.PlayerViewWrapper
 import library.common.PlaybackInfo
+import library.common.SeekData
+import library.common.SeekDataUpdater
+import library.common.TimeFormatter
 import library.common.TrackInfo
+import kotlin.time.Duration
 
 class FakeAppPlayerFactory(val appPlayer: AppPlayer) : AppPlayer.Factory {
     var createCount = 0
@@ -48,6 +52,14 @@ class FakeAppPlayer(
         error("unused")
     }
 
+    override fun seekRelative(duration: Duration) {
+        error("unused")
+    }
+
+    override fun seekTo(duration: Duration) {
+        error("unused")
+    }
+
     override fun release() {
         didRelease = true
     }
@@ -69,5 +81,17 @@ class FakePlayerTelemetry : PlayerTelemetry {
 class NoOpPlaybackInfoResolver : PlaybackInfoResolver {
     override suspend fun resolve(uri: String): PlaybackInfo {
         return PlaybackInfo(uri)
+    }
+}
+
+class FakeSeekDataUpdater : SeekDataUpdater {
+    override fun seekData(appPlayer: AppPlayer): Flow<SeekData> {
+        return emptyFlow()
+    }
+}
+
+class FakeTimeFormatter : TimeFormatter {
+    override fun playerTime(duration: Duration): String {
+        return "6:00"
     }
 }

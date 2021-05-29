@@ -4,7 +4,7 @@ import android.content.Context
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import library.common.PlayerArguments
-import library.common.bundle
+import library.common.toBundle
 import library.common.toPlayerArguments
 import library.ui.PlayerFragment
 
@@ -22,7 +22,7 @@ class LibraryFragment : Fragment(R.layout.library_fragment) {
         super.onCreate(savedInstanceState)
         if (savedInstanceState == null) {
             childFragmentManager.beginTransaction()
-                .replace(R.id.container, PlayerFragment::class.java, playerArguments.bundle())
+                .replace(R.id.container, PlayerFragment::class.java, playerArguments.toBundle())
                 .commit()
         }
     }
@@ -30,7 +30,7 @@ class LibraryFragment : Fragment(R.layout.library_fragment) {
     companion object {
         fun create(playerArguments: PlayerArguments): LibraryFragment {
             return LibraryFragment().apply {
-                arguments = playerArguments.bundle()
+                arguments = playerArguments.toBundle()
             }
         }
     }

@@ -7,6 +7,7 @@ import library.common.AppPlayer
 import library.common.PlayerEventStream
 import library.common.PlayerModule
 import library.common.PlayerViewWrapper
+import library.common.SeekDataUpdater
 
 class ExoPlayerModule(context: Context) : PlayerModule {
 
@@ -16,4 +17,5 @@ class ExoPlayerModule(context: Context) : PlayerModule {
     override val playerViewWrapperFactory: PlayerViewWrapper.Factory get() = ExoPlayerViewWrapper.Factory()
     override val playerEventStream: PlayerEventStream get() = ExoPlayerEventStream()
     override val appPlayerFactory: AppPlayer.Factory get() = ExoPlayerWrapper.Factory(appContext, trackNameProvider)
+    override val seekDataUpdater: SeekDataUpdater get() = ExoPlayerSeekDataUpdater()
 }

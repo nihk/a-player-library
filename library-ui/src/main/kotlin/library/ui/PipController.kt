@@ -22,12 +22,14 @@ interface PipController {
     fun events(): Flow<PipEvent>
     fun enterPip(isPlaying: Boolean): EnterPipResult
     fun onEvent(playerEvent: PlayerEvent)
+    fun isInPip(): Boolean
 }
 
 class NoOpPipController : PipController {
     override fun events(): Flow<PipEvent> = emptyFlow()
     override fun enterPip(isPlaying: Boolean) = EnterPipResult.DidNotEnterPip
     override fun onEvent(playerEvent: PlayerEvent) = Unit
+    override fun isInPip(): Boolean = false
 }
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -80,6 +82,8 @@ class AndroidPipController(private val activity: Activity) : PipController {
         }
     }
 
+    override fun isInPip(): Boolean = activity.isInPictureInPictureMode
+
     private fun pipParams(isPlaying: Boolean): PictureInPictureParams {
         val actions = if (canShowActions) {
             listOf(
@@ -107,7 +111,7 @@ class AndroidPipController(private val activity: Activity) : PipController {
         return remoteAction(
             requestCode = RequestPause,
             control = ControlPause,
-            iconDrawable = R.drawable.pause,
+            iconDrawable = R.drawable.pip_pause,
             title = "Pause"
         )
     }
@@ -116,7 +120,7 @@ class AndroidPipController(private val activity: Activity) : PipController {
         return remoteAction(
             requestCode = RequestPlay,
             control = ControlPlay,
-            iconDrawable = R.drawable.play,
+            iconDrawable = R.drawable.pip_play,
             title = "Play"
         )
     }

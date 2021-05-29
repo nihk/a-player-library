@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import library.common.AppPlayer
+import library.common.SeekData
 import library.common.PlaybackInfo
 import library.common.PlaybackInfoResolver
 import library.common.PlayerEvent
@@ -21,7 +22,9 @@ import library.common.PlayerEventStream
 import library.common.PlayerState
 import library.common.PlayerTelemetry
 import library.common.PlayerViewWrapper
+import library.common.SeekDataUpdater
 import library.common.TrackInfo
+import kotlin.time.Duration
 
 class PlayerViewModel(
     private val playerSavedState: PlayerSavedState,
@@ -29,11 +32,12 @@ class PlayerViewModel(
     private val playerEventStream: PlayerEventStream,
     private val telemetry: PlayerTelemetry?,
     private val playbackInfoResolver: PlaybackInfoResolver?,
-    uri: String
+    uri: String,
+    private val seekDataUpdater: SeekDataUpdater
 ) : ViewModel() {
 
     private var appPlayer: AppPlayer? = null
-    private var listening: Job? = null
+    private val playerJobs = mutableListOf<Job>()
     private val playbackInfo = CompletableDeferred<PlaybackInfo>()
 
     private val playerEvents = MutableSharedFlow<PlayerEvent>()
@@ -45,9 +49,14 @@ class PlayerViewModel(
     private val errors = MutableSharedFlow<String>()
     fun errors(): Flow<String> = errors
 
+    private val tracksStates = MutableStateFlow(TracksState.NotAvailable)
+    fun tracksStates(): Flow<TracksState> = tracksStates
+
     init {
         viewModelScope.launch {
             try {
+                // todo: investigate possibility of this happening as a flow of events rather
+                //  than a one-shot
                 val playbackInfo = playbackInfoResolver?.resolve(uri) ?: PlaybackInfo(uri)
                 this@PlayerViewModel.playbackInfo.complete(playbackInfo)
             } catch (throwable: Throwable) {
@@ -62,8 +71,11 @@ class PlayerViewModel(
             try {
                 val playbackInfo = playbackInfo.await()
                 appPlayer = appPlayerFactory.create(playbackInfo)
-                listening = listenToPlayerEvents(requireNotNull(appPlayer))
-                requireNotNull(appPlayer).bind(playerViewWrapper, playerSavedState.value ?: PlayerState.INITIAL)
+                playerJobs += listenToPlayerEvents(requireNotNull(appPlayer))
+                playerJobs += seekDataUpdater.seekData(requireNotNull(appPlayer))
+                    .onEach { opSeekData -> uiStates.value = uiStates.value.copy(seekData = opSeekData) }
+                    .launchIn(viewModelScope)
+                requireNotNull(appPlayer).bind(playerViewWrapper, playerSavedState.playerState() ?: PlayerState.INITIAL)
             } catch (throwable: Throwable) {
                 errors.emit(throwable.message.toString())
             }
@@ -84,7 +96,8 @@ class PlayerViewModel(
 
         // When a user backgrounds the app, then later foregrounds it back to the video, a good UX is
         // to have the player be paused upon return.
-        playerSavedState.value = appPlayer?.state?.copy(isPlaying = false)
+        val state = appPlayer?.state?.copy(isPlaying = false)
+        playerSavedState.save(state, appPlayer?.tracks.orEmpty())
         tearDown()
     }
 
@@ -95,9 +108,10 @@ class PlayerViewModel(
             .onEach { playerEvent -> telemetry?.onPlayerEvent(playerEvent) }
             .onEach { playerEvent ->
                 when (playerEvent) {
+                    is PlayerEvent.Initial -> uiStates.value = uiStates.value.copy(showController = true)
                     is PlayerEvent.OnTracksAvailable -> {
-                        playerSavedState.value?.trackInfos?.let { appPlayer.handleTrackInfoAction(TrackInfo.Action.Set(it)) }
-                        uiStates.value = uiStates.value.copy(tracksState = TracksState.Available)
+                        playerSavedState.manuallySetTracks().let { appPlayer.handleTrackInfoAction(TrackInfo.Action.Set(it)) }
+                        tracksStates.value = TracksState.Available
                     }
                     is PlayerEvent.OnPlayerError -> errors.emit(playerEvent.exception.message.toString())
                 }
@@ -105,11 +119,11 @@ class PlayerViewModel(
             .launchIn(viewModelScope)
     }
 
+    fun isPlaying(): Boolean = appPlayer?.state?.isPlaying == true
+
     fun play() {
         requireNotNull(appPlayer).play()
     }
-
-    fun isPlaying(): Boolean = appPlayer?.state?.isPlaying == true
 
     fun pause() {
         requireNotNull(appPlayer).pause()
@@ -120,11 +134,11 @@ class PlayerViewModel(
     }
 
     private fun tearDown() {
-        uiStates.value = uiStates.value.copy(tracksState = TracksState.NotAvailable)
-        // These can be nullable when closing PiP. PiP can recreate/destroy the Activity without
+        tracksStates.value = TracksState.NotAvailable
+        playerJobs.forEach(Job::cancel)
+        playerJobs.clear()
+        // This can be nullable when closing PiP. PiP can recreate/destroy the Activity without
         // creating an AppPlayer instance in this ViewModel.
-        listening?.cancel()
-        listening = null
         appPlayer?.release()
         appPlayer = null
     }
@@ -138,14 +152,23 @@ class PlayerViewModel(
     }
 
     fun onPipModeChanged(isInPipMode: Boolean) {
-        uiStates.value = uiStates.value.copy(useController = !isInPipMode)
+        uiStates.value = uiStates.value.copy(showController = !isInPipMode)
+    }
+
+    fun seekRelative(duration: Duration) {
+        requireNotNull(appPlayer).seekRelative(duration)
+    }
+
+    fun seekTo(duration: Duration) {
+        requireNotNull(appPlayer).seekTo(duration)
     }
 
     class Factory(
         private val appPlayerFactory: AppPlayer.Factory,
         private val playerEventStream: PlayerEventStream,
         private val telemetry: PlayerTelemetry?,
-        private val playbackInfoResolver: PlaybackInfoResolver?
+        private val playbackInfoResolver: PlaybackInfoResolver?,
+        private val seekDataUpdater: SeekDataUpdater
     ) {
         fun create(
             owner: SavedStateRegistryOwner,
@@ -164,7 +187,8 @@ class PlayerViewModel(
                         playerEventStream,
                         telemetry,
                         playbackInfoResolver,
-                        uri
+                        uri,
+                        seekDataUpdater
                     ) as T
                 }
             }
@@ -173,15 +197,15 @@ class PlayerViewModel(
 }
 
 data class UiState(
-    val tracksState: TracksState,
-    val useController: Boolean,
-    val isResolvingMedia: Boolean
+    val showController: Boolean,
+    val isResolvingMedia: Boolean,
+    val seekData: SeekData
 ) {
     companion object {
         val INITIAL = UiState(
-            tracksState = TracksState.NotAvailable,
-            useController = true,
-            isResolvingMedia = true
+            showController = false,
+            isResolvingMedia = true,
+            seekData = SeekData.INITIAL
         )
     }
 }

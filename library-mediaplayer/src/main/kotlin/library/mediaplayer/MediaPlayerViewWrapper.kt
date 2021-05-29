@@ -6,13 +6,10 @@ import android.media.MediaPlayer
 import android.view.LayoutInflater
 import android.view.SurfaceHolder
 import android.view.View
-import android.widget.ProgressBar
 import androidx.constraintlayout.widget.ConstraintSet
-import androidx.core.view.isVisible
 import library.common.AppPlayer
 import library.common.PlayerEvent
 import library.common.PlayerViewWrapper
-import library.common.TrackInfo
 import library.mediaplayer.databinding.LibraryMediaPlayerBinding
 
 internal class MediaPlayerViewWrapper(context: Context) : PlayerViewWrapper {
@@ -21,8 +18,6 @@ internal class MediaPlayerViewWrapper(context: Context) : PlayerViewWrapper {
         .inflate(R.layout.library_media_player, null)
 
     private val binding = LibraryMediaPlayerBinding.bind(view)
-
-    private val loading = view.findViewById<ProgressBar>(R.id.loading)
 
     private var callback: MediaPlayerSurfaceCallback? = null
 
@@ -43,25 +38,6 @@ internal class MediaPlayerViewWrapper(context: Context) : PlayerViewWrapper {
         }
     }
 
-    override fun bindTracks(type: TrackInfo.Type, onClick: (View) -> Unit) {
-        TODO("Not yet implemented")
-    }
-
-    override fun bindShare(onClick: (View) -> Unit) {
-        binding.share.run {
-            isVisible = true
-            setOnClickListener(onClick)
-        }
-    }
-
-    override fun bindPlay(play: (View) -> Unit) {
-        binding.play.setOnClickListener(play)
-    }
-
-    override fun bindPause(pause: (View) -> Unit) {
-        binding.pause.setOnClickListener(pause)
-    }
-
     override fun attachTo(appPlayer: AppPlayer) {
         val mediaPlayer = appPlayer as? MediaPlayerWrapper
             ?: error("appPlayer $appPlayer was not a ${MediaPlayerWrapper::class.java}")
@@ -72,14 +48,6 @@ internal class MediaPlayerViewWrapper(context: Context) : PlayerViewWrapper {
     override fun detach() {
         binding.surfaceView.holder.removeCallback(callback)
         callback = null
-    }
-
-    override fun setControllerUsability(isUsable: Boolean) {
-        // todo
-    }
-
-    override fun setLoading(isLoading: Boolean) {
-        loading.isVisible = isLoading
     }
 
     class Factory : PlayerViewWrapper.Factory {

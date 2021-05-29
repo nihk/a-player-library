@@ -64,7 +64,8 @@ private fun <T : BaseExtension> Project.androidConfig() = android<T>().apply {
             useIR = true
             freeCompilerArgs = listOf(
                 "-Xuse-experimental=kotlinx.coroutines.ExperimentalCoroutinesApi",
-                "-Xuse-experimental=kotlin.time.ExperimentalTime"
+                "-Xuse-experimental=kotlin.time.ExperimentalTime",
+                "-Xuse-experimental=kotlinx.coroutines.FlowPreview"
             )
         }
     }

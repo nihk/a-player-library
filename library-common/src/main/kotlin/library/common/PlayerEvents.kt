@@ -3,6 +3,7 @@ package library.common
 import kotlinx.coroutines.flow.Flow
 
 sealed class PlayerEvent {
+    data class Initial(val playerState: PlayerState) : PlayerEvent()
     // todo: need to make every event be relevant for both exoplayer/mediaplayer
     object OnPlayerPrepared : PlayerEvent()
     data class OnInfo(val what: Int, val extra: Int) : PlayerEvent()
@@ -13,6 +14,7 @@ sealed class PlayerEvent {
     object OnTracksAvailable : PlayerEvent()
     object OnTracksChanged : PlayerEvent()
     data class OnPlayerError(val exception: PlayerException) : PlayerEvent()
+    data class OnIsPlayingChanged(val isPlaying: Boolean) : PlayerEvent()
 }
 
 interface PlayerEventStream {

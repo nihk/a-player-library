@@ -7,6 +7,7 @@ import library.common.PlayerState
 import library.common.PlayerViewWrapper
 import library.common.PlaybackInfo
 import library.common.TrackInfo
+import kotlin.time.Duration
 
 class MediaPlayerWrapper(
     val mediaPlayer: MediaPlayer
@@ -18,8 +19,7 @@ class MediaPlayerWrapper(
         get() {
             return PlayerState(
                 positionMs = mediaPlayer.currentPosition.toLong(),
-                isPlaying = mediaPlayer.isPlaying,
-                trackInfos = tracks.filter(TrackInfo::isManuallySet)
+                isPlaying = mediaPlayer.isPlaying
             )
         }
 
@@ -57,6 +57,14 @@ class MediaPlayerWrapper(
 
     override fun pause() {
         mediaPlayer.pause()
+    }
+
+    override fun seekRelative(duration: Duration) {
+        // todo
+    }
+
+    override fun seekTo(duration: Duration) {
+        // todo
     }
 
     override fun release() {

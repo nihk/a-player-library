@@ -6,15 +6,13 @@ import kotlinx.parcelize.Parcelize
 @Parcelize
 data class PlayerState(
     val positionMs: Long,
-    val isPlaying: Boolean,
-    val trackInfos: List<TrackInfo>
+    val isPlaying: Boolean
 ) : Parcelable {
 
     companion object {
         val INITIAL = PlayerState(
             positionMs = 0L,
-            isPlaying = true,
-            trackInfos = emptyList()
+            isPlaying = true
         )
     }
 }

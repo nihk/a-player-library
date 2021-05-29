@@ -11,6 +11,9 @@ import library.common.PlayerState
 import library.common.PlayerViewWrapper
 import library.common.PlaybackInfo
 import library.common.TrackInfo
+import kotlin.time.Duration
+import kotlin.time.DurationUnit
+import kotlin.time.toDuration
 
 internal class ExoPlayerWrapper(
     internal val player: Player,
@@ -25,8 +28,7 @@ internal class ExoPlayerWrapper(
         get() {
             return PlayerState(
                 positionMs = player.currentPosition,
-                isPlaying = player.isPlaying,
-                trackInfos = tracks.filter(TrackInfo::isManuallySet)
+                isPlaying = player.isPlaying
             )
         }
 
@@ -49,11 +51,22 @@ internal class ExoPlayerWrapper(
     }
 
     override fun play() {
+        // fixme: reconcile playing when content position is at end
         player.play()
     }
 
     override fun pause() {
         player.pause()
+    }
+
+    override fun seekRelative(duration: Duration) {
+        val current = player.contentPosition.toDuration(DurationUnit.MILLISECONDS)
+        val seekTo = current + duration
+        seekTo(seekTo)
+    }
+
+    override fun seekTo(duration: Duration) {
+        player.seekTo(duration.toLongMilliseconds())
     }
 
     override fun release() {

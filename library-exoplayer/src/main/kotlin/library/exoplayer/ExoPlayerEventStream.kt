@@ -23,6 +23,8 @@ internal class ExoPlayerEventStream : PlayerEventStream {
     override fun listen(appPlayer: AppPlayer): Flow<PlayerEvent> = callbackFlow {
         appPlayer as? ExoPlayerWrapper ?: error("$appPlayer was not a ${ExoPlayerWrapper::class.java}")
 
+        offer(PlayerEvent.Initial(appPlayer.state))
+
         val listener = object : Player.EventListener, AnalyticsListener {
             override fun onIsLoadingChanged(isLoading: Boolean) {
                 offer(PlayerEvent.OnIsLoadingChanged(isLoading))
@@ -60,6 +62,10 @@ internal class ExoPlayerEventStream : PlayerEventStream {
                 surface: Surface?
             ) {
                 offer(PlayerEvent.OnPlayerPrepared)
+            }
+
+            override fun onIsPlayingChanged(isPlaying: Boolean) {
+                offer(PlayerEvent.OnIsPlayingChanged(isPlaying))
             }
         }
 

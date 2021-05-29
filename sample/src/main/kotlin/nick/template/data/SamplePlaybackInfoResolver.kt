@@ -5,9 +5,9 @@ import library.common.PlaybackInfoResolver
 import library.common.PlaybackInfo
 import kotlin.time.seconds
 
-class SlowPlaybackInfoResolver : PlaybackInfoResolver {
+class SamplePlaybackInfoResolver : PlaybackInfoResolver {
     override suspend fun resolve(uri: String): PlaybackInfo {
-        delay(2.seconds) // Simulate work
+//        delay(2.seconds) // Simulate work
         return PlaybackInfo(uri)
     }
 }
