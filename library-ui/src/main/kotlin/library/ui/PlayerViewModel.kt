@@ -31,7 +31,7 @@ class PlayerViewModel(
     private val appPlayerFactory: AppPlayer.Factory,
     private val playerEventStream: PlayerEventStream,
     private val telemetry: PlayerTelemetry?,
-    private val playbackInfoResolver: PlaybackInfoResolver?,
+    private val playbackInfoResolver: PlaybackInfoResolver,
     uri: String,
     private val seekDataUpdater: SeekDataUpdater
 ) : ViewModel() {
@@ -57,7 +57,7 @@ class PlayerViewModel(
             try {
                 // todo: investigate possibility of this happening as a flow of events rather
                 //  than a one-shot
-                val playbackInfo = playbackInfoResolver?.resolve(uri) ?: PlaybackInfo(uri)
+                val playbackInfo = playbackInfoResolver.resolve(uri)
                 this@PlayerViewModel.playbackInfo.complete(playbackInfo)
             } catch (throwable: Throwable) {
                 playbackInfo.completeExceptionally(throwable)
@@ -167,7 +167,7 @@ class PlayerViewModel(
         private val appPlayerFactory: AppPlayer.Factory,
         private val playerEventStream: PlayerEventStream,
         private val telemetry: PlayerTelemetry?,
-        private val playbackInfoResolver: PlaybackInfoResolver?,
+        private val playbackInfoResolver: PlaybackInfoResolver,
         private val seekDataUpdater: SeekDataUpdater
     ) {
         fun create(

@@ -1,5 +1,6 @@
 package library.core
 
+import library.common.DefaultPlaybackInfoResolver
 import library.common.DefaultPlaybackUiFactory
 import library.common.DefaultTimeFormatter
 import library.common.PlaybackInfoResolver
@@ -23,7 +24,7 @@ object LibraryInitializer {
     internal fun playerModule(): PlayerModule = playerModule.requireInitialized()
     internal fun telemetry(): PlayerTelemetry? = telemetry
     internal fun shareDelegate(): ShareDelegate? = shareDelegate
-    internal fun playbackInfoResolver(): PlaybackInfoResolver? = playbackInfoResolver
+    internal fun playbackInfoResolver(): PlaybackInfoResolver = playbackInfoResolver.requireInitialized()
     internal fun playbackUiFactory(): PlaybackUiFactory = playbackUiFactory.requireInitialized()
     internal fun timeFormatter(): TimeFormatter = timeFormatter.requireInitialized()
 
@@ -32,7 +33,7 @@ object LibraryInitializer {
         playerModule: PlayerModule,
         telemetry: PlayerTelemetry? = null,
         shareDelegate: ShareDelegate? = null,
-        playbackInfoResolver: PlaybackInfoResolver? = null,
+        playbackInfoResolver: PlaybackInfoResolver? = DefaultPlaybackInfoResolver(),
         playbackUiFactory: PlaybackUiFactory = DefaultPlaybackUiFactory(),
         timeFormatter: TimeFormatter = DefaultTimeFormatter(Locale.getDefault())
     ) {
