@@ -6,7 +6,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import library.ui.Navigator
 
-class LibraryNavigator(
+internal class LibraryNavigator(
     private val fragmentManager: FragmentManager,
     @IdRes private val containerId: Int
 ) : Navigator {

@@ -32,6 +32,7 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 import library.common.AppPlayer
 import library.common.PlayerState
+import library.common.TrackInfo
 import library.test.NoOpPlayerViewWrapper
 import okhttp3.mockwebserver.Dispatcher
 import okhttp3.mockwebserver.MockResponse
@@ -199,15 +200,15 @@ class ExoPlayerWrapperRobot(private val context: CoroutineContext = Dispatchers.
     private var appPlayer: AppPlayer? = null
 
     suspend fun assertVideoTracks(count: Int) = withContext(context) {
-        assertEquals(count, appPlayer!!.videoTracks.size)
+        assertEquals(count, appPlayer!!.tracks.filter { it.type == TrackInfo.Type.VIDEO }.size)
     }
 
     suspend fun assertTextTracks(count: Int) = withContext(context) {
-        assertEquals(count, appPlayer!!.textTracks.size)
+        assertEquals(count, appPlayer!!.tracks.filter { it.type == TrackInfo.Type.TEXT }.size)
     }
 
     suspend fun assertAudioTracks(count: Int) = withContext(context) {
-        assertEquals(count, appPlayer!!.audioTracks.size)
+        assertEquals(count, appPlayer!!.tracks.filter { it.type == TrackInfo.Type.AUDIO }.size)
     }
 
     suspend fun play(
