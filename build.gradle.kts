@@ -1,9 +1,9 @@
 buildscript {
     repositories.addProjectDefaults()
     dependencies {
-        classpath(Dependency.androidGradlePlugin)
-        classpath(Dependency.Kotlin.plugin)
-        classpath(Dependency.Dagger.Hilt.plugin)
+        classpath(Dependencies.androidGradlePlugin)
+        classpath(Dependencies.Kotlin.plugin)
+        classpath(Dependencies.Dagger.Hilt.plugin)
     }
 }
 

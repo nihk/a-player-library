@@ -22,28 +22,28 @@ androidAppConfig {
 }
 
 dependencies {
-    implementation(project(":library-core"))
-    implementation(project(":library-exoplayer"))
-    implementation(project(":library-mediaplayer"))
+    implementation(project(Modules.Player.core))
+    implementation(project(Modules.Player.exoplayer))
+    implementation(project(Modules.Player.mediaplayer))
 
-    implementation(Dependency.activity)
-    implementation(Dependency.appCompat)
-    implementation(Dependency.coreKtx)
-    implementation(Dependency.vectorDrawable)
-    implementation(Dependency.constraintLayout)
-    implementation(Dependency.material)
-    implementation(Dependency.Navigation.runtime)
-    implementation(Dependency.Navigation.fragment)
-    implementation(Dependency.Navigation.ui)
-    implementation(Dependency.Dagger.runtime)
-    implementation(Dependency.Dagger.Hilt.runtime)
-    implementation(Dependency.multidex)
+    implementation(Dependencies.activity)
+    implementation(Dependencies.appCompat)
+    implementation(Dependencies.coreKtx)
+    implementation(Dependencies.vectorDrawable)
+    implementation(Dependencies.constraintLayout)
+    implementation(Dependencies.material)
+    implementation(Dependencies.Navigation.runtime)
+    implementation(Dependencies.Navigation.fragment)
+    implementation(Dependencies.Navigation.ui)
+    implementation(Dependencies.Dagger.runtime)
+    implementation(Dependencies.Dagger.Hilt.runtime)
+    implementation(Dependencies.multidex)
 
-    debugImplementation(Dependency.leakCanary)
-    debugImplementation(Dependency.Fragment.testing)
+    debugImplementation(Dependencies.leakCanary)
+    debugImplementation(Dependencies.Fragment.testing)
 
-    testImplementation(Dependency.junit)
+    testImplementation(Dependencies.junit)
 
-    kapt(Dependency.Dagger.compiler)
-    kapt(Dependency.Dagger.Hilt.compiler)
+    kapt(Dependencies.Dagger.compiler)
+    kapt(Dependencies.Dagger.Hilt.compiler)
 }

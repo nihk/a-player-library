@@ -61,7 +61,6 @@ private fun <T : BaseExtension> Project.androidConfig() = android<T>().apply {
     tasks.withType(KotlinCompile::class.java) {
         kotlinOptions {
             jvmTarget = JavaVersion.VERSION_1_8.toString()
-            useIR = true
             freeCompilerArgs = listOf(
                 "-Xuse-experimental=kotlinx.coroutines.ExperimentalCoroutinesApi",
                 "-Xuse-experimental=kotlin.time.ExperimentalTime",
@@ -129,6 +128,6 @@ fun Project.jvmConfig() {
 private fun Project.defaultDependencies() {
     dependencies {
         "implementation"(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
-        "implementation"(Dependency.Kotlin.stdlib)
+        "implementation"(Dependencies.Kotlin.stdlib)
     }
 }

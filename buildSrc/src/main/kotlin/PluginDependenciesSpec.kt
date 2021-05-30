@@ -13,7 +13,7 @@ val PluginDependenciesSpec.hilt: PluginDependencySpec
 
 // ./gradlew dependencyUpdates
 val PluginDependenciesSpec.`ben-manes-versions`: PluginDependencySpec
-    get() = id("com.github.ben-manes.versions") version Version.benManesVersions
+    get() = id("com.github.ben-manes.versions") version Versions.benManesVersions
 
 val PluginDependenciesSpec.parcelize: PluginDependencySpec
     get() = id("kotlin-parcelize")
