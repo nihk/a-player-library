@@ -74,7 +74,5 @@ private class MediaPlayerSurfaceCallback(
         mediaPlayer.setDisplay(null)
     }
 
-    override fun surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {
-        val i = 0
-    }
+    override fun surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) = Unit
 }

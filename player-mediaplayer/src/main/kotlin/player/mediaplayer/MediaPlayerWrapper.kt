@@ -11,15 +11,15 @@ import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 
 class MediaPlayerWrapper(
-    val mediaPlayer: MediaPlayer
+    val mediaPlayer: MediaPlayer,
+    private val initial: PlayerState
 ) : AppPlayer {
-
-    private var initialState: PlayerState? = null
+    private var didSetMediaSource = false
 
     override val state: PlayerState
         get() {
             return PlayerState(
-                positionMs = mediaPlayer.currentPosition.toLong(),
+                positionMillis = mediaPlayer.currentPosition.toLong(),
                 isPlaying = mediaPlayer.isPlaying
             )
         }
@@ -27,9 +27,18 @@ class MediaPlayerWrapper(
     override val tracks: List<TrackInfo>
         get() = emptyList()
 
-    override fun setPlayerState(playerState: PlayerState) {
-        // Cache until MediaPlayer is ready to have this state set.
-        initialState = playerState
+    override fun handlePlaybackInfos(playbackInfos: List<PlaybackInfo>) {
+        playbackInfos.forEach { playbackInfo ->
+            when (playbackInfo) {
+                is PlaybackInfo.MediaUri -> {
+                    if (!didSetMediaSource) {
+                        mediaPlayer.setDataSource(playbackInfo.uri)
+                        mediaPlayer.prepareAsync()
+                        didSetMediaSource = true
+                    }
+                }
+            }
+        }
     }
 
     override fun handleTrackInfoAction(action: TrackInfo.Action) {
@@ -41,14 +50,14 @@ class MediaPlayerWrapper(
 
     override fun onEvent(playerEvent: PlayerEvent) {
         when (playerEvent) {
-            is PlayerEvent.OnPlayerPrepared -> initialState?.run {
-                mediaPlayer.seekTo(positionMs.toInt())
+            is PlayerEvent.OnPlayerPrepared -> {
+                mediaPlayer.seekTo(initial.positionMillis.toInt())
                 // MediaPlayer enforces calling start before pause
                 mediaPlayer.start()
-                if (!isPlaying) {
+                if (!initial.isPlaying) {
                     mediaPlayer.pause()
                 }
-            }.also { initialState = null }
+            }
         }
     }
 
@@ -79,12 +88,8 @@ class MediaPlayerWrapper(
     }
 
     class Factory : AppPlayer.Factory {
-        override fun create(playbackInfo: PlaybackInfo): AppPlayer {
-            val mediaPlayer = MediaPlayer().apply {
-                setDataSource(playbackInfo.uri)
-                prepareAsync()
-            }
-            return MediaPlayerWrapper(mediaPlayer)
+        override fun create(initial: PlayerState): AppPlayer {
+            return MediaPlayerWrapper(MediaPlayer(), initial)
         }
     }
 }

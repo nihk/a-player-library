@@ -9,13 +9,11 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.setFragmentResultListener
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.repeatOnLifecycle
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.launch
 import player.common.OnUserLeaveHintViewModel
+import player.common.PlaybackInfo
 import player.common.PlayerArguments
 import player.common.PlayerEvent
 import player.common.PlayerViewWrapper
@@ -88,7 +86,6 @@ class PlayerFragment(
 
         bindControls(binding)
         listenToPlayer(binding)
-        attachPlayer()
     }
 
     private fun bindControls(binding: PlayerFragmentBinding) {
@@ -150,7 +147,7 @@ class PlayerFragment(
         playerViewModel.uiStates()
             .onEach { uiState ->
                 binding.playerController.isVisible = uiState.showController && !pipController.isInPip()
-                binding.progressBar.isVisible = uiState.isResolvingMedia
+                binding.progressBar.isVisible = uiState.showLoading
                 if (!seekBarListener.isSeekBarBeingTouched) {
                     updateSeekData(binding, uiState.seekData)
                 }
@@ -183,17 +180,21 @@ class PlayerFragment(
                 .onEach { enterPip() }
                 .launchIn(viewLifecycleOwner.lifecycleScope)
         }
-    }
 
-    /** See [onStop] counterpart. */
-    private fun attachPlayer() {
-        viewLifecycleOwner.lifecycleScope.launch {
-            viewLifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                when (val result = playerViewModel.getPlayer()) {
-                    is PlayerResult.Success -> requirePlayerViewWrapper().attach(result.appPlayer)
+        playerViewModel.playbackInfos
+            .onEach { playbackInfos ->
+                playbackInfos.forEach { playbackInfo ->
+                    when (playbackInfo) {
+                        is PlaybackInfo.MediaTitle -> {
+                            binding.title.apply {
+                                text = playbackInfo.title
+                                isVisible = true
+                            }
+                        }
+                    }
                 }
             }
-        }
+            .launchIn(viewLifecycleOwner.lifecycleScope)
     }
 
     private fun updateSeekData(
@@ -244,7 +245,12 @@ class PlayerFragment(
         navigator.toDialog(TracksPickerFragment::class.java, TracksPickerFragment.args(trackInfos))
     }
 
-    /** See [attachPlayer] counterpart. */
+    override fun onStart() {
+        super.onStart()
+        val appPlayer = playerViewModel.getPlayer()
+        requirePlayerViewWrapper().attach(appPlayer)
+    }
+
     override fun onStop() {
         super.onStop()
         requirePlayerViewWrapper().detachPlayer()

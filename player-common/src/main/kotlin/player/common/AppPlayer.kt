@@ -6,7 +6,7 @@ interface AppPlayer {
     val state: PlayerState
     val tracks: List<TrackInfo>
 
-    fun setPlayerState(playerState: PlayerState)
+    fun handlePlaybackInfos(playbackInfos: List<PlaybackInfo>)
     fun handleTrackInfoAction(action: TrackInfo.Action)
     fun play()
     fun pause()
@@ -17,6 +17,6 @@ interface AppPlayer {
     fun onEvent(playerEvent: PlayerEvent) = Unit
 
     interface Factory {
-        fun create(playbackInfo: PlaybackInfo): AppPlayer
+        fun create(initial: PlayerState): AppPlayer
     }
 }

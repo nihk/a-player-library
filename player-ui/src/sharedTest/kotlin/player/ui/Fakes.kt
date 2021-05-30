@@ -4,7 +4,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import player.common.AppPlayer
 import player.common.PlaybackInfo
-import player.common.PlaybackInfoResolver
 import player.common.PlayerEvent
 import player.common.PlayerEventStream
 import player.common.PlayerState
@@ -16,9 +15,11 @@ import player.common.TrackInfo
 import kotlin.time.Duration
 
 class FakeAppPlayerFactory(val appPlayer: AppPlayer) : AppPlayer.Factory {
+    var createdState: PlayerState? = null
     var createCount = 0
-    override fun create(playbackInfo: PlaybackInfo): AppPlayer {
+    override fun create(initial: PlayerState): AppPlayer {
         ++createCount
+        createdState = initial
         return appPlayer
     }
 }
@@ -26,16 +27,11 @@ class FakeAppPlayerFactory(val appPlayer: AppPlayer) : AppPlayer.Factory {
 class FakeAppPlayer(
     val fakeTracks: MutableList<TrackInfo> = mutableListOf()
 ) : AppPlayer {
-    var boundState: PlayerState? = null
     var didRelease: Boolean = false
     val collectedEvents = mutableListOf<PlayerEvent>()
 
     override val state: PlayerState get() = PlayerState.INITIAL
     override val tracks: List<TrackInfo> get() = fakeTracks
-
-    override fun setPlayerState(playerState: PlayerState) {
-        boundState = playerState
-    }
 
     override fun onEvent(playerEvent: PlayerEvent) {
         collectedEvents += playerEvent
@@ -62,6 +58,7 @@ class FakeAppPlayer(
     }
 
     override fun handleTrackInfoAction(action: TrackInfo.Action) = Unit
+    override fun handlePlaybackInfos(playbackInfos: List<PlaybackInfo>) = Unit
 }
 
 class FakePlayerEventStream(val flow: Flow<PlayerEvent> = emptyFlow()) : PlayerEventStream {
@@ -72,12 +69,6 @@ class FakePlayerTelemetry : PlayerTelemetry {
     val collectedEvents = mutableListOf<PlayerEvent>()
     override suspend fun onPlayerEvent(playerEvent: PlayerEvent) {
         collectedEvents.add(playerEvent)
-    }
-}
-
-class NoOpPlaybackInfoResolver : PlaybackInfoResolver {
-    override suspend fun resolve(uri: String): PlaybackInfo {
-        return PlaybackInfo(uri)
     }
 }
 

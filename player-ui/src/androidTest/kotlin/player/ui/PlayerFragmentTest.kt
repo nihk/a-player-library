@@ -28,6 +28,7 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
+import player.common.DefaultPlaybackInfoResolver
 
 class PlayerFragmentTest {
     @get:Rule
@@ -123,7 +124,7 @@ class PlayerFragmentRobot {
     private val pipConfig = PictureInPictureConfig(false, false)
     private val pipController = FakePipController()
     private val errorRenderer = FakeErrorRenderer()
-    private val playbackInfoResolver = NoOpPlaybackInfoResolver()
+    private val playbackInfoResolver = DefaultPlaybackInfoResolver()
     private val seekDataUpdater = FakeSeekDataUpdater()
     private val timeFormatter = FakeTimeFormatter()
     private val navigator = NoOpNavigator()

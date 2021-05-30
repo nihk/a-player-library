@@ -15,6 +15,7 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
+import player.common.DefaultPlaybackInfoResolver
 
 class PlayerViewModelTest {
     @get:Rule
@@ -35,10 +36,10 @@ class PlayerViewModelTest {
 
     @Test
     fun `player state is used when creating new player`() = playerViewModel {
-        val playerState = PlayerState(positionMs = 5000L, isPlaying = false)
+        val playerState = PlayerState(positionMillis = 5000L, isPlaying = false)
         setPlayerState(playerState)
         getPlayer()
-        assertPlayerBindedWithState(playerState)
+        assertPlayerCreatedWithState(playerState)
     }
 
     @Test
@@ -107,7 +108,7 @@ class PlayerViewModelRobot(scope: CoroutineScope) {
     private val events = MutableSharedFlow<PlayerEvent>()
     private val playerEventStream = FakePlayerEventStream(events)
     private val telemetry = FakePlayerTelemetry()
-    private val playbackInfoResolver = NoOpPlaybackInfoResolver()
+    private val playbackInfoResolver = DefaultPlaybackInfoResolver()
     private val seekDataUpdater = FakeSeekDataUpdater()
     private val viewModel = PlayerViewModel(
         playerSavedState = playerSavedState,
@@ -144,7 +145,7 @@ class PlayerViewModelRobot(scope: CoroutineScope) {
         playerSavedState.save(playerState, emptyList())
     }
 
-    suspend fun getPlayer() {
+    fun getPlayer() {
         viewModel.getPlayer()
     }
 
@@ -156,8 +157,8 @@ class PlayerViewModelRobot(scope: CoroutineScope) {
         assertEquals(times, appPlayerFactory.createCount)
     }
 
-    fun assertPlayerBindedWithState(playerState: PlayerState?) {
-        assertEquals(playerState, appPlayer.boundState)
+    fun assertPlayerCreatedWithState(playerState: PlayerState?) {
+        assertEquals(playerState, appPlayerFactory.createdState)
     }
 
     fun assertEmission(playerEvent: PlayerEvent) {

@@ -9,7 +9,6 @@ import com.google.android.exoplayer2.DefaultLoadControl
 import com.google.android.exoplayer2.DefaultRenderersFactory
 import com.google.android.exoplayer2.ExoPlaybackException
 import com.google.android.exoplayer2.ExoPlayer
-import com.google.android.exoplayer2.ExoPlayerLibraryInfo
 import com.google.android.exoplayer2.Format
 import com.google.android.exoplayer2.MediaItem
 import com.google.android.exoplayer2.Player
@@ -22,7 +21,6 @@ import com.google.android.exoplayer2.ui.TrackNameProvider
 import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSource
-import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory
 import com.google.android.exoplayer2.upstream.DefaultLoadErrorHandlingPolicy
 import com.google.android.exoplayer2.upstream.LoadErrorHandlingPolicy
 import com.google.android.exoplayer2.util.Clock
@@ -31,9 +29,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
-import player.common.AppPlayer
-import player.common.PlayerState
-import player.common.TrackInfo
 import okhttp3.mockwebserver.Dispatcher
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
@@ -43,6 +38,9 @@ import okio.source
 import org.junit.Assert.assertEquals
 import org.junit.Assert.fail
 import org.junit.Test
+import player.common.AppPlayer
+import player.common.PlayerState
+import player.common.TrackInfo
 import java.io.Closeable
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.resume
@@ -216,8 +214,7 @@ class ExoPlayerWrapperRobot(private val context: CoroutineContext = Dispatchers.
         vttCaptions: String? = null
     ) = withContext(context) {
         val player = createPlayer(uri, vttCaptions)
-        appPlayer = ExoPlayerWrapper(player, FakeTrackNameProvider())
-        appPlayer!!.setPlayerState(PlayerState.INITIAL)
+        appPlayer = ExoPlayerWrapper(player, FakeTrackNameProvider(), PlayerState.INITIAL)
         player.awaitPlaying()
     }
 
@@ -245,13 +242,8 @@ class ExoPlayerWrapperRobot(private val context: CoroutineContext = Dispatchers.
             }
             .build()
 
-        val httpDataSourceFactory = DefaultHttpDataSourceFactory(
-            ExoPlayerLibraryInfo.DEFAULT_USER_AGENT,
-            null,
-            DefaultHttpDataSource.DEFAULT_CONNECT_TIMEOUT_MILLIS,
-            500, // Fail fast!
-            false
-        )
+        val httpDataSourceFactory = DefaultHttpDataSource.Factory()
+            .setReadTimeoutMs(500) // Fail fast!
         val dataSourceFactory = DefaultDataSourceFactory(appContext, null, httpDataSourceFactory)
         val mediaSourceFactory = DefaultMediaSourceFactory(dataSourceFactory, DefaultExtractorsFactory()).apply {
             // Don't retry at all
@@ -275,13 +267,14 @@ class ExoPlayerWrapperRobot(private val context: CoroutineContext = Dispatchers.
             .build()
             .apply {
                 setMediaItem(mediaItem)
+                prepare()
             }
     }
 
     private suspend fun Player.awaitPlaying() = suspendCancellableCoroutine<Unit> { continuation ->
-        val listener = object : Player.EventListener {
-            override fun onIsPlayingChanged(isPlaying: Boolean) {
-                if (isPlaying) {
+        val listener = object : Player.Listener {
+            override fun onPlaybackStateChanged(state: Int) {
+                if (state == Player.STATE_READY) {
                     removeListener(this)
                     continuation.resume(Unit)
                 }

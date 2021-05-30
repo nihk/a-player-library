@@ -5,14 +5,16 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.savedstate.SavedStateRegistryOwner
-import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.runningFold
+import kotlinx.coroutines.flow.stateIn
 import player.common.AppPlayer
 import player.common.PlaybackInfo
 import player.common.PlaybackInfoResolver
@@ -30,14 +32,13 @@ class PlayerViewModel(
     private val appPlayerFactory: AppPlayer.Factory,
     private val playerEventStream: PlayerEventStream,
     private val telemetry: PlayerTelemetry?,
-    private val playbackInfoResolver: PlaybackInfoResolver,
+    playbackInfoResolver: PlaybackInfoResolver,
     uri: String,
     private val seekDataUpdater: SeekDataUpdater
 ) : ViewModel() {
 
     private var appPlayer: AppPlayer? = null
     private val playerJobs = mutableListOf<Job>()
-    private val playbackInfo = CompletableDeferred<PlaybackInfo>()
 
     private val playerEvents = MutableSharedFlow<PlayerEvent>()
     fun playerEvents(): Flow<PlayerEvent> = playerEvents
@@ -51,40 +52,34 @@ class PlayerViewModel(
     private val tracksStates = MutableStateFlow(TracksState.NotAvailable)
     fun tracksStates(): Flow<TracksState> = tracksStates
 
-    init {
-        viewModelScope.launch {
-            try {
-                // todo: investigate possibility of this happening as a flow of events rather
-                //  than a one-shot
-                val playbackInfo = playbackInfoResolver.resolve(uri)
-                this@PlayerViewModel.playbackInfo.complete(playbackInfo)
-            } catch (throwable: Throwable) {
-                playbackInfo.completeExceptionally(throwable)
+    val playbackInfos: StateFlow<List<PlaybackInfo>> = playbackInfoResolver.playbackInfos(uri)
+        .onEach { playbackInfo ->
+            if (playbackInfo is PlaybackInfo.MediaUri) {
+                uiStates.value = uiStates.value.copy(showLoading = false)
             }
-            uiStates.value = uiStates.value.copy(isResolvingMedia = false)
         }
-    }
-
-    suspend fun getPlayer(): PlayerResult {
-        return if (appPlayer == null) {
-            try {
-                val playbackInfo = playbackInfo.await()
-                appPlayer = appPlayerFactory.create(playbackInfo)
-                val appPlayer = appPlayer.requireNotNull()
-
-                playerJobs += listenToPlayerEvents(appPlayer)
-                playerJobs += seekDataUpdater.seekData(appPlayer)
-                    .onEach { opSeekData -> uiStates.value = uiStates.value.copy(seekData = opSeekData) }
-                    .launchIn(viewModelScope)
-                appPlayer.setPlayerState(playerSavedState.playerState())
-                PlayerResult.Success(appPlayer)
-            } catch (throwable: Throwable) {
-                errors.emit(throwable.message.toString())
-                PlayerResult.Error(throwable)
-            }
-        } else {
-            PlayerResult.Success(appPlayer.requireNotNull())
+        .runningFold(emptyList<PlaybackInfo>()) { list, playbackInfo ->
+            list + listOf(playbackInfo)
         }
+        .onEach { playbackInfos -> appPlayer?.handlePlaybackInfos(playbackInfos) }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.Eagerly,
+            initialValue = emptyList()
+        )
+
+    fun getPlayer(): AppPlayer {
+        if (appPlayer == null) {
+            appPlayer = appPlayerFactory.create(playerSavedState.playerState())
+            val appPlayer = appPlayer.requireNotNull()
+            appPlayer.handlePlaybackInfos(playbackInfos.value)
+            playerJobs += listenToPlayerEvents(appPlayer)
+            playerJobs += seekDataUpdater.seekData(appPlayer)
+                .onEach { opSeekData -> uiStates.value = uiStates.value.copy(seekData = opSeekData) }
+                .launchIn(viewModelScope)
+        }
+
+        return appPlayer.requireNotNull()
     }
 
     fun onAppBackgrounded() {
@@ -193,24 +188,20 @@ class PlayerViewModel(
 
 data class UiState(
     val showController: Boolean,
-    val isResolvingMedia: Boolean,
+    val showLoading: Boolean,
     val seekData: SeekData
 ) {
     companion object {
         val INITIAL = UiState(
             showController = false,
-            isResolvingMedia = true,
+            showLoading = true,
             seekData = SeekData.INITIAL
         )
     }
 }
 
+// todo: what if tracks change due to late PlaybackInfo resolving, e.g. text tracks
 enum class TracksState {
     Available,
     NotAvailable
-}
-
-sealed class PlayerResult {
-    data class Success(val appPlayer: AppPlayer) : PlayerResult()
-    data class Error(val throwable: Throwable) : PlayerResult()
 }

@@ -2,11 +2,11 @@ package nick.sample
 
 import android.app.Application
 import dagger.hilt.android.HiltAndroidApp
-import player.core.LibraryInitializer
-import player.exoplayer.ExoPlayerModule
 import nick.sample.data.AndroidShareDelegate
 import nick.sample.data.LoggingPlayerTelemetry
 import nick.sample.data.SlowPlaybackInfoResolver
+import player.core.LibraryInitializer
+import player.exoplayer.ExoPlayerModule
 
 @HiltAndroidApp
 class App : Application() {

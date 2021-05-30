@@ -1,11 +1,14 @@
 package player.common
 
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
+
 interface PlaybackInfoResolver {
-    suspend fun resolve(uri: String): PlaybackInfo
+    fun playbackInfos(uri: String): Flow<PlaybackInfo>
 }
 
 class DefaultPlaybackInfoResolver : PlaybackInfoResolver {
-    override suspend fun resolve(uri: String): PlaybackInfo {
-        return PlaybackInfo(uri)
+    override fun playbackInfos(uri: String): Flow<PlaybackInfo> {
+        return flowOf(PlaybackInfo.MediaUri(uri))
     }
 }

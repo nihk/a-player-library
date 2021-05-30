@@ -32,7 +32,7 @@ internal fun ExoPlayer.clearTrackOverrides(rendererIndex: Int) {
 }
 
 // MappedTrackInfo[rendererIndex] > TrackGroupArray[groupIndex] > TrackGroup[trackIndex] > Format
-internal fun ExoPlayer.getTrackInfos(trackTypes: List<Int>, trackNameProvider: TrackNameProvider): List<TrackInfo> {
+internal fun ExoPlayer.getTrackInfos(trackNameProvider: TrackNameProvider, vararg trackTypes: Int): List<TrackInfo> {
     val mappedTrackInfo = defaultTrackSelector.currentMappedTrackInfo
         ?: return emptyList()
     val parameters = defaultTrackSelector.parameters

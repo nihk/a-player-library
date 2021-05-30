@@ -1,14 +1,16 @@
 package nick.sample.data
 
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import player.common.PlaybackInfo
 import player.common.PlaybackInfoResolver
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 
 class ErroringPlaybackInfoResolver : PlaybackInfoResolver {
-    override suspend fun resolve(uri: String): PlaybackInfo {
+    override fun playbackInfos(uri: String): Flow<PlaybackInfo> = flow {
         delay(5.toDuration(DurationUnit.SECONDS))
-        throw RuntimeException("Failed to resolve media!")
+        error("Failed to resolve media!")
     }
 }

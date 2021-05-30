@@ -16,27 +16,36 @@ import kotlin.time.toDuration
 
 internal class ExoPlayerWrapper(
     internal val player: ExoPlayer,
-    private val trackNameProvider: TrackNameProvider
+    private val trackNameProvider: TrackNameProvider,
+    private val initial: PlayerState
 ) : AppPlayer {
-
-    init {
-        player.prepare()
-    }
 
     override val state: PlayerState
         get() {
             return PlayerState(
-                positionMs = player.currentPosition,
+                positionMillis = player.currentPosition,
                 isPlaying = player.isPlaying
             )
         }
 
     override val tracks: List<TrackInfo>
-        get() = player.getTrackInfos(listOf(C.TRACK_TYPE_TEXT, C.TRACK_TYPE_AUDIO, C.TRACK_TYPE_VIDEO), trackNameProvider)
+        get() = player.getTrackInfos(trackNameProvider, C.TRACK_TYPE_TEXT, C.TRACK_TYPE_AUDIO, C.TRACK_TYPE_VIDEO)
 
-    override fun setPlayerState(playerState: PlayerState) {
-        player.seekTo(playerState.positionMs)
-        player.playWhenReady = playerState.isPlaying
+    override fun handlePlaybackInfos(playbackInfos: List<PlaybackInfo>) {
+        playbackInfos.forEach { playbackInfo ->
+            when (playbackInfo) {
+                is PlaybackInfo.MediaUri -> {
+                    if (player.currentMediaItem == null) {
+                        val mediaItem = MediaItem.fromUri(playbackInfo.uri)
+                        player.setMediaItem(mediaItem)
+                        player.prepare()
+                        player.seekTo(initial.positionMillis)
+                        player.playWhenReady = initial.isPlaying
+                    }
+                }
+                is PlaybackInfo.CaptionsUri -> {}
+            }
+        }
     }
 
     override fun handleTrackInfoAction(action: TrackInfo.Action) {
@@ -73,11 +82,9 @@ internal class ExoPlayerWrapper(
         private val appContext: Context,
         private val trackNameProvider: TrackNameProvider
     ) : AppPlayer.Factory {
-        override fun create(playbackInfo: PlaybackInfo): AppPlayer {
-            val player = SimpleExoPlayer.Builder(appContext)
-                .build()
-                .apply { setMediaItem(MediaItem.fromUri(playbackInfo.uri)) }
-            return ExoPlayerWrapper(player, trackNameProvider)
+        override fun create(initial: PlayerState): AppPlayer {
+            val player = SimpleExoPlayer.Builder(appContext).build()
+            return ExoPlayerWrapper(player, trackNameProvider, initial)
         }
     }
 }
