@@ -1,9 +1,11 @@
 package player.exoplayer
 
 import android.content.Context
+import androidx.core.net.toUri
 import com.google.android.exoplayer2.C
 import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.MediaItem
+import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.SimpleExoPlayer
 import com.google.android.exoplayer2.ui.TrackNameProvider
 import player.common.AppPlayer
@@ -29,23 +31,52 @@ internal class ExoPlayerWrapper(
         }
 
     override val tracks: List<TrackInfo>
-        get() = player.getTrackInfos(trackNameProvider, C.TRACK_TYPE_TEXT, C.TRACK_TYPE_AUDIO, C.TRACK_TYPE_VIDEO)
+        get() = player.getTrackInfos(KNOWN_TRACK_TYPES, trackNameProvider)
 
     override fun handlePlaybackInfos(playbackInfos: List<PlaybackInfo>) {
-        playbackInfos.forEach { playbackInfo ->
-            when (playbackInfo) {
-                is PlaybackInfo.MediaUri -> {
-                    if (player.currentMediaItem == null) {
-                        val mediaItem = MediaItem.fromUri(playbackInfo.uri)
-                        player.setMediaItem(mediaItem)
-                        player.prepare()
-                        player.seekTo(initial.positionMillis)
-                        player.playWhenReady = initial.isPlaying
-                    }
-                }
-                is PlaybackInfo.CaptionsUri -> {}
+        val currentMediaItem = player.currentMediaItem
+        val captions = playbackInfos.filterIsInstance<PlaybackInfo.Captions>().firstOrNull()
+
+        if (currentMediaItem == null) {
+            val mediaUri = playbackInfos.filterIsInstance<PlaybackInfo.MediaUri>().firstOrNull()
+            if (mediaUri != null) {
+                val mediaItem = MediaItem.Builder()
+                    .setUri(mediaUri.uri)
+                    .addCaptions(captions)
+                    .build()
+                player.setMediaItem(mediaItem)
+                player.prepare()
+                player.seekTo(initial.positionMillis)
+                player.playWhenReady = initial.isPlaying
+            }
+        } else {
+            if (captions != null
+                && captions.metadata.isNotEmpty()
+                && currentMediaItem.playbackProperties?.subtitles?.size != captions.metadata.size) {
+                val mediaItem = currentMediaItem.buildUpon()
+                    .addCaptions(captions)
+                    .build()
+                val contentPosition = player.contentPosition
+                player.setMediaItem(mediaItem)
+                player.prepare()
+                player.seekTo(contentPosition)
             }
         }
+    }
+
+    private fun MediaItem.Builder.addCaptions(captions: PlaybackInfo.Captions?): MediaItem.Builder {
+        if (captions == null) {
+            return this
+        }
+
+        val subtitles = captions.metadata.map { metadata ->
+            MediaItem.Subtitle(
+                metadata.uri.toUri(),
+                metadata.mimeType,
+                metadata.language
+            )
+        }
+        return setSubtitles(subtitles)
     }
 
     override fun handleTrackInfoAction(action: TrackInfo.Action) {
@@ -56,7 +87,9 @@ internal class ExoPlayerWrapper(
     }
 
     override fun play() {
-        // fixme: reconcile playing when content position is at end
+        if (player.playbackState == Player.STATE_ENDED) {
+            player.seekTo(player.currentWindowIndex, C.TIME_UNSET)
+        }
         player.play()
     }
 

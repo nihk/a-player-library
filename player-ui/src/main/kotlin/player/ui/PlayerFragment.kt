@@ -156,8 +156,8 @@ class PlayerFragment(
 
         playerViewModel.tracksStates()
             .onEach { tracksState ->
-                if (tracksState == TracksState.Available) {
-                    bindTracksToPicker(binding)
+                if (tracksState is TracksState.Available) {
+                    bindTracksToPicker(binding, tracksState)
                 }
             }
             .launchIn(viewLifecycleOwner.lifecycleScope)
@@ -223,14 +223,14 @@ class PlayerFragment(
         imageView.setImageResource(resource)
     }
 
-    private fun bindTracksToPicker(binding: PlayerFragmentBinding) {
+    private fun bindTracksToPicker(binding: PlayerFragmentBinding, available: TracksState.Available) {
         val typesToBind = mapOf(
             binding.videoTracks to TrackInfo.Type.VIDEO,
             binding.audioTracks to TrackInfo.Type.AUDIO,
             binding.textTracks to TrackInfo.Type.TEXT
         )
         typesToBind.forEach { entry ->
-            if (playerViewModel.tracks().any { it.type == entry.value }) {
+            if (entry.value in available.trackTypes) {
                 entry.key.apply {
                     isVisible = true
                     setOnClickListener {

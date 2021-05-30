@@ -16,6 +16,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import player.common.DefaultPlaybackInfoResolver
+import player.common.TrackInfo
 
 class PlayerViewModelTest {
     @get:Rule
@@ -45,20 +46,20 @@ class PlayerViewModelTest {
     @Test
     fun `player events can be received when player is created`() = playerViewModel {
         getPlayer()
-        emit(PlayerEvent.OnTracksAvailable)
-        assertEmission(PlayerEvent.OnTracksAvailable)
+        emit(PlayerEvent.Initial)
+        assertEmission(PlayerEvent.Initial)
     }
 
     @Test
     fun `player events are not received if player is not created`() = playerViewModel {
-        emit(PlayerEvent.OnTracksAvailable)
-        assertNoEmission(PlayerEvent.OnTracksAvailable)
+        emit(PlayerEvent.Initial)
+        assertNoEmission(PlayerEvent.Initial)
     }
 
     @Test
     fun `player events stop being received after app is backgrounded`() = playerViewModel {
         getPlayer()
-        emit(PlayerEvent.OnTracksAvailable)
+        emit(PlayerEvent.Initial)
         onAppBackgrounded()
         emit(PlayerEvent.OnPlayerPrepared)
         assertNoEmission(PlayerEvent.OnPlayerPrepared)
@@ -67,15 +68,15 @@ class PlayerViewModelTest {
     @Test
     fun `app player receives player events`() = playerViewModel {
         getPlayer()
-        emit(PlayerEvent.OnTracksAvailable)
-        assertAppPlayerEmission(PlayerEvent.OnTracksAvailable)
+        emit(PlayerEvent.Initial)
+        assertAppPlayerEmission(PlayerEvent.Initial)
     }
 
     @Test
     fun `telemetry receives player events`() = playerViewModel {
         getPlayer()
-        emit(PlayerEvent.OnTracksAvailable)
-        assertTelemetryEmission(PlayerEvent.OnTracksAvailable)
+        emit(PlayerEvent.Initial)
+        assertTelemetryEmission(PlayerEvent.Initial)
     }
 
     @Test
@@ -89,9 +90,9 @@ class PlayerViewModelTest {
     fun `track state changes according to relevant player event emissions`() = playerViewModel {
         getPlayer()
         assertEmission(TracksState.NotAvailable)
-        assertNoEmission(TracksState.Available)
-        emit(PlayerEvent.OnTracksAvailable)
-        assertEmission(TracksState.Available)
+        val event = PlayerEvent.OnTracksChanged(listOf(TrackInfo.Type.AUDIO))
+        emit(event)
+        assertEmission(event)
     }
 }
 
@@ -137,7 +138,7 @@ class PlayerViewModelRobot(scope: CoroutineScope) {
         jobs.forEach(Job::cancel)
     }
 
-    suspend fun emit(playerEvent: PlayerEvent = PlayerEvent.OnTracksAvailable) {
+    suspend fun emit(playerEvent: PlayerEvent = PlayerEvent.Initial) {
         events.emit(playerEvent)
     }
 
@@ -179,10 +180,6 @@ class PlayerViewModelRobot(scope: CoroutineScope) {
 
     fun assertEmission(tracksState: TracksState) {
         assertTrue(tracksState in emittedTrackStates)
-    }
-
-    fun assertNoEmission(tracksState: TracksState) {
-        assertFalse(tracksState in emittedTrackStates)
     }
 
     fun assertReleased() {

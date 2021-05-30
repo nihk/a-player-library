@@ -15,12 +15,12 @@ import player.common.PlayerEvent
 import player.common.PlayerEventStream
 import player.common.PlayerException
 import player.common.TAG
+import player.common.TrackInfo
 
 internal class ExoPlayerEventStream : PlayerEventStream {
-    private val oneTimeEvents = mutableSetOf<Class<out PlayerEvent>>()
-
     override fun listen(appPlayer: AppPlayer): Flow<PlayerEvent> = callbackFlow {
         appPlayer as? ExoPlayerWrapper ?: error("$appPlayer was not a ${ExoPlayerWrapper::class.java}")
+        val player = appPlayer.player
 
         trySend(PlayerEvent.Initial)
 
@@ -41,11 +41,14 @@ internal class ExoPlayerEventStream : PlayerEventStream {
                 trackGroups: TrackGroupArray,
                 trackSelections: TrackSelectionArray
             ) {
-                if (PlayerEvent.OnTracksAvailable::class.java !in oneTimeEvents) {
-                    oneTimeEvents += PlayerEvent.OnTracksAvailable::class.java
-                    trySend(PlayerEvent.OnTracksAvailable)
+                val types = if (trackGroups.length == 0) {
+                    emptyList()
+                } else {
+                    player.getTrackInfos(KNOWN_TRACK_TYPES)
+                        .map(TrackInfo::type)
+                        .distinct()
                 }
-                trySend(PlayerEvent.OnTracksChanged)
+                trySend(PlayerEvent.OnTracksChanged(types))
             }
 
             override fun onPlayerError(error: ExoPlaybackException) {
@@ -69,18 +72,17 @@ internal class ExoPlayerEventStream : PlayerEventStream {
             }
         }
 
-        appPlayer.player.run {
+        player.run {
             addListener(listener)
             (this as? SimpleExoPlayer)?.addAnalyticsListener(listener)
         }
 
         awaitClose {
             Log.d(TAG, "Removing player listeners")
-            appPlayer.player.run {
+            player.run {
                 removeListener(listener)
                 (this as? SimpleExoPlayer)?.removeAnalyticsListener(listener)
             }
-            oneTimeEvents.clear()
         }
     }
 }

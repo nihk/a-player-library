@@ -49,7 +49,7 @@ class PlayerViewModel(
     private val errors = MutableSharedFlow<String>()
     fun errors(): Flow<String> = errors
 
-    private val tracksStates = MutableStateFlow(TracksState.NotAvailable)
+    private val tracksStates = MutableStateFlow<TracksState>(TracksState.NotAvailable)
     fun tracksStates(): Flow<TracksState> = tracksStates
 
     val playbackInfos: StateFlow<List<PlaybackInfo>> = playbackInfoResolver.playbackInfos(uri)
@@ -98,10 +98,12 @@ class PlayerViewModel(
             .onEach { playerEvent ->
                 when (playerEvent) {
                     is PlayerEvent.Initial -> uiStates.value = uiStates.value.copy(showController = true)
-                    is PlayerEvent.OnTracksAvailable -> {
-                        val action = TrackInfo.Action.Set(playerSavedState.manuallySetTracks())
+                    is PlayerEvent.OnTracksChanged -> {
+                        val manuallySetTracks = playerSavedState.manuallySetTracks()
+                            .filter { trackInfo -> trackInfo.type in playerEvent.trackTypes }
+                        val action = TrackInfo.Action.Set(manuallySetTracks)
                         appPlayer.handleTrackInfoAction(action)
-                        tracksStates.value = TracksState.Available
+                        tracksStates.value = TracksState.Available(playerEvent.trackTypes)
                     }
                     is PlayerEvent.OnPlayerError -> errors.emit(playerEvent.exception.message.toString())
                 }
@@ -200,8 +202,7 @@ data class UiState(
     }
 }
 
-// todo: what if tracks change due to late PlaybackInfo resolving, e.g. text tracks
-enum class TracksState {
-    Available,
-    NotAvailable
+sealed class TracksState {
+    data class Available(val trackTypes: List<TrackInfo.Type>) : TracksState()
+    object NotAvailable : TracksState()
 }

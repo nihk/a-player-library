@@ -6,6 +6,8 @@ import com.google.android.exoplayer2.trackselection.DefaultTrackSelector
 import com.google.android.exoplayer2.ui.TrackNameProvider
 import player.common.TrackInfo
 
+internal val KNOWN_TRACK_TYPES = listOf(C.TRACK_TYPE_TEXT, C.TRACK_TYPE_AUDIO, C.TRACK_TYPE_VIDEO)
+
 internal val ExoPlayer.defaultTrackSelector: DefaultTrackSelector
     get() = trackSelector as DefaultTrackSelector
 
@@ -32,7 +34,7 @@ internal fun ExoPlayer.clearTrackOverrides(rendererIndex: Int) {
 }
 
 // MappedTrackInfo[rendererIndex] > TrackGroupArray[groupIndex] > TrackGroup[trackIndex] > Format
-internal fun ExoPlayer.getTrackInfos(trackNameProvider: TrackNameProvider, vararg trackTypes: Int): List<TrackInfo> {
+internal fun ExoPlayer.getTrackInfos(trackTypes: List<Int>, trackNameProvider: TrackNameProvider? = null): List<TrackInfo> {
     val mappedTrackInfo = defaultTrackSelector.currentMappedTrackInfo
         ?: return emptyList()
     val parameters = defaultTrackSelector.parameters
@@ -50,7 +52,7 @@ internal fun ExoPlayer.getTrackInfos(trackNameProvider: TrackNameProvider, varar
                 for (trackIndex in 0 until trackGroup.length) {
                     val format = trackGroup.getFormat(trackIndex)
                     if (mappedTrackInfo.getTrackSupport(rendererIndex, groupIndex, trackIndex) == C.FORMAT_HANDLED) {
-                        val name = trackNameProvider.getTrackName(format)
+                        val name = trackNameProvider?.getTrackName(format) ?: format.label
                         val isTrackSelected = trackSelection?.indexOf(format) != C.INDEX_UNSET
                         val isOverridden = selectionOverride?.containsTrack(trackIndex) == true
                                 && selectionOverride.groupIndex == groupIndex
