@@ -94,99 +94,99 @@ class PlayerViewModelTest {
         emit(event)
         assertEmission(event)
     }
-}
 
-fun playerViewModel(block: suspend PlayerViewModelRobot.() -> Unit) = runBlockingTest {
-    PlayerViewModelRobot(this)
-        .apply { block() }
-        .release()
-}
-
-class PlayerViewModelRobot(scope: CoroutineScope) {
-    private val playerSavedState = PlayerSavedState(SavedStateHandle())
-    private val appPlayer = FakeAppPlayer()
-    private val appPlayerFactory = FakeAppPlayerFactory(appPlayer)
-    private val events = MutableSharedFlow<PlayerEvent>()
-    private val playerEventStream = FakePlayerEventStream(events)
-    private val telemetry = FakePlayerTelemetry()
-    private val playbackInfoResolver = DefaultPlaybackInfoResolver()
-    private val seekDataUpdater = FakeSeekDataUpdater()
-    private val viewModel = PlayerViewModel(
-        playerSavedState = playerSavedState,
-        appPlayerFactory = appPlayerFactory,
-        playerEventStream = playerEventStream,
-        telemetry = telemetry,
-        playbackInfoResolver = playbackInfoResolver,
-        uri = "https://www.example.com/video.mp4",
-        seekDataUpdater = seekDataUpdater
-    )
-    private val emittedEvents = mutableListOf<PlayerEvent>()
-    private val emittedTrackStates = mutableListOf<TracksState>()
-    private val jobs = mutableListOf<Job>()
-
-    init {
-        jobs += viewModel.playerEvents()
-            .onEach { emittedEvents += it }
-            .launchIn(scope)
-
-        jobs += viewModel.tracksStates()
-            .onEach { emittedTrackStates += it }
-            .launchIn(scope)
+    private fun playerViewModel(block: suspend PlayerViewModelRobot.() -> Unit) = coroutinesTestRule.testDispatcher.runBlockingTest {
+        PlayerViewModelRobot(this)
+            .apply { block() }
+            .release()
     }
 
-    fun release() {
-        jobs.forEach(Job::cancel)
-    }
+    private class PlayerViewModelRobot(scope: CoroutineScope) {
+        private val playerSavedState = PlayerSavedState(SavedStateHandle())
+        private val appPlayer = FakeAppPlayer()
+        private val appPlayerFactory = FakeAppPlayerFactory(appPlayer)
+        private val events = MutableSharedFlow<PlayerEvent>()
+        private val playerEventStream = FakePlayerEventStream(events)
+        private val telemetry = FakePlayerTelemetry()
+        private val playbackInfoResolver = DefaultPlaybackInfoResolver()
+        private val seekDataUpdater = FakeSeekDataUpdater()
+        private val viewModel = PlayerViewModel(
+            playerSavedState = playerSavedState,
+            appPlayerFactory = appPlayerFactory,
+            playerEventStream = playerEventStream,
+            telemetry = telemetry,
+            playbackInfoResolver = playbackInfoResolver,
+            mainUri = "https://www.example.com/video.mp4",
+            seekDataUpdater = seekDataUpdater
+        )
+        private val emittedEvents = mutableListOf<PlayerEvent>()
+        private val emittedTrackStates = mutableListOf<TracksState>()
+        private val jobs = mutableListOf<Job>()
 
-    suspend fun emit(playerEvent: PlayerEvent = PlayerEvent.Initial) {
-        events.emit(playerEvent)
-    }
+        init {
+            jobs += viewModel.playerEvents()
+                .onEach { emittedEvents += it }
+                .launchIn(scope)
 
-    fun setPlayerState(playerState: PlayerState?) {
-        playerSavedState.save(playerState, emptyList())
-    }
+            jobs += viewModel.tracksStates()
+                .onEach { emittedTrackStates += it }
+                .launchIn(scope)
+        }
 
-    fun getPlayer() {
-        viewModel.getPlayer()
-    }
+        fun release() {
+            jobs.forEach(Job::cancel)
+        }
 
-    fun onAppBackgrounded() {
-        viewModel.onAppBackgrounded()
-    }
+        suspend fun emit(playerEvent: PlayerEvent = PlayerEvent.Initial) {
+            events.emit(playerEvent)
+        }
 
-    fun assertPlayerCreated(times: Int) {
-        assertEquals(times, appPlayerFactory.createCount)
-    }
+        fun setPlayerState(playerState: PlayerState?) {
+            playerSavedState.save(playerState, emptyList())
+        }
 
-    fun assertPlayerCreatedWithState(playerState: PlayerState?) {
-        assertEquals(playerState, appPlayerFactory.createdState)
-    }
+        fun getPlayer() {
+            viewModel.getPlayer()
+        }
 
-    fun assertEmission(playerEvent: PlayerEvent) {
-        assertTrue(playerEvent in emittedEvents)
-    }
+        fun onAppBackgrounded() {
+            viewModel.onAppBackgrounded()
+        }
 
-    fun assertTelemetryEmission(playerEvent: PlayerEvent) {
-        assertTrue(playerEvent in telemetry.collectedEvents)
-    }
+        fun assertPlayerCreated(times: Int) {
+            assertEquals(times, appPlayerFactory.createCount)
+        }
 
-    fun assertAppPlayerEmission(playerEvent: PlayerEvent) {
-        assertTrue(playerEvent in appPlayer.collectedEvents)
-    }
+        fun assertPlayerCreatedWithState(playerState: PlayerState?) {
+            assertEquals(playerState, appPlayerFactory.createdState)
+        }
 
-    fun assertNoEmission(playerEvent: PlayerEvent) {
-        assertFalse(playerEvent in emittedEvents)
-    }
+        fun assertEmission(playerEvent: PlayerEvent) {
+            assertTrue(playerEvent in emittedEvents)
+        }
 
-    fun assertEmission(tracksState: TracksState) {
-        assertTrue(tracksState in emittedTrackStates)
-    }
+        fun assertTelemetryEmission(playerEvent: PlayerEvent) {
+            assertTrue(playerEvent in telemetry.collectedEvents)
+        }
 
-    fun assertReleased() {
-        assertTrue(appPlayer.didRelease)
-    }
+        fun assertAppPlayerEmission(playerEvent: PlayerEvent) {
+            assertTrue(playerEvent in appPlayer.collectedEvents)
+        }
 
-    fun assertNotReleased() {
-        assertFalse(appPlayer.didRelease)
+        fun assertNoEmission(playerEvent: PlayerEvent) {
+            assertFalse(playerEvent in emittedEvents)
+        }
+
+        fun assertEmission(tracksState: TracksState) {
+            assertTrue(tracksState in emittedTrackStates)
+        }
+
+        fun assertReleased() {
+            assertTrue(appPlayer.didRelease)
+        }
+
+        fun assertNotReleased() {
+            assertFalse(appPlayer.didRelease)
+        }
     }
 }

@@ -129,165 +129,165 @@ class ExoPlayerWrapperTest {
     private fun String.asset(): String {
         return "asset:///$this"
     }
+
+    private fun webServer(block: AssetWebServerRobot.() -> Unit) {
+        AssetWebServerRobot().use { it.block() }
+    }
+
+    private class AssetWebServerRobot private constructor(
+        private val server: MockWebServer
+    ) : Closeable by server {
+
+        constructor() : this(MockWebServer())
+
+        fun start(customResponseCodes: Map<String, Int> = emptyMap()): String {
+            server.dispatcher = createAssetDispatcher(customResponseCodes)
+            server.start(port = 8080) // Use a consistent port for easier debugging
+            return server.url("/").toString()
+        }
+
+        private fun createAssetDispatcher(customResponseCodes: Map<String, Int>): Dispatcher {
+            return object : Dispatcher() {
+                override fun dispatch(request: RecordedRequest): MockResponse {
+                    val path = requireNotNull(request.path)
+
+                    val customResponseCode = customResponseCodes[path]
+                    if (customResponseCode != null) {
+                        return MockResponse().setResponseCode(customResponseCode)
+                    }
+
+                    // Android asset paths can't start with "/"
+                    val assetPath = if (path.startsWith("/")) {
+                        path.drop(1)
+                    } else {
+                        path
+                    }
+
+                    val stream = ApplicationProvider.getApplicationContext<Application>()
+                        .assets
+                        .open(assetPath)
+
+                    // Convert the InputStream to okio APIs, which MockResponse uses
+                    val buffer = Buffer().apply {
+                        writeAll(stream.source())
+                    }
+                    return MockResponse().setBody(buffer)
+                }
+            }
+        }
+    }
+
+    private fun player(block: suspend ExoPlayerWrapperRobot.() -> Unit) = runBlocking {
+        val robot = ExoPlayerWrapperRobot()
+        try {
+            robot.block()
+        } finally {
+            robot.release()
+        }
+    }
+
+    private class ExoPlayerWrapperRobot(private val context: CoroutineContext = Dispatchers.Main) {
+        private val appContext: Context get() = ApplicationProvider.getApplicationContext()
+        private var appPlayer: AppPlayer? = null
+
+        suspend fun assertVideoTracks(count: Int) = withContext(context) {
+            assertEquals(count, appPlayer!!.tracks.filter { it.type == TrackInfo.Type.VIDEO }.size)
+        }
+
+        suspend fun assertTextTracks(count: Int) = withContext(context) {
+            assertEquals(count, appPlayer!!.tracks.filter { it.type == TrackInfo.Type.TEXT }.size)
+        }
+
+        suspend fun assertAudioTracks(count: Int) = withContext(context) {
+            assertEquals(count, appPlayer!!.tracks.filter { it.type == TrackInfo.Type.AUDIO }.size)
+        }
+
+        suspend fun play(
+            uri: String,
+            vttCaptions: String? = null
+        ) = withContext(context) {
+            val player = createPlayer(uri, vttCaptions)
+            appPlayer = ExoPlayerWrapper(player, FakeTrackNameProvider(), PlayerState.INITIAL)
+            player.awaitPlaying()
+        }
+
+        suspend fun release() = withContext(context) {
+            appPlayer!!.release()
+            appPlayer = null
+        }
+
+        private fun createPlayer(
+            uri: String,
+            vttCaptions: String? = null
+        ): ExoPlayer {
+            val mediaItem = MediaItem.Builder()
+                .setUri(uri)
+                .apply {
+                    if (vttCaptions != null) {
+                        val subtitle = MediaItem.Subtitle(
+                            vttCaptions.toUri(),
+                            MimeTypes.TEXT_VTT,
+                            "en",
+                            C.SELECTION_FLAG_DEFAULT
+                        )
+                        setSubtitles(listOf(subtitle))
+                    }
+                }
+                .build()
+
+            val httpDataSourceFactory = DefaultHttpDataSource.Factory()
+                .setReadTimeoutMs(500) // Fail fast!
+            val dataSourceFactory = DefaultDataSourceFactory(appContext, null, httpDataSourceFactory)
+            val mediaSourceFactory = DefaultMediaSourceFactory(dataSourceFactory, DefaultExtractorsFactory()).apply {
+                // Don't retry at all
+                setLoadErrorHandlingPolicy(object : DefaultLoadErrorHandlingPolicy() {
+                    override fun getMinimumLoadableRetryCount(dataType: Int) = 0
+                    override fun getRetryDelayMsFor(
+                        loadErrorInfo: LoadErrorHandlingPolicy.LoadErrorInfo
+                    ) = C.TIME_UNSET
+                })
+            }
+
+            return SimpleExoPlayer.Builder(
+                appContext,
+                DefaultRenderersFactory(appContext),
+                DefaultTrackSelector(appContext),
+                mediaSourceFactory,
+                DefaultLoadControl(),
+                DefaultBandwidthMeter.getSingletonInstance(appContext),
+                AnalyticsCollector(Clock.DEFAULT)
+            )
+                .build()
+                .apply {
+                    setMediaItem(mediaItem)
+                    prepare()
+                }
+        }
+
+        private suspend fun Player.awaitPlaying() = suspendCancellableCoroutine<Unit> { continuation ->
+            val listener = object : Player.Listener {
+                override fun onPlaybackStateChanged(state: Int) {
+                    if (state == Player.STATE_READY) {
+                        removeListener(this)
+                        continuation.resume(Unit)
+                    }
+                }
+
+                override fun onPlayerError(error: ExoPlaybackException) {
+                    removeListener(this)
+                    continuation.cancel(error)
+                }
+            }
+
+            addListener(listener)
+
+            continuation.invokeOnCancellation { removeListener(listener) }
+        }
+    }
 }
 
 class FakeTrackNameProvider : TrackNameProvider {
     override fun getTrackName(format: Format): String {
         return format.label ?: "unknown"
-    }
-}
-
-fun webServer(block: AssetWebServerRobot.() -> Unit) {
-    AssetWebServerRobot().use { it.block() }
-}
-
-class AssetWebServerRobot private constructor(
-    private val server: MockWebServer
-) : Closeable by server {
-
-    constructor() : this(MockWebServer())
-
-    fun start(customResponseCodes: Map<String, Int> = emptyMap()): String {
-        server.dispatcher = createAssetDispatcher(customResponseCodes)
-        server.start(port = 8080) // Use a consistent port for easier debugging
-        return server.url("/").toString()
-    }
-
-    private fun createAssetDispatcher(customResponseCodes: Map<String, Int>): Dispatcher {
-        return object : Dispatcher() {
-            override fun dispatch(request: RecordedRequest): MockResponse {
-                val path = requireNotNull(request.path)
-
-                val customResponseCode = customResponseCodes[path]
-                if (customResponseCode != null) {
-                    return MockResponse().setResponseCode(customResponseCode)
-                }
-
-                // Android asset paths can't start with "/"
-                val assetPath = if (path.startsWith("/")) {
-                    path.drop(1)
-                } else {
-                    path
-                }
-
-                val stream = ApplicationProvider.getApplicationContext<Application>()
-                    .assets
-                    .open(assetPath)
-
-                // Convert the InputStream to okio APIs, which MockResponse uses
-                val buffer = Buffer().apply {
-                    writeAll(stream.source())
-                }
-                return MockResponse().setBody(buffer)
-            }
-        }
-    }
-}
-
-fun player(block: suspend ExoPlayerWrapperRobot.() -> Unit) = runBlocking {
-    val robot = ExoPlayerWrapperRobot()
-    try {
-        robot.block()
-    } finally {
-        robot.release()
-    }
-}
-
-class ExoPlayerWrapperRobot(private val context: CoroutineContext = Dispatchers.Main) {
-    private val appContext: Context get() = ApplicationProvider.getApplicationContext()
-    private var appPlayer: AppPlayer? = null
-
-    suspend fun assertVideoTracks(count: Int) = withContext(context) {
-        assertEquals(count, appPlayer!!.tracks.filter { it.type == TrackInfo.Type.VIDEO }.size)
-    }
-
-    suspend fun assertTextTracks(count: Int) = withContext(context) {
-        assertEquals(count, appPlayer!!.tracks.filter { it.type == TrackInfo.Type.TEXT }.size)
-    }
-
-    suspend fun assertAudioTracks(count: Int) = withContext(context) {
-        assertEquals(count, appPlayer!!.tracks.filter { it.type == TrackInfo.Type.AUDIO }.size)
-    }
-
-    suspend fun play(
-        uri: String,
-        vttCaptions: String? = null
-    ) = withContext(context) {
-        val player = createPlayer(uri, vttCaptions)
-        appPlayer = ExoPlayerWrapper(player, FakeTrackNameProvider(), PlayerState.INITIAL)
-        player.awaitPlaying()
-    }
-
-    suspend fun release() = withContext(context) {
-        appPlayer!!.release()
-        appPlayer = null
-    }
-
-    private fun createPlayer(
-        uri: String,
-        vttCaptions: String? = null
-    ): ExoPlayer {
-        val mediaItem = MediaItem.Builder()
-            .setUri(uri)
-            .apply {
-                if (vttCaptions != null) {
-                    val subtitle = MediaItem.Subtitle(
-                        vttCaptions.toUri(),
-                        MimeTypes.TEXT_VTT,
-                        "en",
-                        C.SELECTION_FLAG_DEFAULT
-                    )
-                    setSubtitles(listOf(subtitle))
-                }
-            }
-            .build()
-
-        val httpDataSourceFactory = DefaultHttpDataSource.Factory()
-            .setReadTimeoutMs(500) // Fail fast!
-        val dataSourceFactory = DefaultDataSourceFactory(appContext, null, httpDataSourceFactory)
-        val mediaSourceFactory = DefaultMediaSourceFactory(dataSourceFactory, DefaultExtractorsFactory()).apply {
-            // Don't retry at all
-            setLoadErrorHandlingPolicy(object : DefaultLoadErrorHandlingPolicy() {
-                override fun getMinimumLoadableRetryCount(dataType: Int) = 0
-                override fun getRetryDelayMsFor(
-                    loadErrorInfo: LoadErrorHandlingPolicy.LoadErrorInfo
-                ) = C.TIME_UNSET
-            })
-        }
-
-        return SimpleExoPlayer.Builder(
-            appContext,
-            DefaultRenderersFactory(appContext),
-            DefaultTrackSelector(appContext),
-            mediaSourceFactory,
-            DefaultLoadControl(),
-            DefaultBandwidthMeter.getSingletonInstance(appContext),
-            AnalyticsCollector(Clock.DEFAULT)
-        )
-            .build()
-            .apply {
-                setMediaItem(mediaItem)
-                prepare()
-            }
-    }
-
-    private suspend fun Player.awaitPlaying() = suspendCancellableCoroutine<Unit> { continuation ->
-        val listener = object : Player.Listener {
-            override fun onPlaybackStateChanged(state: Int) {
-                if (state == Player.STATE_READY) {
-                    removeListener(this)
-                    continuation.resume(Unit)
-                }
-            }
-
-            override fun onPlayerError(error: ExoPlaybackException) {
-                removeListener(this)
-                continuation.cancel(error)
-            }
-        }
-
-        addListener(listener)
-
-        continuation.invokeOnCancellation { removeListener(listener) }
     }
 }

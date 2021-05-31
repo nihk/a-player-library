@@ -36,7 +36,7 @@ class MainFragment @Inject constructor(
 
     private fun createPlayerArguments(isPipEnabled: Boolean): PlayerArguments {
         return PlayerArguments(
-            uri = "https://devstreaming-cdn.apple.com/videos/streaming/examples/bipbop_16x9/bipbop_16x9_variant.m3u8",
+            mainUri = "https://devstreaming-cdn.apple.com/videos/streaming/examples/bipbop_16x9/bipbop_16x9_variant.m3u8",
             pipConfig = PictureInPictureConfig(
                 enabled = isPipEnabled,
                 onBackPresses = true

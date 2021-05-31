@@ -38,7 +38,7 @@ class PlayerFragment(
     private val timeFormatter: TimeFormatter
 ) : Fragment(R.layout.player_fragment) {
 
-    private val playerViewModel: PlayerViewModel by viewModels { vmFactory.create(this, playerArguments.uri) }
+    private val playerViewModel: PlayerViewModel by viewModels { vmFactory.create(this, playerArguments.mainUri) }
     private val onUserLeaveHintViewModel: OnUserLeaveHintViewModel by activityViewModels()
     private var playerViewWrapper: PlayerViewWrapper? = null
     private val playerArguments: PlayerArguments get() = requireArguments().toPlayerArguments()
@@ -90,7 +90,7 @@ class PlayerFragment(
             binding.share.apply {
                 isVisible = true
                 setOnClickListener {
-                    share(requireActivity(), playerArguments.uri)
+                    share(requireActivity(), playerArguments.mainUri)
                 }
             }
         }

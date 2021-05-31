@@ -69,6 +69,85 @@ class PlayerFragmentTest {
         emit(PlayerEvent.OnPlayerError(PlayerException("Message")))
         assertErrorMessageRendered("Message")
     }
+
+    private fun playerFragment(block: PlayerFragmentRobot.() -> Unit) {
+        PlayerFragmentRobot().block()
+    }
+
+    private class PlayerFragmentRobot {
+        private val appPlayer = FakeAppPlayer()
+        private val appPlayerFactory = FakeAppPlayerFactory(appPlayer)
+        private val playerViewWrapper = FakePlayerViewWrapper(ApplicationProvider.getApplicationContext())
+        private val eventFlow = MutableStateFlow<PlayerEvent?>(null)
+        private val playerEventStream = FakePlayerEventStream(eventFlow.filterNotNull())
+        private val telemetry = FakePlayerTelemetry()
+        private val shareDelegate: ShareDelegate? = null
+        private val pipConfig = PictureInPictureConfig(false, false)
+        private val pipController = FakePipController()
+        private val errorRenderer = FakeErrorRenderer()
+        private val playbackInfoResolver = DefaultPlaybackInfoResolver()
+        private val seekDataUpdater = FakeSeekDataUpdater()
+        private val timeFormatter = FakeTimeFormatter()
+        private val navigator = NoOpNavigator()
+        private val scenario: FragmentScenario<PlayerFragment>
+
+        init {
+            val vmFactory = PlayerViewModel.Factory(
+                appPlayerFactory = appPlayerFactory,
+                playerEventStream = playerEventStream,
+                telemetry = telemetry,
+                playbackInfoResolver = playbackInfoResolver,
+                seekDataUpdater = seekDataUpdater
+            )
+
+            val playerViewWrapperFactory = FakePlayerViewWrapperFactory(playerViewWrapper)
+
+            val args = PlayerArguments(
+                mainUri = "",
+                pipConfig = pipConfig
+            )
+            scenario = launchFragmentInContainer(fragmentArgs = args.toBundle()) {
+                PlayerFragment(vmFactory, playerViewWrapperFactory, shareDelegate, pipController, errorRenderer, navigator, timeFormatter)
+            }
+        }
+
+        fun destroy() {
+            scenario.moveToState(Lifecycle.State.DESTROYED)
+        }
+
+        fun recreate() {
+            scenario.recreate()
+        }
+
+        fun emit(playerEvent: PlayerEvent) {
+            eventFlow.value = playerEvent
+        }
+
+        fun assertPlayerCreated(times: Int) {
+            assertEquals(times, appPlayerFactory.createCount)
+        }
+
+        fun assertPlayerAttached(times: Int) {
+            assertEquals(times, playerViewWrapper.attachCount)
+        }
+
+        fun assertPlayerDetached(times: Int) {
+            assertEquals(times, playerViewWrapper.detachCount)
+        }
+
+        fun assertPlayerReleased() {
+            assertTrue(appPlayer.didRelease)
+        }
+
+        fun assertPlayerNotReleased() {
+            assertFalse(appPlayer.didRelease)
+        }
+
+        fun assertErrorMessageRendered(string: String) {
+            assertEquals(string, errorRenderer.collectedMessage)
+            assertTrue(errorRenderer.didRender)
+        }
+    }
 }
 
 class FakePlayerViewWrapper(context: Context) : NoOpPlayerViewWrapper() {
@@ -107,83 +186,4 @@ class FakeErrorRenderer : ErrorRenderer {
 class NoOpNavigator : Navigator {
     override fun toDialog(clazz: Class<out Fragment>, bundle: Bundle?) = Unit
     override fun replace(clazz: Class<out Fragment>, bundle: Bundle?) = Unit
-}
-
-fun playerFragment(block: PlayerFragmentRobot.() -> Unit) {
-    PlayerFragmentRobot().block()
-}
-
-class PlayerFragmentRobot {
-    private val appPlayer = FakeAppPlayer()
-    private val appPlayerFactory = FakeAppPlayerFactory(appPlayer)
-    private val playerViewWrapper = FakePlayerViewWrapper(ApplicationProvider.getApplicationContext())
-    private val eventFlow = MutableStateFlow<PlayerEvent?>(null)
-    private val playerEventStream = FakePlayerEventStream(eventFlow.filterNotNull())
-    private val telemetry = FakePlayerTelemetry()
-    private val shareDelegate: ShareDelegate? = null
-    private val pipConfig = PictureInPictureConfig(false, false)
-    private val pipController = FakePipController()
-    private val errorRenderer = FakeErrorRenderer()
-    private val playbackInfoResolver = DefaultPlaybackInfoResolver()
-    private val seekDataUpdater = FakeSeekDataUpdater()
-    private val timeFormatter = FakeTimeFormatter()
-    private val navigator = NoOpNavigator()
-    private val scenario: FragmentScenario<PlayerFragment>
-
-    init {
-        val vmFactory = PlayerViewModel.Factory(
-            appPlayerFactory = appPlayerFactory,
-            playerEventStream = playerEventStream,
-            telemetry = telemetry,
-            playbackInfoResolver = playbackInfoResolver,
-            seekDataUpdater = seekDataUpdater
-        )
-
-        val playerViewWrapperFactory = FakePlayerViewWrapperFactory(playerViewWrapper)
-
-        val args = PlayerArguments(
-            uri = "",
-            pipConfig = pipConfig
-        )
-        scenario = launchFragmentInContainer(fragmentArgs = args.toBundle()) {
-            PlayerFragment(vmFactory, playerViewWrapperFactory, shareDelegate, pipController, errorRenderer, navigator, timeFormatter)
-        }
-    }
-
-    fun destroy() {
-        scenario.moveToState(Lifecycle.State.DESTROYED)
-    }
-
-    fun recreate() {
-        scenario.recreate()
-    }
-
-    fun emit(playerEvent: PlayerEvent) {
-        eventFlow.value = playerEvent
-    }
-
-    fun assertPlayerCreated(times: Int) {
-        assertEquals(times, appPlayerFactory.createCount)
-    }
-
-    fun assertPlayerAttached(times: Int) {
-        assertEquals(times, playerViewWrapper.attachCount)
-    }
-
-    fun assertPlayerDetached(times: Int) {
-        assertEquals(times, playerViewWrapper.detachCount)
-    }
-
-    fun assertPlayerReleased() {
-        assertTrue(appPlayer.didRelease)
-    }
-
-    fun assertPlayerNotReleased() {
-        assertFalse(appPlayer.didRelease)
-    }
-
-    fun assertErrorMessageRendered(string: String) {
-        assertEquals(string, errorRenderer.collectedMessage)
-        assertTrue(errorRenderer.didRender)
-    }
 }
