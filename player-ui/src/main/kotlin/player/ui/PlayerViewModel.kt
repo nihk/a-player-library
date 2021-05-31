@@ -52,12 +52,8 @@ class PlayerViewModel(
     private val tracksStates = MutableStateFlow<TracksState>(TracksState.NotAvailable)
     fun tracksStates(): Flow<TracksState> = tracksStates
 
-    val playbackInfos: StateFlow<List<PlaybackInfo>> = playbackInfoResolver.playbackInfos(mainUri)
-        .onEach { playbackInfo ->
-            if (playbackInfo is PlaybackInfo.MediaUri) {
-                uiStates.value = uiStates.value.copy(showLoading = false)
-            }
-        }
+    private val playbackInfos: StateFlow<List<PlaybackInfo>> = playbackInfoResolver.playbackInfos(mainUri)
+        .onEach { playbackInfo -> playbackInfo.sideEffect() }
         .runningFold(emptyList<PlaybackInfo>()) { list, playbackInfo ->
             list + if (playbackInfo is PlaybackInfo.Batched) {
                 playbackInfo.playbackInfos
@@ -92,6 +88,17 @@ class PlayerViewModel(
         val state = appPlayer?.state?.copy(isPlaying = false)
         playerSavedState.save(state, appPlayer?.tracks.orEmpty())
         tearDown()
+    }
+
+    private fun PlaybackInfo.sideEffect() {
+        if (this is PlaybackInfo.Batched) {
+            playbackInfos.forEach { it.sideEffect() }
+        } else {
+            when (this) {
+                is PlaybackInfo.MediaUri -> uiStates.value = uiStates.value.copy(showLoading = false)
+                is PlaybackInfo.MediaTitle -> uiStates.value = uiStates.value.copy(title = title)
+            }
+        }
     }
 
     private fun listenToPlayerEvents(appPlayer: AppPlayer): Job {
@@ -191,13 +198,15 @@ class PlayerViewModel(
 data class UiState(
     val isControllerUsable: Boolean,
     val showLoading: Boolean,
-    val seekData: SeekData
+    val seekData: SeekData,
+    val title: String?
 ) {
     companion object {
         val INITIAL = UiState(
             isControllerUsable = false,
             showLoading = true,
-            seekData = SeekData.INITIAL
+            seekData = SeekData.INITIAL,
+            title = null
         )
     }
 }

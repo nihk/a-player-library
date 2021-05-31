@@ -13,7 +13,6 @@ import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import player.common.OnUserLeaveHintViewModel
-import player.common.PlaybackInfo
 import player.common.PlayerArguments
 import player.common.PlayerEvent
 import player.common.PlayerViewWrapper
@@ -148,6 +147,10 @@ class PlayerFragment(
                 if (!seekBarListener.isSeekBarBeingTouched) {
                     updateSeekData(binding, uiState.seekData)
                 }
+                binding.title.apply {
+                    isVisible = uiState.title != null
+                    text = uiState.title
+                }
             }
             .launchIn(viewLifecycleOwner.lifecycleScope)
 
@@ -177,21 +180,6 @@ class PlayerFragment(
                 .onEach { enterPip() }
                 .launchIn(viewLifecycleOwner.lifecycleScope)
         }
-
-        playerViewModel.playbackInfos
-            .onEach { playbackInfos ->
-                playbackInfos.forEach { playbackInfo ->
-                    when (playbackInfo) {
-                        is PlaybackInfo.MediaTitle -> {
-                            binding.title.apply {
-                                text = playbackInfo.title
-                                isVisible = true
-                            }
-                        }
-                    }
-                }
-            }
-            .launchIn(viewLifecycleOwner.lifecycleScope)
     }
 
     private fun updateSeekData(
