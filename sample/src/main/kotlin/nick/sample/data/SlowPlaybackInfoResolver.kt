@@ -25,9 +25,8 @@ class SlowPlaybackInfoResolver : PlaybackInfoResolver {
                 )
             )
         )
-        emit(captions)
-
-        delay(5.toDuration(DurationUnit.SECONDS))
-        emit(PlaybackInfo.MediaTitle("This is a resolved title"))
+        val title = PlaybackInfo.MediaTitle("This is a resolved title")
+        val batched = PlaybackInfo.Batched(listOf(captions, title))
+        emit(batched)
     }.flowOn(Dispatchers.IO)
 }

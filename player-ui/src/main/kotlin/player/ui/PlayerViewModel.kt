@@ -59,7 +59,11 @@ class PlayerViewModel(
             }
         }
         .runningFold(emptyList<PlaybackInfo>()) { list, playbackInfo ->
-            list + listOf(playbackInfo)
+            list + if (playbackInfo is PlaybackInfo.Batched) {
+                playbackInfo.playbackInfos
+            } else {
+                listOf(playbackInfo)
+            }
         }
         .onEach { playbackInfos -> appPlayer?.handlePlaybackInfos(playbackInfos) }
         .stateIn(
