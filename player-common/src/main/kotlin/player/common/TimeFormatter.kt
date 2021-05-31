@@ -14,7 +14,7 @@ class DefaultTimeFormatter(locale: Locale) : TimeFormatter {
 
     override fun playerTime(duration: Duration): String {
         // Copied from com.google.android.exoplayer2.util.Util.getStringForTime
-        var timeMs = duration.toLongMilliseconds()
+        var timeMs = duration.inWholeMilliseconds
         val prefix = if (timeMs < 0) "-" else ""
         timeMs = abs(timeMs)
         val totalSeconds: Long = (timeMs + 500) / 1000
