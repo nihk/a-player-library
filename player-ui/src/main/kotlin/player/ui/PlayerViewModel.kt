@@ -35,7 +35,7 @@ class PlayerViewModel(
     playbackInfoResolver: PlaybackInfoResolver,
     uri: String,
     private val seekDataUpdater: SeekDataUpdater
-) : ViewModel() {
+) : ViewModel(), PlayerController {
 
     private var appPlayer: AppPlayer? = null
     private val playerJobs = mutableListOf<Job>()
@@ -119,11 +119,11 @@ class PlayerViewModel(
 
     fun isPlaying(): Boolean = appPlayer?.state?.isPlaying == true
 
-    fun play() {
+    override fun play() {
         requireNotNull(appPlayer).play()
     }
 
-    fun pause() {
+    override fun pause() {
         requireNotNull(appPlayer).pause()
     }
 
@@ -147,11 +147,11 @@ class PlayerViewModel(
         uiStates.value = uiStates.value.copy(isControllerUsable = !isInPipMode)
     }
 
-    fun seekRelative(duration: Duration) {
+    override fun seekRelative(duration: Duration) {
         requireNotNull(appPlayer).seekRelative(duration)
     }
 
-    fun seekTo(duration: Duration) {
+    override fun seekTo(duration: Duration) {
         requireNotNull(appPlayer).seekTo(duration)
     }
 
