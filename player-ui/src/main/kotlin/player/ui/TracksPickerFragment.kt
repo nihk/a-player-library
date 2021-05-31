@@ -15,6 +15,8 @@ import player.ui.databinding.TrackItemBinding
 import player.ui.databinding.TracksFragmentBinding
 
 // fixme: if tracks update while this Fragment is open, this Fragment doesn't get updated.
+//  do not use an activity scoped PlayerViewModel for this (VM/player instance should always
+//  be scoped to PlayerFragment). use [TracksBroadcaster].
 class TracksPickerFragment : BottomSheetDialogFragment() {
 
     private val trackInfos: List<TrackInfo>
