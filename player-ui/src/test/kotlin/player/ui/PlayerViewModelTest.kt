@@ -7,16 +7,15 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.test.runBlockingTest
-import player.CoroutinesTestRule
-import player.common.PlayerEvent
-import player.common.PlayerState
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
+import player.CoroutinesTestRule
 import player.common.DefaultPlaybackInfoResolver
-import player.common.TrackInfo
+import player.common.PlayerEvent
+import player.common.PlayerState
 
 class PlayerViewModelTest {
     @get:Rule
@@ -61,8 +60,9 @@ class PlayerViewModelTest {
         getPlayer()
         emit(PlayerEvent.Initial)
         onAppBackgrounded()
-        emit(PlayerEvent.OnPlayerPrepared)
-        assertNoEmission(PlayerEvent.OnPlayerPrepared)
+        val tracksChanged = PlayerEvent.OnTracksChanged(emptyList())
+        emit(tracksChanged)
+        assertNoEmission(tracksChanged)
     }
 
     @Test
@@ -90,7 +90,7 @@ class PlayerViewModelTest {
     fun `track state changes according to relevant player event emissions`() = playerViewModel {
         getPlayer()
         assertEmission(TracksState.NotAvailable)
-        val event = PlayerEvent.OnTracksChanged(listOf(TrackInfo.Type.AUDIO))
+        val event = PlayerEvent.OnTracksChanged(emptyList())
         emit(event)
         assertEmission(event)
     }

@@ -37,7 +37,7 @@ internal class MediaPlayerEventStream : PlayerEventStream {
             }
 
             override fun onPrepared(mp: MediaPlayer) {
-                trySend(PlayerEvent.OnPlayerPrepared)
+                trySend(PlayerEvent.OnPlayerPrepared(mp.isPlaying))
             }
 
             override fun onVideoSizeChanged(mp: MediaPlayer, width: Int, height: Int) {

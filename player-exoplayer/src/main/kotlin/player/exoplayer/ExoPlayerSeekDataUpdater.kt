@@ -15,6 +15,7 @@ import kotlinx.coroutines.isActive
 import player.common.AppPlayer
 import player.common.SeekData
 import player.common.SeekDataUpdater
+import kotlin.math.max
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 
@@ -70,9 +71,9 @@ class ExoPlayerSeekDataUpdater : SeekDataUpdater {
             Command.DoNotEmit
         } else {
             val seekData = SeekData(
-                position = contentPosition.toDuration(DurationUnit.MILLISECONDS),
-                buffered = contentBufferedPosition.toDuration(DurationUnit.MILLISECONDS),
-                duration = contentDuration.toDuration(DurationUnit.MILLISECONDS)
+                position = max(contentPosition, 0L).toDuration(DurationUnit.MILLISECONDS),
+                buffered = max(contentBufferedPosition, 0L).toDuration(DurationUnit.MILLISECONDS),
+                duration = max(contentDuration, 0L).toDuration(DurationUnit.MILLISECONDS)
             )
             Command.Emit(seekData)
         }

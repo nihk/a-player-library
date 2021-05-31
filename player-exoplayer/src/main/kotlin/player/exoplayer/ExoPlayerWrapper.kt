@@ -23,12 +23,10 @@ internal class ExoPlayerWrapper(
 ) : AppPlayer {
 
     override val state: PlayerState
-        get() {
-            return PlayerState(
-                positionMillis = player.currentPosition,
-                isPlaying = player.isPlaying
-            )
-        }
+        get() = PlayerState(
+            positionMillis = player.currentPosition,
+            isPlaying = player.isPlaying
+        )
 
     override val tracks: List<TrackInfo>
         get() = player.getTrackInfos(KNOWN_TRACK_TYPES, trackNameProvider)
@@ -50,18 +48,24 @@ internal class ExoPlayerWrapper(
                 player.playWhenReady = initial.isPlaying
             }
         } else {
-            if (captions != null
-                && captions.metadata.isNotEmpty()
-                && currentMediaItem.playbackProperties?.subtitles?.size != captions.metadata.size) {
+            val currentSubtitles = currentMediaItem.playbackProperties?.subtitles ?: emptyList()
+            if (captions != null && !currentSubtitles.contains(captions)) {
+                // Load subtitles that came in after media content had already started
                 val mediaItem = currentMediaItem.buildUpon()
                     .addCaptions(captions)
                     .build()
                 val contentPosition = player.contentPosition
+                val playWhenReady = player.playWhenReady
                 player.setMediaItem(mediaItem)
                 player.prepare()
                 player.seekTo(contentPosition)
+                player.playWhenReady = playWhenReady
             }
         }
+    }
+
+    private fun List<MediaItem.Subtitle>.contains(captions: PlaybackInfo.Captions): Boolean {
+        return map { it.uri.toString() }.containsAll(captions.metadata.map { it.uri })
     }
 
     private fun MediaItem.Builder.addCaptions(captions: PlaybackInfo.Captions?): MediaItem.Builder {

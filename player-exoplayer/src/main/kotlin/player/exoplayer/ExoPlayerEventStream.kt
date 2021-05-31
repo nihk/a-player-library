@@ -7,6 +7,7 @@ import com.google.android.exoplayer2.SimpleExoPlayer
 import com.google.android.exoplayer2.analytics.AnalyticsListener
 import com.google.android.exoplayer2.source.TrackGroupArray
 import com.google.android.exoplayer2.trackselection.TrackSelectionArray
+import com.google.android.exoplayer2.ui.TrackNameProvider
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
@@ -15,9 +16,10 @@ import player.common.PlayerEvent
 import player.common.PlayerEventStream
 import player.common.PlayerException
 import player.common.TAG
-import player.common.TrackInfo
 
-internal class ExoPlayerEventStream : PlayerEventStream {
+internal class ExoPlayerEventStream(
+    private val trackNameProvider: TrackNameProvider
+) : PlayerEventStream {
     override fun listen(appPlayer: AppPlayer): Flow<PlayerEvent> = callbackFlow {
         appPlayer as? ExoPlayerWrapper ?: error("$appPlayer was not a ${ExoPlayerWrapper::class.java}")
         val player = appPlayer.player
@@ -41,14 +43,12 @@ internal class ExoPlayerEventStream : PlayerEventStream {
                 trackGroups: TrackGroupArray,
                 trackSelections: TrackSelectionArray
             ) {
-                val types = if (trackGroups.length == 0) {
+                val trackInfos = if (trackGroups.length == 0) {
                     emptyList()
                 } else {
-                    player.getTrackInfos(KNOWN_TRACK_TYPES)
-                        .map(TrackInfo::type)
-                        .distinct()
+                    player.getTrackInfos(KNOWN_TRACK_TYPES, trackNameProvider)
                 }
-                trySend(PlayerEvent.OnTracksChanged(types))
+                trySend(PlayerEvent.OnTracksChanged(trackInfos))
             }
 
             override fun onPlayerError(error: ExoPlaybackException) {
@@ -64,7 +64,7 @@ internal class ExoPlayerEventStream : PlayerEventStream {
                 output: Any,
                 renderTimeMs: Long
             ) {
-                trySend(PlayerEvent.OnPlayerPrepared)
+                trySend(PlayerEvent.OnPlayerPrepared(player.playWhenReady))
             }
 
             override fun onIsPlayingChanged(isPlaying: Boolean) {

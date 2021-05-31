@@ -26,11 +26,8 @@ import player.ui.databinding.PlayerFragmentBinding
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 
-// todo: show controller before player is loaded?
-// todo: this is currently only using the default playback UI. needs to be more like a composable factory pattern.
-//  --> Factory will own the layout ID
-// todo: can UI be extracted to its own class? this fragment is getting bloated
-// fixme: any way to not have 3 calls to setPlayPause?
+// todo: this is currently only using the default playback UI. widgets need to be more composable
+//  and the player controllers should be passed in and used like a factory.
 class PlayerFragment(
     private val vmFactory: PlayerViewModel.Factory,
     private val playerViewWrapperFactory: PlayerViewWrapper.Factory,
@@ -146,7 +143,7 @@ class PlayerFragment(
 
         playerViewModel.uiStates()
             .onEach { uiState ->
-                binding.playerController.isVisible = uiState.showController && !pipController.isInPip()
+                binding.playerController.isVisible = uiState.isControllerUsable && !pipController.isInPip()
                 binding.progressBar.isVisible = uiState.showLoading
                 if (!seekBarListener.isSeekBarBeingTouched) {
                     updateSeekData(binding, uiState.seekData)
@@ -254,7 +251,7 @@ class PlayerFragment(
     override fun onStop() {
         super.onStop()
         requirePlayerViewWrapper().detachPlayer()
-        if (!isChangingConfigurations) {
+        if (!requireActivity().isChangingConfigurations) {
             playerViewModel.onAppBackgrounded()
         }
     }
@@ -269,6 +266,4 @@ class PlayerFragment(
     }
 
     private fun requirePlayerViewWrapper() = requireNotNull(playerViewWrapper)
-
-    private val isChangingConfigurations get() = requireActivity().isChangingConfigurations
 }

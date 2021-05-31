@@ -14,6 +14,7 @@ import player.common.requireNotNull
 import player.ui.databinding.TrackItemBinding
 import player.ui.databinding.TracksFragmentBinding
 
+// fixme: if tracks update while this Fragment is open, this Fragment doesn't get updated.
 class TracksPickerFragment : BottomSheetDialogFragment() {
 
     private val trackInfos: List<TrackInfo>
@@ -30,7 +31,7 @@ class TracksPickerFragment : BottomSheetDialogFragment() {
         val auto = TrackOption.Auto(
             name = "Auto",
             isSelected = !hasManuallySetOption,
-            rendererIndex = trackInfos.first().rendererIndex // They should all be the same
+            rendererIndex = trackInfos.first().indices.rendererIndex // They should all be the same
         )
 
         val adapter = TracksAdapter(listOf(auto) + trackOptions) { trackOption ->

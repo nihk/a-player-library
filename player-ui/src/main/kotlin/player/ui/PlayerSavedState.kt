@@ -5,13 +5,11 @@ import player.common.PlayerState
 import player.common.TrackInfo
 
 class PlayerSavedState(private val handle: SavedStateHandle) {
-    fun manuallySetTracks(): List<TrackInfo> {
-        return handle[KEY_MANUALLY_SET_TRACK_INFOS] ?: emptyList()
-    }
+    val manuallySetTracks: List<TrackInfo>
+        get() = handle[KEY_MANUALLY_SET_TRACK_INFOS] ?: emptyList()
 
-    fun playerState(): PlayerState {
-        return handle[KEY_PLAYER_STATE] ?:PlayerState.INITIAL
-    }
+    val state: PlayerState
+        get() = handle[KEY_PLAYER_STATE] ?: PlayerState.INITIAL
 
     fun save(playerState: PlayerState?, tracks: List<TrackInfo>) {
         handle[KEY_PLAYER_STATE] = playerState

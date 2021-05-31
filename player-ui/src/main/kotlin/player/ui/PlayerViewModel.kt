@@ -70,12 +70,12 @@ class PlayerViewModel(
 
     fun getPlayer(): AppPlayer {
         if (appPlayer == null) {
-            appPlayer = appPlayerFactory.create(playerSavedState.playerState())
+            appPlayer = appPlayerFactory.create(playerSavedState.state)
             val appPlayer = appPlayer.requireNotNull()
             appPlayer.handlePlaybackInfos(playbackInfos.value)
             playerJobs += listenToPlayerEvents(appPlayer)
             playerJobs += seekDataUpdater.seekData(appPlayer)
-                .onEach { opSeekData -> uiStates.value = uiStates.value.copy(seekData = opSeekData) }
+                .onEach { seekData -> uiStates.value = uiStates.value.copy(seekData = seekData) }
                 .launchIn(viewModelScope)
         }
 
@@ -97,13 +97,15 @@ class PlayerViewModel(
             .onEach { playerEvent -> telemetry?.onPlayerEvent(playerEvent) }
             .onEach { playerEvent ->
                 when (playerEvent) {
-                    is PlayerEvent.Initial -> uiStates.value = uiStates.value.copy(showController = true)
+                    is PlayerEvent.Initial -> uiStates.value = uiStates.value.copy(isControllerUsable = true)
                     is PlayerEvent.OnTracksChanged -> {
-                        val manuallySetTracks = playerSavedState.manuallySetTracks()
-                            .filter { trackInfo -> trackInfo.type in playerEvent.trackTypes }
-                        val action = TrackInfo.Action.Set(manuallySetTracks)
+                        val trackIndices = playerEvent.trackInfos.map(TrackInfo::indices)
+                        val settableTracks = playerSavedState.manuallySetTracks
+                            .filter { trackInfo -> trackInfo.indices in trackIndices }
+                        val action = TrackInfo.Action.Set(settableTracks)
                         appPlayer.handleTrackInfoAction(action)
-                        tracksStates.value = TracksState.Available(playerEvent.trackTypes)
+                        val trackTypes = playerEvent.trackInfos.map(TrackInfo::type)
+                        tracksStates.value = TracksState.Available(trackTypes)
                     }
                     is PlayerEvent.OnPlayerError -> errors.emit(playerEvent.exception.message.toString())
                 }
@@ -121,17 +123,11 @@ class PlayerViewModel(
         requireNotNull(appPlayer).pause()
     }
 
-    override fun onCleared() {
-        tearDown()
-    }
-
     private fun tearDown() {
         tracksStates.value = TracksState.NotAvailable
         playerJobs.forEach(Job::cancel)
         playerJobs.clear()
-        // This can be nullable when closing PiP. PiP can recreate/destroy the Activity without
-        // creating an AppPlayer instance in this ViewModel.
-        appPlayer?.release()
+        requireNotNull(appPlayer).release()
         appPlayer = null
     }
 
@@ -144,7 +140,7 @@ class PlayerViewModel(
     }
 
     fun onPipModeChanged(isInPipMode: Boolean) {
-        uiStates.value = uiStates.value.copy(showController = !isInPipMode)
+        uiStates.value = uiStates.value.copy(isControllerUsable = !isInPipMode)
     }
 
     fun seekRelative(duration: Duration) {
@@ -189,13 +185,13 @@ class PlayerViewModel(
 }
 
 data class UiState(
-    val showController: Boolean,
+    val isControllerUsable: Boolean,
     val showLoading: Boolean,
     val seekData: SeekData
 ) {
     companion object {
         val INITIAL = UiState(
-            showController = false,
+            isControllerUsable = false,
             showLoading = true,
             seekData = SeekData.INITIAL
         )

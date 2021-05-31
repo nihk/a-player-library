@@ -77,7 +77,7 @@ class AndroidPipController(private val activity: Activity) : PipController {
             is PlayerEvent.OnPlayerPrepared -> {
                 if (canShowActions || !activity.isInPictureInPictureMode) return
                 canShowActions = true
-                updateActions(isPlaying = true)
+                updateActions(isPlaying = playerEvent.playWhenReady)
             }
         }
     }

@@ -12,17 +12,18 @@ internal val ExoPlayer.defaultTrackSelector: DefaultTrackSelector
     get() = trackSelector as DefaultTrackSelector
 
 internal fun ExoPlayer.setTrackInfo(trackInfo: TrackInfo) {
+    val indices = trackInfo.indices
     val trackGroupArray = defaultTrackSelector.currentMappedTrackInfo
-        ?.getTrackGroups(trackInfo.rendererIndex)
-        ?: error("Can't find track group array for renderer index ${trackInfo.rendererIndex}")
+        ?.getTrackGroups(indices.rendererIndex)
+        ?: error("Can't find track group array for renderer index ${indices.rendererIndex}")
 
     defaultTrackSelector.parameters = defaultTrackSelector.parameters.buildUpon()
-        .clearSelectionOverrides(trackInfo.rendererIndex)
-        .setRendererDisabled(trackInfo.rendererIndex, !trackInfo.isSelected)
+        .clearSelectionOverrides(indices.rendererIndex)
+        .setRendererDisabled(indices.rendererIndex, !trackInfo.isSelected)
         .setSelectionOverride(
-            trackInfo.rendererIndex,
+            indices.rendererIndex,
             trackGroupArray,
-            DefaultTrackSelector.SelectionOverride(trackInfo.groupIndex, trackInfo.index)
+            DefaultTrackSelector.SelectionOverride(indices.groupIndex, indices.index)
         )
         .build()
 }
@@ -62,9 +63,11 @@ internal fun ExoPlayer.getTrackInfos(trackTypes: List<Int>, trackNameProvider: T
                             TrackInfo(
                                 name = name,
                                 type = trackType.toTrackInfoType(),
-                                index = trackIndex,
-                                groupIndex = groupIndex,
-                                rendererIndex = rendererIndex,
+                                indices = TrackInfo.Indices(
+                                    index = trackIndex,
+                                    groupIndex = groupIndex,
+                                    rendererIndex = rendererIndex
+                                ),
                                 isDefault = isDefault,
                                 isSelected = isTrackSelected,
                                 isAutoSelected = isAutoSelected,

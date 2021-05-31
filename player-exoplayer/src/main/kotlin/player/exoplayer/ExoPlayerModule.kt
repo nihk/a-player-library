@@ -15,7 +15,7 @@ class ExoPlayerModule(context: Context) : PlayerModule {
     private val trackNameProvider: TrackNameProvider get() = DefaultTrackNameProvider(appContext.resources)
 
     override val playerViewWrapperFactory: PlayerViewWrapper.Factory get() = ExoPlayerViewWrapper.Factory()
-    override val playerEventStream: PlayerEventStream get() = ExoPlayerEventStream()
+    override val playerEventStream: PlayerEventStream get() = ExoPlayerEventStream(trackNameProvider)
     override val appPlayerFactory: AppPlayer.Factory get() = ExoPlayerWrapper.Factory(appContext, trackNameProvider)
     override val seekDataUpdater: SeekDataUpdater get() = ExoPlayerSeekDataUpdater()
 }
