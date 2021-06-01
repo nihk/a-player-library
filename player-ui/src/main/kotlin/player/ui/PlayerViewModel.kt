@@ -44,7 +44,7 @@ class PlayerViewModel(
     fun playerEvents(): Flow<PlayerEvent> = playerEvents
 
     private val uiStates = MutableStateFlow(UiState.INITIAL)
-    fun uiStates(): Flow<UiState> = uiStates
+    fun uiStates(): StateFlow<UiState> = uiStates
 
     private val errors = MutableSharedFlow<String>()
     fun errors(): Flow<String> = errors

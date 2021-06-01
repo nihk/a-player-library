@@ -3,6 +3,7 @@ package player.ui
 import android.os.Bundle
 import android.view.View
 import android.widget.ImageView
+import android.widget.SeekBar
 import androidx.activity.OnBackPressedCallback
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
@@ -22,6 +23,7 @@ import player.common.TimeFormatter
 import player.common.TrackInfo
 import player.common.toPlayerArguments
 import player.ui.databinding.PlayerFragmentBinding
+import kotlin.time.Duration
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 
@@ -41,7 +43,6 @@ class PlayerFragment(
     private val onUserLeaveHintViewModel: OnUserLeaveHintViewModel by activityViewModels()
     private var playerViewWrapper: PlayerViewWrapper? = null
     private val playerArguments: PlayerArguments get() = requireArguments().toPlayerArguments()
-    private val seekBarListener = SeekBarListener { playerViewModel.seekTo(it) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -94,7 +95,6 @@ class PlayerFragment(
             }
         }
 
-        binding.seekBar.setOnSeekBarChangeListener(seekBarListener)
         binding.playPause.apply {
             setPlayPause(
                 imageView = this,
@@ -140,12 +140,27 @@ class PlayerFragment(
             }
             .launchIn(viewLifecycleOwner.lifecycleScope)
 
+        val seekBarProgress = SeekBarProgress(binding.seekBar)
+        seekBarProgress.progress()
+            .onEach { event ->
+                when (event) {
+                    is SeekBarProgress.Event.SeekTo -> playerViewModel.seekTo(event.position)
+                    is SeekBarProgress.Event.Progress -> {
+                        val seekData = playerViewModel.uiStates().value.seekData
+                        updateTimestamps(binding, event.position, seekData.duration)
+                    }
+                }
+            }
+            .launchIn(viewLifecycleOwner.lifecycleScope)
+
         playerViewModel.uiStates()
             .onEach { uiState ->
                 binding.playerController.isVisible = uiState.isControllerUsable && !pipController.isInPip()
                 binding.progressBar.isVisible = uiState.showLoading
-                if (!seekBarListener.isSeekBarBeingTouched) {
-                    updateSeekData(binding, uiState.seekData)
+                if (!seekBarProgress.isSeekBarBeingTouched) {
+                    val seekData = uiState.seekData
+                    updateSeekBar(binding.seekBar, seekData)
+                    updateTimestamps(binding, seekData.position, seekData.duration)
                 }
                 binding.title.apply {
                     isVisible = uiState.title != null
@@ -182,17 +197,24 @@ class PlayerFragment(
         }
     }
 
-    private fun updateSeekData(
-        binding: PlayerFragmentBinding,
+    private fun updateSeekBar(
+        seekBar: SeekBar,
         seekData: SeekData
     ) {
-        binding.seekBar.apply {
+        seekBar.apply {
             max = seekData.duration.inWholeSeconds.toInt()
             progress = seekData.position.inWholeSeconds.toInt()
             secondaryProgress = seekData.buffered.inWholeSeconds.toInt()
         }
-        binding.position.text = timeFormatter.playerTime(seekData.position)
-        binding.remaining.text = timeFormatter.playerTime(seekData.duration - seekData.position)
+    }
+
+    private fun updateTimestamps(
+        binding: PlayerFragmentBinding,
+        position: Duration,
+        duration: Duration
+    ) {
+        binding.position.text = timeFormatter.playerTime(position)
+        binding.remaining.text = timeFormatter.playerTime(duration - position)
         // todo: content descriptions
     }
 
