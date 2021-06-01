@@ -26,7 +26,7 @@ class PlayerFragment(
     private val playbackUiFactory: PlaybackUi.Factory
 ) : Fragment(R.layout.player_fragment) {
 
-    private val playerViewModel: PlayerViewModel by viewModels { vmFactory.create(this, playerArguments.mainUri) }
+    private val playerViewModel: PlayerViewModel by viewModels { vmFactory.create(this, playerArguments.uri) }
     private val onUserLeaveHintViewModel: OnUserLeaveHintViewModel by activityViewModels()
     private var playerViewWrapper: PlayerViewWrapper? = null
     private var playbackUi: PlaybackUi? = null

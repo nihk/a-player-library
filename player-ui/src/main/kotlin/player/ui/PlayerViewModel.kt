@@ -33,7 +33,7 @@ class PlayerViewModel(
     private val playerEventStream: PlayerEventStream,
     private val telemetry: PlayerTelemetry?,
     playbackInfoResolver: PlaybackInfoResolver,
-    mainUri: String,
+    uri: String,
     private val seekDataUpdater: SeekDataUpdater
 ) : ViewModel(), PlayerController {
 
@@ -52,7 +52,7 @@ class PlayerViewModel(
     private val tracksStates = MutableStateFlow<TracksState>(TracksState.NotAvailable)
     fun tracksStates(): Flow<TracksState> = tracksStates
 
-    private val playbackInfos: StateFlow<List<PlaybackInfo>> = playbackInfoResolver.playbackInfos(mainUri)
+    private val playbackInfos: StateFlow<List<PlaybackInfo>> = playbackInfoResolver.playbackInfos(uri)
         .onEach { playbackInfo -> playbackInfo.sideEffect() }
         .runningFold(emptyList<PlaybackInfo>()) { list, playbackInfo ->
             list + if (playbackInfo is PlaybackInfo.Batched) {

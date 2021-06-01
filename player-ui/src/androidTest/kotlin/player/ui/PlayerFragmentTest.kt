@@ -26,6 +26,7 @@ import player.common.PlayerArguments
 import player.common.PlayerEvent
 import player.common.PlayerException
 import player.common.PlayerViewWrapper
+import player.common.TrackInfo
 import player.common.toBundle
 import player.test.NoOpPlayerViewWrapper
 import player.ui.playbackui.PlaybackUi
@@ -102,7 +103,7 @@ class PlayerFragmentTest {
             val playerViewWrapperFactory = FakePlayerViewWrapperFactory(playerViewWrapper)
 
             val args = PlayerArguments(
-                mainUri = "",
+                uri = "",
                 pipConfig = pipConfig
             )
             scenario = launchFragmentInContainer(fragmentArgs = args.toBundle()) {
@@ -189,8 +190,8 @@ class FakeErrorRenderer : ErrorRenderer {
 }
 
 class NoOpNavigator : Navigator {
-    override fun toDialog(clazz: Class<out Fragment>, bundle: Bundle?) = Unit
-    override fun replace(clazz: Class<out Fragment>, bundle: Bundle?) = Unit
+    override fun toPlayer(playerArguments: PlayerArguments) = Unit
+    override fun toTracksPicker(trackInfos: List<TrackInfo>) = Unit
 }
 
 class FakePlaybackUi : PlaybackUi {

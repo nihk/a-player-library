@@ -6,10 +6,31 @@
     android:layout_gravity="center"
     android:orientation="vertical">
 
+    <RadioGroup
+        android:layout_width="wrap_content"
+        android:layout_gravity="center"
+        android:layout_height="wrap_content"
+        android:checkedButton="@id/default_ui">
+
+        <RadioButton
+            android:id="@+id/default_ui"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Default UI" />
+
+        <RadioButton
+            android:id="@+id/sve_ui"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Short Video Experience UI" />
+
+    </RadioGroup>
+
     <com.google.android.material.switchmaterial.SwitchMaterial
         android:id="@+id/enable_pip"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_gravity="center"
         android:text="Enable PiP"
         tools:ignore="HardcodedText" />
 

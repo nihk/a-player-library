@@ -17,6 +17,7 @@ dependencies {
     implementation(Dependencies.material)
     implementation(Dependencies.multidex)
     implementation(Dependencies.Fragment.runtime)
+    implementation(Dependencies.coil)
 
     testImplementation(Dependencies.junit)
 

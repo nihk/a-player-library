@@ -13,6 +13,7 @@ import player.common.toBundle
 import player.common.isMinOsForPip
 import player.common.toPlayerArguments
 
+// fixme: back presses for nested videos aren't working as expected - it just pops off the entire activity
 abstract class LibraryActivity : AppCompatActivity(R.layout.library_activity) {
 
     private val onUserLeaveHintViewModel: OnUserLeaveHintViewModel by viewModels()

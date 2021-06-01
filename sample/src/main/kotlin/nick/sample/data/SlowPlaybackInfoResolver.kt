@@ -12,8 +12,7 @@ import kotlin.time.toDuration
 
 class SlowPlaybackInfoResolver : PlaybackInfoResolver {
     override fun playbackInfos(uri: String): Flow<PlaybackInfo> = flow {
-        delay(2.toDuration(DurationUnit.SECONDS))
-        emit(PlaybackInfo.MediaUri("https://bestvpn.org/html5demos/assets/dizzy.mp4"))
+        emit(PlaybackInfo.MediaUri(uri))
 
         delay(2.toDuration(DurationUnit.SECONDS))
         val captions = PlaybackInfo.Captions(

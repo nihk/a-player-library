@@ -1,9 +1,9 @@
 package player.ui
 
-import android.os.Bundle
-import androidx.fragment.app.Fragment
+import player.common.PlayerArguments
+import player.common.TrackInfo
 
 interface Navigator {
-    fun toDialog(clazz: Class<out Fragment>, bundle: Bundle? = null)
-    fun replace(clazz: Class<out Fragment>, bundle: Bundle? = null)
+    fun toTracksPicker(trackInfos: List<TrackInfo>)
+    fun toPlayer(playerArguments: PlayerArguments)
 }

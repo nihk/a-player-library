@@ -116,7 +116,7 @@ class PlayerViewModelTest {
             playerEventStream = playerEventStream,
             telemetry = telemetry,
             playbackInfoResolver = playbackInfoResolver,
-            mainUri = "https://www.example.com/video.mp4",
+            uri = "https://www.example.com/video.mp4",
             seekDataUpdater = seekDataUpdater
         )
         private val emittedEvents = mutableListOf<PlayerEvent>()

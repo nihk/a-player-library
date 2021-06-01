@@ -2,6 +2,7 @@ package player.core
 
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentFactory
+import coil.imageLoader
 import player.common.PlayerArguments
 import player.common.PlayerModule
 import player.common.isMinOsForPip
@@ -45,6 +46,7 @@ internal class LibraryModule(
                     timeFormatter = LibraryInitializer.timeFormatter(),
                     pipController = pipController,
                     navigator = navigator,
+                    imageLoader = fragment.requireContext().applicationContext.imageLoader
                 )
             )
         },
