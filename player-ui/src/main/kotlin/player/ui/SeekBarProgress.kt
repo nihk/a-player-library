@@ -8,12 +8,26 @@ import kotlin.time.Duration
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 
-class SeekBarProgress(private val seekBar: SeekBar) {
+interface SeekBarProgress {
+    val isSeekBarBeingTouched: Boolean
+    fun progress(): Flow<Event>
+
+    sealed class Event {
+        data class Progress(val position: Duration) : Event()
+        data class SeekTo(val position: Duration) : Event()
+    }
+
+    interface Factory {
+        fun create(seekBar: SeekBar): SeekBarProgress
+    }
+}
+
+class DefaultSeekBarProgress(private val seekBar: SeekBar) : SeekBarProgress {
     private var seekToPosition = Duration.ZERO
-    var isSeekBarBeingTouched = false
+    override var isSeekBarBeingTouched = false
         private set
 
-    fun progress(): Flow<Event> = callbackFlow {
+    override fun progress(): Flow<SeekBarProgress.Event> = callbackFlow {
         val listener = object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
                 if (!fromUser) return
@@ -21,9 +35,9 @@ class SeekBarProgress(private val seekBar: SeekBar) {
                 val position = progress.toDuration(DurationUnit.SECONDS)
                 if (isSeekBarBeingTouched) {
                     seekToPosition = position
-                    trySend(Event.Progress(position))
+                    trySend(SeekBarProgress.Event.Progress(position))
                 } else {
-                    trySend(Event.SeekTo(seekToPosition))
+                    trySend(SeekBarProgress.Event.SeekTo(seekToPosition))
                 }
             }
 
@@ -33,7 +47,7 @@ class SeekBarProgress(private val seekBar: SeekBar) {
 
             override fun onStopTrackingTouch(seekBar: SeekBar) {
                 isSeekBarBeingTouched = false
-                trySend(Event.SeekTo(seekToPosition))
+                trySend(SeekBarProgress.Event.SeekTo(seekToPosition))
             }
         }
 
@@ -42,8 +56,9 @@ class SeekBarProgress(private val seekBar: SeekBar) {
         awaitClose { seekBar.setOnSeekBarChangeListener(null) }
     }
 
-    sealed class Event {
-        data class Progress(val position: Duration) : Event()
-        data class SeekTo(val position: Duration) : Event()
+    class Factory : SeekBarProgress.Factory {
+        override fun create(seekBar: SeekBar): SeekBarProgress {
+            return DefaultSeekBarProgress(seekBar)
+        }
     }
 }

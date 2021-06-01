@@ -89,6 +89,7 @@ class PlayerFragmentTest {
         private val seekDataUpdater = FakeSeekDataUpdater()
         private val timeFormatter = FakeTimeFormatter()
         private val navigator = NoOpNavigator()
+        private val seekBarProgressFactory = DefaultSeekBarProgress.Factory()
         private val scenario: FragmentScenario<PlayerFragment>
 
         init {
@@ -107,7 +108,16 @@ class PlayerFragmentTest {
                 pipConfig = pipConfig
             )
             scenario = launchFragmentInContainer(fragmentArgs = args.toBundle()) {
-                PlayerFragment(vmFactory, playerViewWrapperFactory, shareDelegate, pipController, errorRenderer, navigator, timeFormatter)
+                PlayerFragment(
+                    vmFactory = vmFactory,
+                    playerViewWrapperFactory = playerViewWrapperFactory,
+                    shareDelegate = shareDelegate,
+                    pipController = pipController,
+                    errorRenderer = errorRenderer,
+                    navigator = navigator,
+                    timeFormatter = timeFormatter,
+                    seekBarProgressFactory = seekBarProgressFactory
+                )
             }
         }
 

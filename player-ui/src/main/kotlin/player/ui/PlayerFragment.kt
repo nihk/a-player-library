@@ -36,7 +36,8 @@ class PlayerFragment(
     private val pipController: PipController,
     private val errorRenderer: ErrorRenderer,
     private val navigator: Navigator,
-    private val timeFormatter: TimeFormatter
+    private val timeFormatter: TimeFormatter,
+    private val seekBarProgressFactory: SeekBarProgress.Factory
 ) : Fragment(R.layout.player_fragment) {
 
     private val playerViewModel: PlayerViewModel by viewModels { vmFactory.create(this, playerArguments.mainUri) }
@@ -140,7 +141,7 @@ class PlayerFragment(
             }
             .launchIn(viewLifecycleOwner.lifecycleScope)
 
-        val seekBarProgress = SeekBarProgress(binding.seekBar)
+        val seekBarProgress = seekBarProgressFactory.create(binding.seekBar)
         seekBarProgress.progress()
             .onEach { event ->
                 when (event) {
