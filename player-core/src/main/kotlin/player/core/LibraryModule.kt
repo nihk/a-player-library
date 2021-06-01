@@ -2,6 +2,7 @@ package player.core
 
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentFactory
+import player.common.PlayerArguments
 import player.common.PlayerModule
 import player.common.isMinOsForPip
 import player.ui.AndroidPipController
@@ -15,7 +16,10 @@ import player.ui.PlayerViewModel
 import player.ui.SnackbarErrorRenderer
 import player.ui.TracksPickerFragment
 
-internal class LibraryModule(private val fragment: Fragment) {
+internal class LibraryModule(
+    private val fragment: Fragment,
+    private val playerArguments: PlayerArguments
+) {
     val fragmentFactory: FragmentFactory get() = LibraryFragmentFactory(fragmentMap)
 
     private val module: PlayerModule = LibraryInitializer.playerModule()
@@ -34,6 +38,7 @@ internal class LibraryModule(private val fragment: Fragment) {
                 pipController = pipController,
                 errorRenderer = SnackbarErrorRenderer(),
                 playbackUiFactory = DefaultPlaybackUiFactory(
+                    playerArguments = playerArguments,
                     activity = fragment.requireActivity(),
                     shareDelegate = LibraryInitializer.shareDelegate(),
                     seekBarListenerFactory = DefaultSeekBarListener.Factory(),

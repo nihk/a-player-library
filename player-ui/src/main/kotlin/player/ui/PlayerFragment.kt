@@ -68,7 +68,7 @@ class PlayerFragment(
         val binding = PlayerFragmentBinding.bind(view)
         playerViewWrapper = playerViewWrapperFactory.create(view.context)
         binding.playerContainer.addView(requirePlayerViewWrapper().view)
-        playbackUi = playbackUiFactory.create(playerArguments, playerViewModel)
+        playbackUi = playbackUiFactory.create(playerViewModel)
         binding.playbackUi.addView(requirePlaybackUi().view)
 
         listenToPlayer(binding)

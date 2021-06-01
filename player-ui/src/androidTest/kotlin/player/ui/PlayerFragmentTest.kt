@@ -209,10 +209,7 @@ class FakePlaybackUi : PlaybackUi {
 class FakePlaybackUiFactory(
     private val playbackUi: PlaybackUi = FakePlaybackUi()
 ) : PlaybackUi.Factory {
-    override fun create(
-        playerArguments: PlayerArguments,
-        playerController: PlayerController
-    ): PlaybackUi {
+    override fun create(playerController: PlayerController): PlaybackUi {
         return playbackUi
     }
 }

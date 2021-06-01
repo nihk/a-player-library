@@ -16,14 +16,12 @@ interface PlaybackUi : PlayerEmissionsHandler {
     val view: View
 
     interface Factory {
-        fun create(
-            playerArguments: PlayerArguments,
-            playerController: PlayerController
-        ): PlaybackUi
+        fun create(playerController: PlayerController): PlaybackUi
     }
 }
 
 class DefaultPlaybackUiFactory(
+    private val playerArguments: PlayerArguments,
     private val activity: FragmentActivity,
     private val shareDelegate: ShareDelegate?,
     private val seekBarListenerFactory: SeekBarListener.Factory,
@@ -31,10 +29,7 @@ class DefaultPlaybackUiFactory(
     private val pipController: PipController,
     private val navigator: Navigator
 ) : PlaybackUi.Factory {
-    override fun create(
-        playerArguments: PlayerArguments,
-        playerController: PlayerController
-    ): PlaybackUi {
+    override fun create(playerController: PlayerController): PlaybackUi {
         return when (playerArguments.playbackUiType) {
             PlaybackUiType.Default -> DefaultPlaybackUi(
                 playerArguments,
