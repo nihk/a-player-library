@@ -26,6 +26,7 @@ import kotlin.time.Duration
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 
+// todo: this should be more composable for shared components across PlaybackUis, e.g. the seekbar
 class DefaultPlaybackUi(
     private val playerArguments: PlayerArguments,
     private val playerController: PlayerController,

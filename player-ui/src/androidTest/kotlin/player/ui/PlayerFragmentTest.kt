@@ -26,9 +26,9 @@ import player.common.PlayerArguments
 import player.common.PlayerEvent
 import player.common.PlayerException
 import player.common.PlayerViewWrapper
-import player.common.ShareDelegate
 import player.common.toBundle
 import player.test.NoOpPlayerViewWrapper
+import player.ui.playbackui.PlaybackUi
 
 class PlayerFragmentTest {
     @get:Rule
@@ -81,15 +81,13 @@ class PlayerFragmentTest {
         private val eventFlow = MutableStateFlow<PlayerEvent?>(null)
         private val playerEventStream = FakePlayerEventStream(eventFlow.filterNotNull())
         private val telemetry = FakePlayerTelemetry()
-        private val shareDelegate: ShareDelegate? = null
-        private val pipConfig = PictureInPictureConfig(false, false)
+        private val pipConfig = PictureInPictureConfig(enabled = false, onBackPresses = false)
         private val pipController = FakePipController()
         private val errorRenderer = FakeErrorRenderer()
         private val playbackInfoResolver = DefaultPlaybackInfoResolver()
         private val seekDataUpdater = FakeSeekDataUpdater()
-        private val timeFormatter = FakeTimeFormatter()
-        private val navigator = NoOpNavigator()
-        private val seekBarListenerFactory = DefaultSeekBarListener.Factory()
+        private val playbackUi = FakePlaybackUi()
+        private val playbackUiFactory = FakePlaybackUiFactory(playbackUi)
         private val scenario: FragmentScenario<PlayerFragment>
 
         init {
@@ -111,12 +109,9 @@ class PlayerFragmentTest {
                 PlayerFragment(
                     vmFactory = vmFactory,
                     playerViewWrapperFactory = playerViewWrapperFactory,
-                    shareDelegate = shareDelegate,
                     pipController = pipController,
                     errorRenderer = errorRenderer,
-                    navigator = navigator,
-                    timeFormatter = timeFormatter,
-                    seekBarListenerFactory = seekBarListenerFactory
+                    playbackUiFactory = playbackUiFactory
                 )
             }
         }
@@ -196,4 +191,28 @@ class FakeErrorRenderer : ErrorRenderer {
 class NoOpNavigator : Navigator {
     override fun toDialog(clazz: Class<out Fragment>, bundle: Bundle?) = Unit
     override fun replace(clazz: Class<out Fragment>, bundle: Bundle?) = Unit
+}
+
+class FakePlaybackUi : PlaybackUi {
+    override val view: View get() = FrameLayout(ApplicationProvider.getApplicationContext())
+
+    override fun onPlayerEvent(playerEvent: PlayerEvent) {
+    }
+
+    override fun onUiState(uiState: UiState) {
+    }
+
+    override fun onTracksState(tracksState: TracksState) {
+    }
+}
+
+class FakePlaybackUiFactory(
+    private val playbackUi: PlaybackUi = FakePlaybackUi()
+) : PlaybackUi.Factory {
+    override fun create(
+        playerArguments: PlayerArguments,
+        playerController: PlayerController
+    ): PlaybackUi {
+        return playbackUi
+    }
 }
