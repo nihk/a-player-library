@@ -21,6 +21,7 @@ import player.common.SeekData
 import player.common.ShareDelegate
 import player.common.TimeFormatter
 import player.common.TrackInfo
+import player.common.requireNotNull
 import player.common.toPlayerArguments
 import player.ui.databinding.PlayerFragmentBinding
 import kotlin.time.Duration
@@ -37,13 +38,14 @@ class PlayerFragment(
     private val errorRenderer: ErrorRenderer,
     private val navigator: Navigator,
     private val timeFormatter: TimeFormatter,
-    private val seekBarProgressFactory: SeekBarProgress.Factory
+    private val seekBarListenerFactory: SeekBarListener.Factory
 ) : Fragment(R.layout.player_fragment) {
 
     private val playerViewModel: PlayerViewModel by viewModels { vmFactory.create(this, playerArguments.mainUri) }
     private val onUserLeaveHintViewModel: OnUserLeaveHintViewModel by activityViewModels()
     private var playerViewWrapper: PlayerViewWrapper? = null
     private val playerArguments: PlayerArguments get() = requireArguments().toPlayerArguments()
+    private var seekBarListener: SeekBarListener? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -96,6 +98,15 @@ class PlayerFragment(
             }
         }
 
+        seekBarListener = seekBarListenerFactory.create(
+            updateProgress = { position ->
+                val seekData = playerViewModel.uiStates().value.seekData
+                updateTimestamps(binding, position, seekData.duration)
+            },
+            seekTo = playerViewModel::seekTo
+        )
+        binding.seekBar.setOnSeekBarChangeListener(seekBarListener)
+
         binding.playPause.apply {
             setPlayPause(
                 imageView = this,
@@ -141,26 +152,13 @@ class PlayerFragment(
             }
             .launchIn(viewLifecycleOwner.lifecycleScope)
 
-        val seekBarProgress = seekBarProgressFactory.create(binding.seekBar)
-        seekBarProgress.progress()
-            .onEach { event ->
-                when (event) {
-                    is SeekBarProgress.Event.SeekTo -> playerViewModel.seekTo(event.position)
-                    is SeekBarProgress.Event.Progress -> {
-                        val seekData = playerViewModel.uiStates().value.seekData
-                        updateTimestamps(binding, event.position, seekData.duration)
-                    }
-                }
-            }
-            .launchIn(viewLifecycleOwner.lifecycleScope)
-
         playerViewModel.uiStates()
             .onEach { uiState ->
                 binding.playerController.isVisible = uiState.isControllerUsable && !pipController.isInPip()
                 binding.progressBar.isVisible = uiState.showLoading
-                if (!seekBarProgress.isSeekBarBeingTouched) {
+                if (!seekBarListener.requireNotNull().isSeekBarBeingTouched) {
                     val seekData = uiState.seekData
-                    updateSeekBar(binding.seekBar, seekData)
+                    binding.seekBar.update(seekData)
                     updateTimestamps(binding, seekData.position, seekData.duration)
                 }
                 binding.title.apply {
@@ -198,15 +196,10 @@ class PlayerFragment(
         }
     }
 
-    private fun updateSeekBar(
-        seekBar: SeekBar,
-        seekData: SeekData
-    ) {
-        seekBar.apply {
-            max = seekData.duration.inWholeSeconds.toInt()
-            progress = seekData.position.inWholeSeconds.toInt()
-            secondaryProgress = seekData.buffered.inWholeSeconds.toInt()
-        }
+    private fun SeekBar.update(seekData: SeekData) {
+        max = seekData.duration.inWholeSeconds.toInt()
+        progress = seekData.position.inWholeSeconds.toInt()
+        secondaryProgress = seekData.buffered.inWholeSeconds.toInt()
     }
 
     private fun updateTimestamps(
@@ -274,6 +267,7 @@ class PlayerFragment(
     override fun onDestroyView() {
         super.onDestroyView()
         playerViewWrapper = null
+        seekBarListener = null
     }
 
     private fun requirePlayerViewWrapper() = requireNotNull(playerViewWrapper)

@@ -14,7 +14,13 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.filterNotNull
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
+import org.junit.Rule
+import org.junit.Test
 import player.CoroutinesTestRule
+import player.common.DefaultPlaybackInfoResolver
 import player.common.PictureInPictureConfig
 import player.common.PlayerArguments
 import player.common.PlayerEvent
@@ -23,12 +29,6 @@ import player.common.PlayerViewWrapper
 import player.common.ShareDelegate
 import player.common.toBundle
 import player.test.NoOpPlayerViewWrapper
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
-import org.junit.Assert.assertTrue
-import org.junit.Rule
-import org.junit.Test
-import player.common.DefaultPlaybackInfoResolver
 
 class PlayerFragmentTest {
     @get:Rule
@@ -89,7 +89,7 @@ class PlayerFragmentTest {
         private val seekDataUpdater = FakeSeekDataUpdater()
         private val timeFormatter = FakeTimeFormatter()
         private val navigator = NoOpNavigator()
-        private val seekBarProgressFactory = DefaultSeekBarProgress.Factory()
+        private val seekBarListenerFactory = DefaultSeekBarListener.Factory()
         private val scenario: FragmentScenario<PlayerFragment>
 
         init {
@@ -116,7 +116,7 @@ class PlayerFragmentTest {
                     errorRenderer = errorRenderer,
                     navigator = navigator,
                     timeFormatter = timeFormatter,
-                    seekBarProgressFactory = seekBarProgressFactory
+                    seekBarListenerFactory = seekBarListenerFactory
                 )
             }
         }

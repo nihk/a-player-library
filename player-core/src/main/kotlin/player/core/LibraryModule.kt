@@ -5,7 +5,7 @@ import androidx.fragment.app.FragmentFactory
 import player.common.PlayerModule
 import player.common.isMinOsForPip
 import player.ui.AndroidPipController
-import player.ui.DefaultSeekBarProgress
+import player.ui.DefaultSeekBarListener
 import player.ui.Navigator
 import player.ui.NoOpPipController
 import player.ui.PlayerFragment
@@ -32,7 +32,7 @@ internal class LibraryModule(private val fragment: Fragment) {
                 errorRenderer = SnackbarErrorRenderer(),
                 navigator = navigator,
                 timeFormatter = LibraryInitializer.timeFormatter(),
-                seekBarProgressFactory = DefaultSeekBarProgress.Factory()
+                seekBarListenerFactory = DefaultSeekBarListener.Factory()
             )
         },
         TracksPickerFragment::class.java to { TracksPickerFragment() }
