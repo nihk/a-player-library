@@ -124,7 +124,7 @@ class PlayerViewModel(
             .launchIn(viewModelScope)
     }
 
-    fun isPlaying(): Boolean = appPlayer?.state?.isPlaying == true
+    override fun isPlaying(): Boolean = appPlayer?.state?.isPlaying == true
 
     override fun play() {
         requireNotNull(appPlayer).play()
@@ -142,7 +142,7 @@ class PlayerViewModel(
         appPlayer = null
     }
 
-    fun tracks(): List<TrackInfo> {
+    override fun tracks(): List<TrackInfo> {
         return requireNotNull(appPlayer).tracks
     }
 
@@ -160,6 +160,10 @@ class PlayerViewModel(
 
     override fun seekTo(duration: Duration) {
         requireNotNull(appPlayer).seekTo(duration)
+    }
+
+    override fun latestSeekData(): SeekData {
+        return uiStates.value.seekData
     }
 
     class Factory(

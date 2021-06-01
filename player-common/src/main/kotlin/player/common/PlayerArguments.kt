@@ -9,7 +9,7 @@ import java.util.concurrent.TimeUnit
 @Parcelize
 data class PlayerArguments(
     val mainUri: String,
-    val playbackUi: PlaybackUi = PlaybackUi.Default,
+    val playbackUiType: PlaybackUiType = PlaybackUiType.Default,
     val secondaryUris: List<String> = emptyList(),
     val pipConfig: PictureInPictureConfig? = null,
     val seekConfiguration: SeekConfiguration = SeekConfiguration.DEFAULT
@@ -28,7 +28,7 @@ data class SeekConfiguration(
     }
 }
 
-enum class PlaybackUi {
+enum class PlaybackUiType {
     Default,
     ShortVideoExperience
 }

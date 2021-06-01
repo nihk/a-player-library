@@ -5,9 +5,11 @@ import androidx.fragment.app.FragmentFactory
 import player.common.PlayerModule
 import player.common.isMinOsForPip
 import player.ui.AndroidPipController
+import player.ui.playbackui.DefaultPlaybackUiFactory
 import player.ui.DefaultSeekBarListener
 import player.ui.Navigator
 import player.ui.NoOpPipController
+import player.ui.PipController
 import player.ui.PlayerFragment
 import player.ui.PlayerViewModel
 import player.ui.SnackbarErrorRenderer
@@ -18,21 +20,27 @@ internal class LibraryModule(private val fragment: Fragment) {
 
     private val module: PlayerModule = LibraryInitializer.playerModule()
 
+    private val pipController: PipController = if (isMinOsForPip) {
+        AndroidPipController(fragment.requireActivity())
+    } else {
+        NoOpPipController()
+    }
+
     private val fragmentMap: Map<Class<out Fragment>, () -> Fragment> get() = mapOf(
         PlayerFragment::class.java to {
             PlayerFragment(
                 vmFactory = playerViewModelFactory,
                 playerViewWrapperFactory = module.playerViewWrapperFactory,
-                shareDelegate = LibraryInitializer.shareDelegate(),
-                pipController = if (isMinOsForPip) {
-                    AndroidPipController(fragment.requireActivity())
-                } else {
-                    NoOpPipController()
-                },
+                pipController = pipController,
                 errorRenderer = SnackbarErrorRenderer(),
-                navigator = navigator,
-                timeFormatter = LibraryInitializer.timeFormatter(),
-                seekBarListenerFactory = DefaultSeekBarListener.Factory()
+                playbackUiFactory = DefaultPlaybackUiFactory(
+                    activity = fragment.requireActivity(),
+                    shareDelegate = LibraryInitializer.shareDelegate(),
+                    seekBarListenerFactory = DefaultSeekBarListener.Factory(),
+                    timeFormatter = LibraryInitializer.timeFormatter(),
+                    pipController = pipController,
+                    navigator = navigator,
+                )
             )
         },
         TracksPickerFragment::class.java to { TracksPickerFragment() }

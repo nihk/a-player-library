@@ -2,8 +2,6 @@ package player.ui
 
 import android.os.Bundle
 import android.view.View
-import android.widget.ImageView
-import android.widget.SeekBar
 import androidx.activity.OnBackPressedCallback
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
@@ -15,37 +13,24 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import player.common.OnUserLeaveHintViewModel
 import player.common.PlayerArguments
-import player.common.PlayerEvent
 import player.common.PlayerViewWrapper
-import player.common.SeekData
-import player.common.ShareDelegate
-import player.common.TimeFormatter
-import player.common.TrackInfo
-import player.common.requireNotNull
 import player.common.toPlayerArguments
 import player.ui.databinding.PlayerFragmentBinding
-import kotlin.time.Duration
-import kotlin.time.DurationUnit
-import kotlin.time.toDuration
+import player.ui.playbackui.PlaybackUi
 
-// todo: this is currently only using the default playback UI. widgets need to be more composable
-//  and the player controllers should be passed in and used like a factory.
 class PlayerFragment(
     private val vmFactory: PlayerViewModel.Factory,
     private val playerViewWrapperFactory: PlayerViewWrapper.Factory,
-    private val shareDelegate: ShareDelegate?,
     private val pipController: PipController,
     private val errorRenderer: ErrorRenderer,
-    private val navigator: Navigator,
-    private val timeFormatter: TimeFormatter,
-    private val seekBarListenerFactory: SeekBarListener.Factory
+    private val playbackUiFactory: PlaybackUi.Factory
 ) : Fragment(R.layout.player_fragment) {
 
     private val playerViewModel: PlayerViewModel by viewModels { vmFactory.create(this, playerArguments.mainUri) }
     private val onUserLeaveHintViewModel: OnUserLeaveHintViewModel by activityViewModels()
     private var playerViewWrapper: PlayerViewWrapper? = null
+    private var playbackUi: PlaybackUi? = null
     private val playerArguments: PlayerArguments get() = requireArguments().toPlayerArguments()
-    private var seekBarListener: SeekBarListener? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -83,97 +68,30 @@ class PlayerFragment(
         val binding = PlayerFragmentBinding.bind(view)
         playerViewWrapper = playerViewWrapperFactory.create(view.context)
         binding.playerContainer.addView(requirePlayerViewWrapper().view)
+        playbackUi = playbackUiFactory.create(playerArguments, playerViewModel)
+        binding.playbackUi.addView(requirePlaybackUi().view)
 
-        bindControls(binding)
         listenToPlayer(binding)
-    }
-
-    private fun bindControls(binding: PlayerFragmentBinding) {
-        shareDelegate?.run {
-            binding.share.apply {
-                isVisible = true
-                setOnClickListener {
-                    share(requireActivity(), playerArguments.mainUri)
-                }
-            }
-        }
-
-        seekBarListener = seekBarListenerFactory.create(
-            updateProgress = { position ->
-                val seekData = playerViewModel.uiStates().value.seekData
-                updateTimestamps(binding, position, seekData.duration)
-            },
-            seekTo = playerViewModel::seekTo
-        )
-        binding.seekBar.setOnSeekBarChangeListener(seekBarListener)
-
-        binding.playPause.apply {
-            setPlayPause(
-                imageView = this,
-                isPlaying = playerViewModel.isPlaying()
-            )
-            setOnClickListener {
-                if (playerViewModel.isPlaying()) {
-                    playerViewModel.pause()
-                } else {
-                    playerViewModel.play()
-                }
-            }
-        }
-        binding.seekBackward.setOnClickListener {
-            val amount = -playerArguments.seekConfiguration.backwardAmount.toDuration(DurationUnit.MILLISECONDS)
-            playerViewModel.seekRelative(amount)
-        }
-        binding.seekForward.setOnClickListener {
-            val amount = playerArguments.seekConfiguration.forwardAmount.toDuration(DurationUnit.MILLISECONDS)
-            playerViewModel.seekRelative(amount)
-        }
     }
 
     private fun listenToPlayer(binding: PlayerFragmentBinding) {
         playerViewModel.playerEvents()
             .onEach { playerEvent ->
                 requirePlayerViewWrapper().onEvent(playerEvent)
+                requirePlaybackUi().onPlayerEvent(playerEvent)
                 pipController.onEvent(playerEvent)
-                when (playerEvent) {
-                    is PlayerEvent.Initial -> {
-                        setPlayPause(
-                            imageView = binding.playPause,
-                            isPlaying = playerViewModel.isPlaying()
-                        )
-                    }
-                    is PlayerEvent.OnIsPlayingChanged -> {
-                        setPlayPause(
-                            imageView = binding.playPause,
-                            isPlaying = playerEvent.isPlaying
-                        )
-                    }
-                }
             }
             .launchIn(viewLifecycleOwner.lifecycleScope)
 
         playerViewModel.uiStates()
             .onEach { uiState ->
-                binding.playerController.isVisible = uiState.isControllerUsable && !pipController.isInPip()
                 binding.progressBar.isVisible = uiState.showLoading
-                if (!seekBarListener.requireNotNull().isSeekBarBeingTouched) {
-                    val seekData = uiState.seekData
-                    binding.seekBar.update(seekData)
-                    updateTimestamps(binding, seekData.position, seekData.duration)
-                }
-                binding.title.apply {
-                    isVisible = uiState.title != null
-                    text = uiState.title
-                }
+                requirePlaybackUi().onUiState(uiState)
             }
             .launchIn(viewLifecycleOwner.lifecycleScope)
 
         playerViewModel.tracksStates()
-            .onEach { tracksState ->
-                if (tracksState is TracksState.Available) {
-                    bindTracksToPicker(binding, tracksState)
-                }
-            }
+            .onEach { tracksState -> requirePlaybackUi().onTracksState(tracksState) }
             .launchIn(viewLifecycleOwner.lifecycleScope)
 
         playerViewModel.errors()
@@ -194,56 +112,6 @@ class PlayerFragment(
                 .onEach { enterPip() }
                 .launchIn(viewLifecycleOwner.lifecycleScope)
         }
-    }
-
-    private fun SeekBar.update(seekData: SeekData) {
-        max = seekData.duration.inWholeSeconds.toInt()
-        progress = seekData.position.inWholeSeconds.toInt()
-        secondaryProgress = seekData.buffered.inWholeSeconds.toInt()
-    }
-
-    private fun updateTimestamps(
-        binding: PlayerFragmentBinding,
-        position: Duration,
-        duration: Duration
-    ) {
-        binding.position.text = timeFormatter.playerTime(position)
-        binding.remaining.text = timeFormatter.playerTime(duration - position)
-        // todo: content descriptions
-    }
-
-    private fun setPlayPause(
-        imageView: ImageView,
-        isPlaying: Boolean
-    ) {
-        val resource = if (isPlaying) {
-            R.drawable.pause
-        } else {
-            R.drawable.play
-        }
-        imageView.setImageResource(resource)
-    }
-
-    private fun bindTracksToPicker(binding: PlayerFragmentBinding, available: TracksState.Available) {
-        val typesToBind = mapOf(
-            binding.videoTracks to TrackInfo.Type.VIDEO,
-            binding.audioTracks to TrackInfo.Type.AUDIO,
-            binding.textTracks to TrackInfo.Type.TEXT
-        )
-        typesToBind.forEach { entry ->
-            if (entry.value in available.trackTypes) {
-                entry.key.apply {
-                    isVisible = true
-                    setOnClickListener {
-                        navigateToTracksPicker(playerViewModel.tracks().filter { it.type == entry.value })
-                    }
-                }
-            }
-        }
-    }
-
-    private fun navigateToTracksPicker(trackInfos: List<TrackInfo>) {
-        navigator.toDialog(TracksPickerFragment::class.java, TracksPickerFragment.args(trackInfos))
     }
 
     override fun onStart() {
@@ -267,8 +135,9 @@ class PlayerFragment(
     override fun onDestroyView() {
         super.onDestroyView()
         playerViewWrapper = null
-        seekBarListener = null
+        playbackUi = null
     }
 
     private fun requirePlayerViewWrapper() = requireNotNull(playerViewWrapper)
+    private fun requirePlaybackUi() = requireNotNull(playbackUi)
 }
