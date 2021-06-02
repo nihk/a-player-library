@@ -13,25 +13,25 @@ data class PlayerArguments(
     val pipConfig: PictureInPictureConfig? = null,
     val seekConfiguration: SeekConfiguration = SeekConfiguration.DEFAULT,
     val playbackUiFactory: Class<out PlaybackUi.Factory>
-) : Parcelable
-
-@Parcelize
-data class Link(
-    val uri: String,
-    val imageUri: String,
-    val durationMillis: Long
-) : Parcelable
-
-@Parcelize
-data class SeekConfiguration(
-    val forwardAmount: Long,
-    val backwardAmount: Long
 ) : Parcelable {
-    companion object {
-        val DEFAULT = SeekConfiguration(
-            forwardAmount = TimeUnit.SECONDS.toMillis(10L),
-            backwardAmount = TimeUnit.SECONDS.toMillis(10L)
-        )
+    @Parcelize
+    data class Link(
+        val uri: String,
+        val imageUri: String,
+        val durationMillis: Long
+    ) : Parcelable
+
+    @Parcelize
+    data class SeekConfiguration(
+        val forwardAmount: Long,
+        val backwardAmount: Long
+    ) : Parcelable {
+        companion object {
+            val DEFAULT = SeekConfiguration(
+                forwardAmount = TimeUnit.SECONDS.toMillis(10L),
+                backwardAmount = TimeUnit.SECONDS.toMillis(10L)
+            )
+        }
     }
 }
 
