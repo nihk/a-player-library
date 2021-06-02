@@ -13,8 +13,7 @@ import player.ui.shared.NoOpPipController
 import player.ui.shared.PipController
 import player.ui.controller.SnackbarErrorRenderer
 import player.ui.controller.TracksPickerFragment
-import player.ui.shared.PlayerArguments
-import player.ui.shared.PlayerViewModel
+import player.ui.controller.PlayerViewModel
 import player.ui.shared.SharedDependencies
 import player.ui.shared.isMinOsForPip
 

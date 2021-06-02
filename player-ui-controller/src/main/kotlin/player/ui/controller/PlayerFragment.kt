@@ -19,7 +19,6 @@ import player.ui.shared.EnterPipResult
 import player.ui.shared.PipEvent
 import player.ui.shared.PlaybackUi
 import player.ui.shared.PlayerArguments
-import player.ui.shared.PlayerViewModel
 import player.ui.shared.SharedDependencies
 import player.ui.shared.toPlayerArguments
 
@@ -111,6 +110,10 @@ class PlayerFragment(
 
         playerViewModel.errors()
             .onEach { message -> errorRenderer.render(requireView(), message) }
+            .launchIn(viewLifecycleOwner.lifecycleScope)
+
+        playerViewModel.playbackInfos
+            .onEach { playbackInfos -> requirePlaybackUi().onPlaybackInfos(playbackInfos) }
             .launchIn(viewLifecycleOwner.lifecycleScope)
 
         if (playerArguments.pipConfig?.enabled == true) {

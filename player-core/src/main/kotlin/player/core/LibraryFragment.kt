@@ -9,6 +9,7 @@ import player.ui.shared.PlayerArguments
 import player.ui.shared.toBundle
 import player.ui.shared.toPlayerArguments
 
+// todo: add README.md to each module
 class LibraryFragment : Fragment(R.layout.library_fragment) {
     private val playerArguments get() = requireArguments().toPlayerArguments()
     private lateinit var fm: FragmentManager

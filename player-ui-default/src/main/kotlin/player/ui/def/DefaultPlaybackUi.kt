@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.widget.SeekBar
 import androidx.core.view.isVisible
+import player.common.PlaybackInfo
 import player.common.PlayerEvent
 import player.common.SeekData
 import player.common.TrackInfo
@@ -56,15 +57,24 @@ class DefaultPlaybackUi(
             binding.seekBar.update(seekData)
             updateTimestamps(seekData.position, seekData.duration)
         }
-        binding.title.apply {
-            isVisible = uiState.title != null
-            text = uiState.title
-        }
     }
 
     override fun onTracksState(tracksState: TracksState) {
         if (tracksState is TracksState.Available) {
             bindTracksToPicker(tracksState)
+        }
+    }
+
+    override fun onPlaybackInfos(playbackInfos: List<PlaybackInfo>) {
+        playbackInfos.forEach { playbackInfo ->
+            when (playbackInfo) {
+                is PlaybackInfo.MediaTitle -> {
+                    binding.title.apply {
+                        isVisible = true
+                        text = playbackInfo.title
+                    }
+                }
+            }
         }
     }
 

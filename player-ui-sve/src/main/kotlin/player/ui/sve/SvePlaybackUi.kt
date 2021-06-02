@@ -7,6 +7,7 @@ import android.widget.SeekBar
 import androidx.core.view.isVisible
 import coil.ImageLoader
 import coil.imageLoader
+import player.common.PlaybackInfo
 import player.common.PlayerEvent
 import player.common.SeekData
 import player.common.requireNotNull
@@ -30,15 +31,14 @@ class SvePlaybackUi(
     @SuppressLint("InflateParams")
     override val view: View = LayoutInflater.from(deps.context)
         .inflate(R.layout.sve_playback_ui, null)
-
     private val binding = SvePlaybackUiBinding.bind(view)
-
     private val seekBarListener = deps.seekBarListenerFactory.create(
         updateProgress = { position ->
             updateTimestamps(position, playerController.latestSeekData().duration)
         },
         seekTo = playerController::seekTo
     )
+    private val adapter = SveAdapter(imageLoader, deps.navigator, playerArguments, deps.timeFormatter)
 
     init {
         bindControls()
@@ -58,13 +58,32 @@ class SvePlaybackUi(
             binding.seekBar.update(seekData)
             updateTimestamps(seekData.position, seekData.duration)
         }
-        binding.title.apply {
-            isVisible = uiState.title != null
-            text = uiState.title
-        }
     }
 
     override fun onTracksState(tracksState: TracksState) = Unit
+
+    override fun onPlaybackInfos(playbackInfos: List<PlaybackInfo>) {
+        playbackInfos.forEach { playbackInfo ->
+            when (playbackInfo) {
+                is PlaybackInfo.MediaTitle -> {
+                    binding.title.apply {
+                        isVisible = true
+                        text = playbackInfo.title
+                    }
+                }
+                is PlaybackInfo.RelatedMedia -> {
+                    val sveItems = playbackInfo.metadata.map { metadata ->
+                        SveItem(
+                            uri = metadata.uri,
+                            imageUri = metadata.imageUri,
+                            duration = metadata.durationMillis.toDuration(DurationUnit.MILLISECONDS)
+                        )
+                    }
+                    adapter.submitList(sveItems)
+                }
+            }
+        }
+    }
 
     private fun SeekBar.update(seekData: SeekData) {
         max = seekData.duration.inWholeSeconds.toInt()
@@ -73,15 +92,7 @@ class SvePlaybackUi(
     }
 
     private fun bindControls() {
-        val adapter = SveAdapter(imageLoader, deps.navigator, playerArguments, deps.timeFormatter)
-        val sveItems = playerArguments.links.map { link ->
-            SveItem(
-                uri = link.uri,
-                imageUri = link.imageUri,
-                duration = link.durationMillis.toDuration(DurationUnit.MILLISECONDS)
-            )
-        }
-        binding.recyclerView.adapter = adapter.also { it.submitList(sveItems) }
+        binding.recyclerView.adapter = adapter
 
         deps.shareDelegate?.run {
             binding.share.apply {

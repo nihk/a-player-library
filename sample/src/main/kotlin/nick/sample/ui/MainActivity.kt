@@ -13,6 +13,7 @@ import nick.sample.R
 import nick.sample.di.MainEntryPoint
 import nick.sample.navigation.AppNavigation
 
+// todo: remove all dagger / androidx.navigation / MainFragment
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity(R.layout.main_activity) {
     private val viewModel by viewModels<OnUserLeaveHintViewModel>()

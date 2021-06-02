@@ -1,4 +1,4 @@
-package player.ui.shared
+package player.ui.controller
 
 import androidx.lifecycle.AbstractSavedStateViewModelFactory
 import androidx.lifecycle.SavedStateHandle
@@ -25,6 +25,10 @@ import player.common.SeekData
 import player.common.SeekDataUpdater
 import player.common.TrackInfo
 import player.common.requireNotNull
+import player.ui.shared.PlayerController
+import player.ui.shared.PlayerSavedState
+import player.ui.shared.TracksState
+import player.ui.shared.UiState
 import kotlin.time.Duration
 
 class PlayerViewModel(
@@ -52,7 +56,7 @@ class PlayerViewModel(
     private val tracksStates = MutableStateFlow<TracksState>(TracksState.NotAvailable)
     fun tracksStates(): Flow<TracksState> = tracksStates
 
-    private val playbackInfos: StateFlow<List<PlaybackInfo>> = playbackInfoResolver.playbackInfos(uri)
+    val playbackInfos: StateFlow<List<PlaybackInfo>> = playbackInfoResolver.playbackInfos(uri)
         .onEach { playbackInfo -> playbackInfo.sideEffect() }
         .runningFold(emptyList<PlaybackInfo>()) { list, playbackInfo ->
             list + if (playbackInfo is PlaybackInfo.Batched) {
@@ -96,7 +100,6 @@ class PlayerViewModel(
         } else {
             when (this) {
                 is PlaybackInfo.MediaUri -> uiStates.value = uiStates.value.copy(showLoading = false)
-                is PlaybackInfo.MediaTitle -> uiStates.value = uiStates.value.copy(title = title)
             }
         }
     }

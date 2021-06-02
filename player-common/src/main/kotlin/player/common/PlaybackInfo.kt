@@ -17,4 +17,11 @@ sealed class PlaybackInfo {
         )
     }
     data class MediaTitle(val title: String) : PlaybackInfo()
+    data class RelatedMedia(val metadata: List<Metadata>) : PlaybackInfo() {
+        data class Metadata(
+            val uri: String,
+            val imageUri: String,
+            val durationMillis: Long
+        )
+    }
 }

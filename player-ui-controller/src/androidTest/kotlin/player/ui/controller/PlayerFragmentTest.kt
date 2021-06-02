@@ -17,6 +17,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import player.common.DefaultPlaybackInfoResolver
+import player.common.PlaybackInfo
 import player.common.PlayerEvent
 import player.common.PlayerException
 import player.common.PlayerViewWrapper
@@ -32,7 +33,6 @@ import player.ui.shared.PipEvent
 import player.ui.shared.PlaybackUi
 import player.ui.shared.PlayerArguments
 import player.ui.shared.PlayerController
-import player.ui.shared.PlayerViewModel
 import player.ui.shared.SharedDependencies
 import player.ui.shared.TracksState
 import player.ui.shared.UiState
@@ -210,14 +210,10 @@ class NoOpNavigator : Navigator {
 class FakePlaybackUi : PlaybackUi {
     override val view: View get() = FrameLayout(ApplicationProvider.getApplicationContext())
 
-    override fun onPlayerEvent(playerEvent: PlayerEvent) {
-    }
-
-    override fun onUiState(uiState: UiState) {
-    }
-
-    override fun onTracksState(tracksState: TracksState) {
-    }
+    override fun onPlayerEvent(playerEvent: PlayerEvent) = Unit
+    override fun onUiState(uiState: UiState) = Unit
+    override fun onTracksState(tracksState: TracksState) = Unit
+    override fun onPlaybackInfos(playbackInfos: List<PlaybackInfo>) = Unit
 }
 
 class FakePlaybackUiFactory : PlaybackUi.Factory {
