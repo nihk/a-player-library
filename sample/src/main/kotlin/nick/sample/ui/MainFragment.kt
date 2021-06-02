@@ -4,16 +4,15 @@ import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.Fragment
 import androidx.navigation.NavController
-import player.core.LibraryActivity
-import player.ui.shared.PictureInPictureConfig
 import nick.sample.R
 import nick.sample.databinding.MainFragmentBinding
 import nick.sample.navigation.AppNavigation
+import player.core.LibraryActivity
 import player.ui.def.DefaultPlaybackUi
+import player.ui.shared.PictureInPictureConfig
 import player.ui.shared.PlayerArguments
 import player.ui.shared.toBundle
 import player.ui.sve.SvePlaybackUi
-import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 class MainFragment @Inject constructor(

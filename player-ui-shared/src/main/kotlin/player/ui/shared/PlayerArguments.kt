@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.os.Parcelable
 import androidx.core.os.bundleOf
 import kotlinx.parcelize.Parcelize
+import player.common.requireNotNull
 import java.util.concurrent.TimeUnit
 
 @Parcelize
@@ -11,7 +12,7 @@ data class PlayerArguments(
     val uri: String,
     val pipConfig: PictureInPictureConfig? = null,
     val seekConfiguration: SeekConfiguration = SeekConfiguration.DEFAULT,
-    val playbackUiFactory: Class<out PlaybackUi.Factory>
+    val playbackUiFactory: Class<*>
 ) : Parcelable {
     @Parcelize
     data class SeekConfiguration(
@@ -32,5 +33,5 @@ fun PlayerArguments.toBundle(): Bundle {
 }
 
 fun Bundle.toPlayerArguments(): PlayerArguments {
-    return getParcelable("player_arguments")!!
+    return getParcelable<PlayerArguments>("player_arguments").requireNotNull()
 }

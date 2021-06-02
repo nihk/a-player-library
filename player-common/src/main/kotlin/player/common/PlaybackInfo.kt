@@ -17,18 +17,12 @@ sealed class PlaybackInfo {
         )
     }
     data class MediaTitle(val title: String) : PlaybackInfo()
-    // fixme: i want to have a signal for a PlaybackUi.Factory here, but can't because i'm in :common
-    //  one option is use Stringly typed refs to factories, and pass in factories to initializer.
-    //  another is use a Class<*>.
-    //  ^both aren't ideal.
-    //  there might need to be some kind of refactor, e.g. moving playbackUi to common, but that's
-    //  not great either.
-    //  Maybe downcast to a type with a create(SharedDependencies)?
     data class RelatedMedia(val metadata: List<Metadata>) : PlaybackInfo() {
         data class Metadata(
             val uri: String,
             val imageUri: String,
-            val durationMillis: Long
+            val durationMillis: Long,
+            val playbackUiFactory: Class<*>
         )
     }
 }

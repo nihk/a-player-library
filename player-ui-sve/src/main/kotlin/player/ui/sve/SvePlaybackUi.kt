@@ -76,7 +76,8 @@ class SvePlaybackUi(
                         SveItem(
                             uri = metadata.uri,
                             imageUri = metadata.imageUri,
-                            duration = metadata.durationMillis.toDuration(DurationUnit.MILLISECONDS)
+                            duration = metadata.durationMillis.toDuration(DurationUnit.MILLISECONDS),
+                            playbackUiFactory = metadata.playbackUiFactory
                         )
                     }
                     adapter.submitList(sveItems)

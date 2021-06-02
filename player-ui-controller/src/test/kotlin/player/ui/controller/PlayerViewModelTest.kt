@@ -83,7 +83,7 @@ class PlayerViewModelTest {
     fun `player did tear down when app is backgrounded`() = playerViewModel {
         getPlayer()
         onAppBackgrounded()
-        assertReleased()
+        assertReleased(times = 1)
     }
 
     @Test
@@ -181,12 +181,8 @@ class PlayerViewModelTest {
             assertTrue(tracksState in emittedTrackStates)
         }
 
-        fun assertReleased() {
-            assertTrue(appPlayer.didRelease)
-        }
-
-        fun assertNotReleased() {
-            assertFalse(appPlayer.didRelease)
+        fun assertReleased(times: Int) {
+            assertEquals(times, appPlayer.releaseCount)
         }
     }
 }

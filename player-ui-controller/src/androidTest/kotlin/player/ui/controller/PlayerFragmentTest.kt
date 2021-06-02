@@ -98,6 +98,7 @@ class PlayerFragmentTest {
         private val timeFormatter = FakeTimeFormatter()
         private val navigator = NoOpNavigator()
         private val seekBarListenerFactory = DefaultSeekBarListener.Factory()
+        private val playbackUiFactories = listOf(FakePlaybackUiFactory())
         private val scenario: FragmentScenario<PlayerFragment>
 
         init {
@@ -120,6 +121,7 @@ class PlayerFragmentTest {
                 PlayerFragment(
                     vmFactory = vmFactory,
                     playerViewWrapperFactory = playerViewWrapperFactory,
+                    playbackUiFactories = playbackUiFactories,
                     errorRenderer = errorRenderer,
                     deps = SharedDependencies(
                         shareDelegate = shareDelegate,

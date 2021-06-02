@@ -36,6 +36,7 @@ internal class LibraryModule(
             PlayerFragment(
                 vmFactory = playerViewModelFactory,
                 playerViewWrapperFactory = module.playerViewWrapperFactory,
+                playbackUiFactories = LibraryInitializer.playbackUiFactories(),
                 errorRenderer = SnackbarErrorRenderer(),
                 deps = SharedDependencies(
                     context = activity,

@@ -22,7 +22,11 @@ class SveViewHolder(
         binding.image.load(sveItem.imageUri, imageLoader)
         binding.duration.text = timeFormatter.playerTime(sveItem.duration)
         binding.root.setOnClickListener {
-            navigator.toPlayer(playerArguments.copy(uri = sveItem.uri))
+            val args = playerArguments.copy(
+                uri = sveItem.uri,
+                playbackUiFactory = sveItem.playbackUiFactory
+            )
+            navigator.toPlayer(args)
         }
     }
 }
