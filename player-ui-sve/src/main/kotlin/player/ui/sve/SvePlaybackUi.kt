@@ -11,6 +11,7 @@ import player.common.PlayerEvent
 import player.common.SeekData
 import player.common.requireNotNull
 import player.ui.shared.PlaybackUi
+import player.ui.shared.PlayerArguments
 import player.ui.shared.PlayerController
 import player.ui.shared.SharedDependencies
 import player.ui.shared.TracksState
@@ -23,6 +24,7 @@ import kotlin.time.toDuration
 class SvePlaybackUi(
     private val deps: SharedDependencies,
     private val playerController: PlayerController,
+    private val playerArguments: PlayerArguments,
     private val imageLoader: ImageLoader
 ) : PlaybackUi {
     @SuppressLint("InflateParams")
@@ -71,8 +73,8 @@ class SvePlaybackUi(
     }
 
     private fun bindControls() {
-        val adapter = SveAdapter(imageLoader, deps.navigator, deps.playerArguments, deps.timeFormatter)
-        val sveItems = deps.playerArguments.links.map { link ->
+        val adapter = SveAdapter(imageLoader, deps.navigator, playerArguments, deps.timeFormatter)
+        val sveItems = playerArguments.links.map { link ->
             SveItem(
                 uri = link.uri,
                 imageUri = link.imageUri,
@@ -85,7 +87,7 @@ class SvePlaybackUi(
             binding.share.apply {
                 isVisible = true
                 setOnClickListener {
-                    share(deps.context, deps.playerArguments.uri)
+                    share(deps.context, playerArguments.uri)
                 }
             }
         }
@@ -102,11 +104,11 @@ class SvePlaybackUi(
         }
 
         binding.seekBackward.setOnClickListener {
-            val amount = -deps.playerArguments.seekConfiguration.backwardAmount.toDuration(DurationUnit.MILLISECONDS)
+            val amount = -playerArguments.seekConfiguration.backwardAmount.toDuration(DurationUnit.MILLISECONDS)
             playerController.seekRelative(amount)
         }
         binding.seekForward.setOnClickListener {
-            val amount = deps.playerArguments.seekConfiguration.forwardAmount.toDuration(DurationUnit.MILLISECONDS)
+            val amount = playerArguments.seekConfiguration.forwardAmount.toDuration(DurationUnit.MILLISECONDS)
             playerController.seekRelative(amount)
         }
     }
@@ -132,10 +134,11 @@ class SvePlaybackUi(
     class Factory : PlaybackUi.Factory {
         override fun create(
             deps: SharedDependencies,
-            playerController: PlayerController
+            playerController: PlayerController,
+            playerArguments: PlayerArguments
         ): PlaybackUi {
             val imageLoader = deps.context.applicationContext.imageLoader
-            return SvePlaybackUi(deps, playerController, imageLoader)
+            return SvePlaybackUi(deps, playerController, playerArguments, imageLoader)
         }
     }
 }

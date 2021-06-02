@@ -123,7 +123,6 @@ class PlayerFragmentTest {
                     playerViewWrapperFactory = playerViewWrapperFactory,
                     errorRenderer = errorRenderer,
                     deps = SharedDependencies(
-                        playerArguments = args,
                         shareDelegate = shareDelegate,
                         context = ApplicationProvider.getApplicationContext(),
                         seekBarListenerFactory = seekBarListenerFactory,
@@ -229,7 +228,8 @@ class FakePlaybackUi : PlaybackUi {
 class FakePlaybackUiFactory : PlaybackUi.Factory {
     override fun create(
         deps: SharedDependencies,
-        playerController: PlayerController
+        playerController: PlayerController,
+        playerArguments: PlayerArguments
     ): PlaybackUi {
         return FakePlaybackUi()
     }

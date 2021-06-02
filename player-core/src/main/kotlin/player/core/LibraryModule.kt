@@ -20,8 +20,7 @@ import player.ui.shared.isMinOsForPip
 
 internal class LibraryModule(
     private val activity: FragmentActivity,
-    private val fragmentManager: FragmentManager,
-    private val playerArguments: PlayerArguments
+    private val fragmentManager: FragmentManager
 ) {
     val fragmentFactory: FragmentFactory get() = LibraryFragmentFactory(fragmentMap)
 
@@ -40,7 +39,6 @@ internal class LibraryModule(
                 playerViewWrapperFactory = module.playerViewWrapperFactory,
                 errorRenderer = SnackbarErrorRenderer(),
                 deps = SharedDependencies(
-                    playerArguments = playerArguments,
                     context = activity,
                     shareDelegate = LibraryInitializer.shareDelegate(),
                     seekBarListenerFactory = DefaultSeekBarListener.Factory(),

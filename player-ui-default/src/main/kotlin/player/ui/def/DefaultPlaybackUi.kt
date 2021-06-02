@@ -11,6 +11,7 @@ import player.common.TrackInfo
 import player.common.requireNotNull
 import player.ui.def.databinding.DefaultPlaybackUiBinding
 import player.ui.shared.PlaybackUi
+import player.ui.shared.PlayerArguments
 import player.ui.shared.PlayerController
 import player.ui.shared.SharedDependencies
 import player.ui.shared.TracksState
@@ -23,6 +24,7 @@ import kotlin.time.toDuration
 class DefaultPlaybackUi(
     private val deps: SharedDependencies,
     private val playerController: PlayerController,
+    private val playerArguments: PlayerArguments,
 ) : PlaybackUi {
     @SuppressLint("InflateParams")
     override val view: View = LayoutInflater.from(deps.context)
@@ -99,7 +101,7 @@ class DefaultPlaybackUi(
             binding.share.apply {
                 isVisible = true
                 setOnClickListener {
-                    share(deps.context, deps.playerArguments.uri)
+                    share(deps.context, playerArguments.uri)
                 }
             }
         }
@@ -116,11 +118,11 @@ class DefaultPlaybackUi(
         }
 
         binding.seekBackward.setOnClickListener {
-            val amount = -deps.playerArguments.seekConfiguration.backwardAmount.toDuration(DurationUnit.MILLISECONDS)
+            val amount = -playerArguments.seekConfiguration.backwardAmount.toDuration(DurationUnit.MILLISECONDS)
             playerController.seekRelative(amount)
         }
         binding.seekForward.setOnClickListener {
-            val amount = deps.playerArguments.seekConfiguration.forwardAmount.toDuration(DurationUnit.MILLISECONDS)
+            val amount = playerArguments.seekConfiguration.forwardAmount.toDuration(DurationUnit.MILLISECONDS)
             playerController.seekRelative(amount)
         }
     }
@@ -146,9 +148,10 @@ class DefaultPlaybackUi(
     class Factory : PlaybackUi.Factory {
         override fun create(
             deps: SharedDependencies,
-            playerController: PlayerController
+            playerController: PlayerController,
+            playerArguments: PlayerArguments
         ): PlaybackUi {
-            return DefaultPlaybackUi(deps, playerController)
+            return DefaultPlaybackUi(deps, playerController, playerArguments)
         }
     }
 }

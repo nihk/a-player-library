@@ -17,7 +17,7 @@ class LibraryFragment : Fragment(R.layout.library_fragment) {
         if (context is LibraryActivity) {
             fm = requireActivity().supportFragmentManager
         } else {
-            val libraryModule = LibraryModule(requireActivity(), childFragmentManager, playerArguments)
+            val libraryModule = LibraryModule(requireActivity(), childFragmentManager)
             childFragmentManager.fragmentFactory = libraryModule.fragmentFactory
             fm = childFragmentManager
         }

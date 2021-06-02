@@ -13,7 +13,8 @@ interface PlaybackUi {
     interface Factory {
         fun create(
             deps: SharedDependencies,
-            playerController: PlayerController
+            playerController: PlayerController,
+            playerArguments: PlayerArguments
         ): PlaybackUi
     }
 }

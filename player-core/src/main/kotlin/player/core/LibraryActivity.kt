@@ -19,7 +19,7 @@ abstract class LibraryActivity : AppCompatActivity(R.layout.library_activity) {
     private val playerArguments get() = intent.extras?.toPlayerArguments().requireNotNull()
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        val module = LibraryModule(this, supportFragmentManager, playerArguments)
+        val module = LibraryModule(this, supportFragmentManager)
         supportFragmentManager.fragmentFactory = module.fragmentFactory
         super.onCreate(savedInstanceState)
 
