@@ -9,7 +9,6 @@ import player.common.AppPlayer
 import player.common.PlayerEvent
 import player.common.PlayerEventStream
 import player.common.PlayerException
-import player.common.TAG
 
 internal class MediaPlayerEventStream : PlayerEventStream {
     override fun listen(appPlayer: AppPlayer): Flow<PlayerEvent> = callbackFlow {
@@ -64,7 +63,7 @@ internal class MediaPlayerEventStream : PlayerEventStream {
 
         awaitClose {
             mediaPlayer.run {
-                Log.d(TAG, "Closing player event stream")
+                Log.d("asdf", "Closing player event stream")
                 setOnErrorListener(null)
                 setOnBufferingUpdateListener(null)
                 setOnCompletionListener(null)

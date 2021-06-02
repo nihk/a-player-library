@@ -7,7 +7,7 @@ import androidx.navigation.NavController
 import androidx.navigation.createGraph
 import androidx.navigation.fragment.fragment
 import dagger.hilt.android.AndroidEntryPoint
-import player.common.OnUserLeaveHintViewModel
+import player.ui.shared.OnUserLeaveHintViewModel
 import player.core.LibraryFragment
 import nick.sample.R
 import nick.sample.di.MainEntryPoint

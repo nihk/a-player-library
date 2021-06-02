@@ -6,6 +6,12 @@ object Modules {
         const val exoplayer = "$prefix-exoplayer"
         const val mediaplayer = "$prefix-mediaplayer"
         const val test = "$prefix-test"
-        const val ui = "$prefix-ui"
+        object Ui {
+            private const val prefix = "${Player.prefix}-ui"
+            const val shared = "$prefix-shared"
+            const val default = "$prefix-default"
+            const val sve = "$prefix-sve"
+            const val controller = "$prefix-controller"
+        }
     }
 }

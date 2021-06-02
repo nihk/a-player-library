@@ -2,20 +2,19 @@ package player.core
 
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentFactory
-import coil.imageLoader
-import player.common.PlayerArguments
 import player.common.PlayerModule
-import player.common.isMinOsForPip
-import player.ui.AndroidPipController
-import player.ui.playbackui.DefaultPlaybackUiFactory
-import player.ui.DefaultSeekBarListener
-import player.ui.Navigator
-import player.ui.NoOpPipController
-import player.ui.PipController
-import player.ui.PlayerFragment
-import player.ui.PlayerViewModel
-import player.ui.SnackbarErrorRenderer
-import player.ui.TracksPickerFragment
+import player.ui.controller.PlayerFragment
+import player.ui.shared.AndroidPipController
+import player.ui.shared.DefaultSeekBarListener
+import player.ui.shared.Navigator
+import player.ui.shared.NoOpPipController
+import player.ui.shared.PipController
+import player.ui.controller.SnackbarErrorRenderer
+import player.ui.controller.TracksPickerFragment
+import player.ui.shared.PlayerArguments
+import player.ui.shared.PlayerViewModel
+import player.ui.shared.SharedDependencies
+import player.ui.shared.isMinOsForPip
 
 internal class LibraryModule(
     private val fragment: Fragment,
@@ -36,17 +35,15 @@ internal class LibraryModule(
             PlayerFragment(
                 vmFactory = playerViewModelFactory,
                 playerViewWrapperFactory = module.playerViewWrapperFactory,
-                pipController = pipController,
                 errorRenderer = SnackbarErrorRenderer(),
-                playbackUiFactory = DefaultPlaybackUiFactory(
+                deps = SharedDependencies(
                     playerArguments = playerArguments,
-                    activity = fragment.requireActivity(),
+                    context = fragment.requireContext(),
                     shareDelegate = LibraryInitializer.shareDelegate(),
                     seekBarListenerFactory = DefaultSeekBarListener.Factory(),
                     timeFormatter = LibraryInitializer.timeFormatter(),
                     pipController = pipController,
                     navigator = navigator,
-                    imageLoader = fragment.requireContext().applicationContext.imageLoader
                 )
             )
         },
@@ -61,8 +58,9 @@ internal class LibraryModule(
         seekDataUpdater = module.seekDataUpdater
     )
 
-    private val navigator: Navigator get() = LibraryNavigator(
-        fragment.childFragmentManager,
-        R.id.container
-    )
+    private val navigator: Navigator
+        get() = LibraryNavigator(
+            fragment.childFragmentManager,
+            R.id.container
+        )
 }

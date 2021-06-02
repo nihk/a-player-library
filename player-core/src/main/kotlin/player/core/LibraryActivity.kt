@@ -7,11 +7,12 @@ import android.os.Bundle
 import android.os.Process
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import player.common.OnUserLeaveHintViewModel
-import player.common.PlayerArguments
-import player.common.toBundle
-import player.common.isMinOsForPip
-import player.common.toPlayerArguments
+import player.common.requireNotNull
+import player.ui.shared.OnUserLeaveHintViewModel
+import player.ui.shared.PlayerArguments
+import player.ui.shared.isMinOsForPip
+import player.ui.shared.toBundle
+import player.ui.shared.toPlayerArguments
 
 // fixme: back presses for nested videos aren't working as expected - it just pops off the entire activity
 abstract class LibraryActivity : AppCompatActivity(R.layout.library_activity) {
@@ -25,7 +26,7 @@ abstract class LibraryActivity : AppCompatActivity(R.layout.library_activity) {
             supportFragmentManager.beginTransaction()
                 .replace(
                     R.id.container,
-                    LibraryFragment.create(intent.extras?.toPlayerArguments()!!)
+                    LibraryFragment.create(intent.extras?.toPlayerArguments().requireNotNull())
                 )
                 .commit()
         }

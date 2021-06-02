@@ -3,10 +3,10 @@ package player.core
 import android.content.Context
 import android.os.Bundle
 import androidx.fragment.app.Fragment
-import player.common.PlayerArguments
-import player.common.toBundle
-import player.common.toPlayerArguments
-import player.ui.PlayerFragment
+import player.ui.controller.PlayerFragment
+import player.ui.shared.PlayerArguments
+import player.ui.shared.toBundle
+import player.ui.shared.toPlayerArguments
 
 class LibraryFragment : Fragment(R.layout.library_fragment) {
 

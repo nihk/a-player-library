@@ -15,7 +15,6 @@ import player.common.AppPlayer
 import player.common.PlayerEvent
 import player.common.PlayerEventStream
 import player.common.PlayerException
-import player.common.TAG
 
 internal class ExoPlayerEventStream(
     private val trackNameProvider: TrackNameProvider
@@ -78,7 +77,7 @@ internal class ExoPlayerEventStream(
         }
 
         awaitClose {
-            Log.d(TAG, "Removing player listeners")
+            Log.d("asdf", "Removing player listeners")
             player.run {
                 removeListener(listener)
                 (this as? SimpleExoPlayer)?.removeAnalyticsListener(listener)

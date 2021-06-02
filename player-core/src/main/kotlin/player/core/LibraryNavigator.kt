@@ -1,16 +1,14 @@
 package player.core
 
-import android.os.Bundle
 import androidx.annotation.IdRes
-import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.commit
-import player.common.PlayerArguments
 import player.common.TrackInfo
-import player.common.toBundle
-import player.ui.Navigator
-import player.ui.PlayerFragment
-import player.ui.TracksPickerFragment
+import player.ui.controller.PlayerFragment
+import player.ui.controller.TracksPickerFragment
+import player.ui.shared.Navigator
+import player.ui.shared.PlayerArguments
+import player.ui.shared.toBundle
 
 internal class LibraryNavigator(
     private val fragmentManager: FragmentManager,

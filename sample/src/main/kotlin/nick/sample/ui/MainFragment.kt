@@ -5,14 +5,15 @@ import android.view.View
 import androidx.fragment.app.Fragment
 import androidx.navigation.NavController
 import player.core.LibraryActivity
-import player.common.PictureInPictureConfig
-import player.common.PlayerArguments
-import player.common.toBundle
+import player.ui.shared.PictureInPictureConfig
 import nick.sample.R
 import nick.sample.databinding.MainFragmentBinding
 import nick.sample.navigation.AppNavigation
-import player.common.Link
-import player.common.PlaybackUiType
+import player.ui.def.DefaultPlaybackUi
+import player.ui.shared.Link
+import player.ui.shared.PlayerArguments
+import player.ui.shared.toBundle
+import player.ui.sve.SvePlaybackUi
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
@@ -44,10 +45,10 @@ class MainFragment @Inject constructor(
                 enabled = binding.enablePip.isChecked,
                 onBackPresses = false
             ),
-            playbackUiType = if (binding.defaultUi.isChecked) {
-                PlaybackUiType.Default
+            playbackUiFactory = if (binding.defaultUi.isChecked) {
+                DefaultPlaybackUi.Factory::class.java
             } else {
-                PlaybackUiType.ShortVideoExperience
+                SvePlaybackUi.Factory::class.java
             },
             links = listOf(
                 Link(

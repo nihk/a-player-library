@@ -1,17 +1,17 @@
 package nick.sample.data
 
+import android.content.Context
 import android.content.Intent
-import androidx.fragment.app.FragmentActivity
 import player.common.ShareDelegate
 
 class AndroidShareDelegate : ShareDelegate {
-    override fun share(activity: FragmentActivity, uri: String) {
+    override fun share(context: Context, uri: String) {
         val sendIntent = Intent().apply {
             action = Intent.ACTION_SEND
             putExtra(Intent.EXTRA_TEXT, uri)
             type = "text/plain"
         }
         val shareIntent = Intent.createChooser(sendIntent, null)
-        activity.startActivity(shareIntent)
+        context.startActivity(shareIntent)
     }
 }

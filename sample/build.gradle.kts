@@ -25,6 +25,8 @@ dependencies {
     implementation(project(Modules.Player.core))
     implementation(project(Modules.Player.exoplayer))
     implementation(project(Modules.Player.mediaplayer))
+    implementation(project(Modules.Player.Ui.default))
+    implementation(project(Modules.Player.Ui.sve))
 
     implementation(Dependencies.activity)
     implementation(Dependencies.appCompat)
