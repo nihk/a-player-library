@@ -18,4 +18,3 @@ sealed class PlaybackInfo {
     }
     data class MediaTitle(val title: String) : PlaybackInfo()
 }
-
