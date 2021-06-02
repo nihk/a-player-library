@@ -1,7 +1,6 @@
 package nick.sample
 
 import android.app.Application
-import dagger.hilt.android.HiltAndroidApp
 import nick.sample.data.AndroidShareDelegate
 import nick.sample.data.LoggingPlayerTelemetry
 import nick.sample.data.SlowPlaybackInfoResolver
@@ -10,7 +9,6 @@ import player.exoplayer.ExoPlayerModule
 import player.ui.def.DefaultPlaybackUi
 import player.ui.sve.SvePlaybackUi
 
-@HiltAndroidApp
 class App : Application() {
     override fun onCreate() {
         super.onCreate()

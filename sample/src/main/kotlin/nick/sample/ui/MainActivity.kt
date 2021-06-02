@@ -3,36 +3,56 @@ package nick.sample.ui
 import android.os.Bundle
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.navigation.NavController
-import androidx.navigation.createGraph
-import androidx.navigation.fragment.fragment
-import dagger.hilt.android.AndroidEntryPoint
-import player.ui.shared.OnUserLeaveHintViewModel
-import player.core.LibraryFragment
+import androidx.fragment.app.commit
 import nick.sample.R
-import nick.sample.di.MainEntryPoint
-import nick.sample.navigation.AppNavigation
+import nick.sample.databinding.MainActivityBinding
+import player.core.LibraryActivity
+import player.core.LibraryFragment
+import player.ui.def.DefaultPlaybackUi
+import player.ui.shared.OnUserLeaveHintViewModel
+import player.ui.shared.PictureInPictureConfig
+import player.ui.shared.PlayerArguments
+import player.ui.shared.toBundle
+import player.ui.sve.SvePlaybackUi
 
-// todo: remove all dagger / androidx.navigation / MainFragment
-@AndroidEntryPoint
-class MainActivity : AppCompatActivity(R.layout.main_activity) {
+class MainActivity : AppCompatActivity() {
     private val viewModel by viewModels<OnUserLeaveHintViewModel>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        val entryPoint = entryPoint<MainEntryPoint>()
-        supportFragmentManager.fragmentFactory = entryPoint.fragmentFactory
         super.onCreate(savedInstanceState)
-        createNavGraph(entryPoint.navController)
+        val binding = MainActivityBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+
+        binding.toPlayerFragment.setOnClickListener {
+            val playerArguments = createPlayerArguments(binding)
+            supportFragmentManager.commit {
+                replace(android.R.id.content, LibraryFragment::class.java, playerArguments.toBundle())
+                addToBackStack(null)
+            }
+        }
+
+        binding.toPlayerActivity.setOnClickListener {
+            val playerArguments = createPlayerArguments(binding)
+            LibraryActivity.start(
+                context = this,
+                playerArguments = playerArguments
+            )
+        }
     }
 
-    private fun createNavGraph(navController: NavController) {
-        navController.graph = navController.createGraph(
-            id = AppNavigation.id,
-            startDestination = AppNavigation.main
-        ) {
-            fragment<MainFragment>(AppNavigation.main)
-            fragment<LibraryFragment>(AppNavigation.library)
-        }
+    private fun createPlayerArguments(binding: MainActivityBinding): PlayerArguments {
+        return PlayerArguments(
+            uri = "https://devstreaming-cdn.apple.com/videos/streaming/examples/bipbop_16x9/bipbop_16x9_variant.m3u8",
+            pipConfig = PictureInPictureConfig(
+                enabled = binding.enablePip.isChecked,
+                onBackPresses = true
+            ),
+            playbackUiFactory = if (binding.defaultUi.isChecked) {
+                DefaultPlaybackUi.Factory::class.java
+            } else {
+                SvePlaybackUi.Factory::class.java
+            }
+        )
     }
 
     override fun onUserLeaveHint() {
