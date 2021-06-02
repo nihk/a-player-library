@@ -27,7 +27,7 @@ class FakeAppPlayerFactory(val appPlayer: AppPlayer) : AppPlayer.Factory {
 class FakeAppPlayer(
     val fakeTracks: MutableList<TrackInfo> = mutableListOf()
 ) : AppPlayer {
-    var didRelease: Boolean = false
+    var releaseCount = 0
     val collectedEvents = mutableListOf<PlayerEvent>()
 
     override val state: PlayerState get() = PlayerState.INITIAL
@@ -54,7 +54,7 @@ class FakeAppPlayer(
     }
 
     override fun release() {
-        didRelease = true
+        ++releaseCount
     }
 
     override fun handleTrackInfoAction(action: TrackInfo.Action) = Unit

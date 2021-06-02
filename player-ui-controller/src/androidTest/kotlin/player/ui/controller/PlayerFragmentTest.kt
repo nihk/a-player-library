@@ -13,12 +13,10 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.filterNotNull
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import player.common.DefaultPlaybackInfoResolver
-import player.ui.shared.PictureInPictureConfig
 import player.common.PlayerEvent
 import player.common.PlayerException
 import player.common.PlayerViewWrapper
@@ -28,6 +26,7 @@ import player.test.NoOpPlayerViewWrapper
 import player.ui.shared.DefaultSeekBarListener
 import player.ui.shared.EnterPipResult
 import player.ui.shared.Navigator
+import player.ui.shared.PictureInPictureConfig
 import player.ui.shared.PipController
 import player.ui.shared.PipEvent
 import player.ui.shared.PlaybackUi
@@ -48,14 +47,14 @@ class PlayerFragmentTest {
         assertPlayerCreated(times = 1)
         assertPlayerAttached(times = 1)
         assertPlayerDetached(times = 0)
-        assertPlayerNotReleased()
+        assertPlayerReleased(times = 0)
 
         destroy()
 
         assertPlayerCreated(times = 1)
         assertPlayerAttached(times = 1)
         assertPlayerDetached(times = 1)
-        assertPlayerReleased()
+        assertPlayerReleased(times = 1)
     }
 
     @Test
@@ -63,14 +62,14 @@ class PlayerFragmentTest {
         assertPlayerCreated(times = 1)
         assertPlayerAttached(times = 1)
         assertPlayerDetached(times = 0)
-        assertPlayerNotReleased()
+        assertPlayerReleased(times = 0)
 
         recreate()
 
         assertPlayerCreated(times = 1)
         assertPlayerAttached(times = 2)
         assertPlayerDetached(times = 1)
-        assertPlayerNotReleased()
+        assertPlayerReleased(times = 0)
     }
 
     @Test
@@ -158,12 +157,8 @@ class PlayerFragmentTest {
             assertEquals(times, playerViewWrapper.detachCount)
         }
 
-        fun assertPlayerReleased() {
-            assertTrue(appPlayer.didRelease)
-        }
-
-        fun assertPlayerNotReleased() {
-            assertFalse(appPlayer.didRelease)
+        fun assertPlayerReleased(times: Int) {
+            assertEquals(times, appPlayer.releaseCount)
         }
 
         fun assertErrorMessageRendered(string: String) {
