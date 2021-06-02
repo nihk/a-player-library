@@ -1,4 +1,4 @@
-package player.ui.shared
+package player.ui.controller
 
 import androidx.lifecycle.SavedStateHandle
 import player.common.PlayerState

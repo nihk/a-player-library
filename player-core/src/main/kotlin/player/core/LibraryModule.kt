@@ -5,11 +5,11 @@ import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentFactory
 import androidx.fragment.app.FragmentManager
 import player.common.PlayerModule
+import player.ui.controller.AndroidPipController
+import player.ui.controller.NoOpPipController
 import player.ui.controller.PlayerFragment
-import player.ui.shared.AndroidPipController
 import player.ui.shared.DefaultSeekBarListener
 import player.ui.shared.Navigator
-import player.ui.shared.NoOpPipController
 import player.ui.shared.PipController
 import player.ui.controller.SnackbarErrorRenderer
 import player.ui.controller.TracksPickerFragment

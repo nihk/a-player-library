@@ -15,7 +15,6 @@ import org.junit.Test
 import player.common.DefaultPlaybackInfoResolver
 import player.common.PlayerEvent
 import player.common.PlayerState
-import player.ui.shared.PlayerSavedState
 import player.ui.shared.TracksState
 
 class PlayerViewModelTest {

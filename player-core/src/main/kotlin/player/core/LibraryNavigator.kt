@@ -10,6 +10,7 @@ import player.ui.shared.Navigator
 import player.ui.shared.PlayerArguments
 import player.ui.shared.toBundle
 
+// todo: fragment transitions/animations
 internal class LibraryNavigator(
     private val fragmentManager: FragmentManager,
     @IdRes private val containerId: Int
