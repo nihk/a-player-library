@@ -26,4 +26,13 @@ internal class LibraryNavigator(
             addToBackStack(null)
         }
     }
+
+    override fun pop(): Boolean {
+        return if (fragmentManager.backStackEntryCount > 0) {
+            fragmentManager.popBackStack()
+            true
+        } else {
+            false
+        }
+    }
 }

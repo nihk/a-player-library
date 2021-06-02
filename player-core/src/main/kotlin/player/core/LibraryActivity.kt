@@ -14,19 +14,20 @@ import player.ui.shared.isMinOsForPip
 import player.ui.shared.toBundle
 import player.ui.shared.toPlayerArguments
 
-// fixme: back presses for nested videos aren't working as expected - it just pops off the entire activity
 abstract class LibraryActivity : AppCompatActivity(R.layout.library_activity) {
-
     private val onUserLeaveHintViewModel: OnUserLeaveHintViewModel by viewModels()
+    private val playerArguments get() = intent.extras?.toPlayerArguments().requireNotNull()
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        val module = LibraryModule(this, supportFragmentManager, playerArguments)
+        supportFragmentManager.fragmentFactory = module.fragmentFactory
         super.onCreate(savedInstanceState)
 
         if (savedInstanceState == null) {
             supportFragmentManager.beginTransaction()
                 .replace(
                     R.id.container,
-                    LibraryFragment.create(intent.extras?.toPlayerArguments().requireNotNull())
+                    LibraryFragment.create(playerArguments)
                 )
                 .commit()
         }

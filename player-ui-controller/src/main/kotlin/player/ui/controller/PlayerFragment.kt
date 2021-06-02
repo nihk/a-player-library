@@ -47,16 +47,26 @@ class PlayerFragment(
     }
 
     private fun setUpBackPressHandling() {
-        val pipConfig = playerArguments.pipConfig
-        val pipOnBackPress = pipConfig?.enabled == true && pipConfig.onBackPresses
-        if (!pipOnBackPress) return
-
         val onBackPressed = object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
-                val result = enterPip()
-                if (result == EnterPipResult.DidNotEnterPip) {
+                if (deps.navigator.pop()) {
+                    return
+                }
+
+                fun yield() {
                     isEnabled = false
                     requireActivity().onBackPressed()
+                }
+
+                val pipConfig = playerArguments.pipConfig
+                val pipOnBackPress = pipConfig?.enabled == true && pipConfig.onBackPresses
+                if (pipOnBackPress) {
+                    val result = enterPip()
+                    if (result == EnterPipResult.DidNotEnterPip) {
+                        yield()
+                    }
+                } else {
+                    yield()
                 }
             }
         }

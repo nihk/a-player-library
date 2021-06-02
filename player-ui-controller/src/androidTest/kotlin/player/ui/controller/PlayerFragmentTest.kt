@@ -210,6 +210,7 @@ class FakeErrorRenderer : ErrorRenderer {
 class NoOpNavigator : Navigator {
     override fun toPlayer(playerArguments: PlayerArguments) = Unit
     override fun toTracksPicker(trackInfos: List<TrackInfo>) = Unit
+    override fun pop(): Boolean = false
 }
 
 class FakePlaybackUi : PlaybackUi {

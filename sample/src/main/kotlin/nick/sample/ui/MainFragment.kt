@@ -42,7 +42,7 @@ class MainFragment @Inject constructor(
             uri = "https://devstreaming-cdn.apple.com/videos/streaming/examples/bipbop_16x9/bipbop_16x9_variant.m3u8",
             pipConfig = PictureInPictureConfig(
                 enabled = binding.enablePip.isChecked,
-                onBackPresses = false
+                onBackPresses = true
             ),
             playbackUiFactory = if (binding.defaultUi.isChecked) {
                 DefaultPlaybackUi.Factory::class.java

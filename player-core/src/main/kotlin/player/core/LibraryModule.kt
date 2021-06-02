@@ -1,7 +1,9 @@
 package player.core
 
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentFactory
+import androidx.fragment.app.FragmentManager
 import player.common.PlayerModule
 import player.ui.controller.PlayerFragment
 import player.ui.shared.AndroidPipController
@@ -17,7 +19,8 @@ import player.ui.shared.SharedDependencies
 import player.ui.shared.isMinOsForPip
 
 internal class LibraryModule(
-    private val fragment: Fragment,
+    private val activity: FragmentActivity,
+    private val fragmentManager: FragmentManager,
     private val playerArguments: PlayerArguments
 ) {
     val fragmentFactory: FragmentFactory get() = LibraryFragmentFactory(fragmentMap)
@@ -25,7 +28,7 @@ internal class LibraryModule(
     private val module: PlayerModule = LibraryInitializer.playerModule()
 
     private val pipController: PipController = if (isMinOsForPip) {
-        AndroidPipController(fragment.requireActivity())
+        AndroidPipController(activity)
     } else {
         NoOpPipController()
     }
@@ -38,7 +41,7 @@ internal class LibraryModule(
                 errorRenderer = SnackbarErrorRenderer(),
                 deps = SharedDependencies(
                     playerArguments = playerArguments,
-                    context = fragment.requireContext(),
+                    context = activity,
                     shareDelegate = LibraryInitializer.shareDelegate(),
                     seekBarListenerFactory = DefaultSeekBarListener.Factory(),
                     timeFormatter = LibraryInitializer.timeFormatter(),
@@ -59,8 +62,5 @@ internal class LibraryModule(
     )
 
     private val navigator: Navigator
-        get() = LibraryNavigator(
-            fragment.childFragmentManager,
-            R.id.container
-        )
+        get() = LibraryNavigator(fragmentManager, R.id.container)
 }
