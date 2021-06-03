@@ -10,9 +10,9 @@ import androidx.fragment.app.setFragmentResult
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import player.common.TrackInfo
-import player.common.databinding.TrackItemBinding
-import player.common.databinding.TracksFragmentBinding
 import player.common.requireNotNull
+import player.ui.controller.databinding.TrackItemBinding
+import player.ui.controller.databinding.TracksFragmentBinding
 
 // fixme: if tracks update while this Fragment is open, this Fragment doesn't get updated.
 //  do not use an activity scoped PlayerViewModel for this (VM/player instance should always

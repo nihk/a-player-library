@@ -11,7 +11,6 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import player.common.databinding.PlayerFragmentBinding
 import player.common.ui.OnUserLeaveHintViewModel
 import player.common.ui.PlayerViewWrapper
 import player.common.ui.EnterPipResult
@@ -20,6 +19,7 @@ import player.common.ui.PlaybackUi
 import player.common.ui.PlayerArguments
 import player.common.ui.SharedDependencies
 import player.common.ui.toPlayerArguments
+import player.ui.controller.databinding.PlayerFragmentBinding
 
 class PlayerFragment(
     private val vmFactory: PlayerViewModel.Factory,
