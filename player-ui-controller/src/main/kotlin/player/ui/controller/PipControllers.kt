@@ -17,10 +17,9 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.emptyFlow
 import player.common.PlayerEvent
-import player.ui.R
-import player.ui.shared.EnterPipResult
-import player.ui.shared.PipController
-import player.ui.shared.PipEvent
+import player.common.ui.EnterPipResult
+import player.common.ui.PipController
+import player.common.ui.PipEvent
 
 class NoOpPipController : PipController {
     override fun events(): Flow<PipEvent> = emptyFlow()

@@ -1,4 +1,4 @@
-package player.ui.shared
+package player.common.ui
 
 import android.os.Parcelable
 import kotlinx.parcelize.Parcelize

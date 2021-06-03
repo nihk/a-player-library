@@ -1,7 +1,9 @@
-package player.common
+package player.common.ui
 
 import android.content.Context
 import android.view.View
+import player.common.AppPlayer
+import player.common.PlayerEvent
 
 interface PlayerViewWrapper {
     val view: View

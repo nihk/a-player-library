@@ -20,23 +20,23 @@ import player.common.DefaultPlaybackInfoResolver
 import player.common.PlaybackInfo
 import player.common.PlayerEvent
 import player.common.PlayerException
-import player.common.PlayerViewWrapper
+import player.common.ui.PlayerViewWrapper
 import player.common.ShareDelegate
 import player.common.TrackInfo
 import player.test.NoOpPlayerViewWrapper
-import player.ui.shared.DefaultSeekBarListener
-import player.ui.shared.EnterPipResult
-import player.ui.shared.Navigator
-import player.ui.shared.PictureInPictureConfig
-import player.ui.shared.PipController
-import player.ui.shared.PipEvent
-import player.ui.shared.PlaybackUi
-import player.ui.shared.PlayerArguments
-import player.ui.shared.PlayerController
-import player.ui.shared.SharedDependencies
-import player.ui.shared.TracksState
-import player.ui.shared.UiState
-import player.ui.shared.toBundle
+import player.common.ui.DefaultSeekBarListener
+import player.common.ui.EnterPipResult
+import player.common.ui.Navigator
+import player.common.ui.PictureInPictureConfig
+import player.common.ui.PipController
+import player.common.ui.PipEvent
+import player.common.ui.PlaybackUi
+import player.common.ui.PlayerArguments
+import player.common.ui.PlayerController
+import player.common.ui.SharedDependencies
+import player.common.ui.TracksState
+import player.common.ui.UiState
+import player.common.ui.toBundle
 
 class PlayerFragmentTest {
     @get:Rule

@@ -6,9 +6,9 @@ import androidx.fragment.app.commit
 import player.common.TrackInfo
 import player.ui.controller.PlayerFragment
 import player.ui.controller.TracksPickerFragment
-import player.ui.shared.Navigator
-import player.ui.shared.PlayerArguments
-import player.ui.shared.toBundle
+import player.common.ui.Navigator
+import player.common.ui.PlayerArguments
+import player.common.ui.toBundle
 
 // todo: fragment transitions/animations
 internal class LibraryNavigator(

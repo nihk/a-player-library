@@ -1,4 +1,4 @@
-package player.ui.shared
+package player.common.ui
 
 import kotlinx.coroutines.flow.Flow
 import player.common.PlayerEvent

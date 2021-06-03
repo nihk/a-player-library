@@ -5,9 +5,9 @@ import android.os.Bundle
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import player.ui.controller.PlayerFragment
-import player.ui.shared.PlayerArguments
-import player.ui.shared.toBundle
-import player.ui.shared.toPlayerArguments
+import player.common.ui.PlayerArguments
+import player.common.ui.toBundle
+import player.common.ui.toPlayerArguments
 
 // todo: add README.md to each module
 class LibraryFragment : Fragment(R.layout.library_fragment) {

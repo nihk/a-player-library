@@ -6,7 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import com.google.android.exoplayer2.ui.PlayerView
 import player.common.AppPlayer
-import player.common.PlayerViewWrapper
+import player.common.ui.PlayerViewWrapper
 
 internal class ExoPlayerViewWrapper(context: Context) : PlayerViewWrapper {
     @SuppressLint("InflateParams")

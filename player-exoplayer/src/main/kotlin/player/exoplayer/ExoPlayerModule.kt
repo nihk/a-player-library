@@ -6,7 +6,7 @@ import com.google.android.exoplayer2.ui.TrackNameProvider
 import player.common.AppPlayer
 import player.common.PlayerEventStream
 import player.common.PlayerModule
-import player.common.PlayerViewWrapper
+import player.common.ui.PlayerViewWrapper
 import player.common.SeekDataUpdater
 
 class ExoPlayerModule(context: Context) : PlayerModule {

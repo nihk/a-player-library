@@ -8,14 +8,14 @@ import player.common.PlayerModule
 import player.ui.controller.AndroidPipController
 import player.ui.controller.NoOpPipController
 import player.ui.controller.PlayerFragment
-import player.ui.shared.DefaultSeekBarListener
-import player.ui.shared.Navigator
-import player.ui.shared.PipController
+import player.common.ui.DefaultSeekBarListener
+import player.common.ui.Navigator
+import player.common.ui.PipController
 import player.ui.controller.SnackbarErrorRenderer
 import player.ui.controller.TracksPickerFragment
 import player.ui.controller.PlayerViewModel
-import player.ui.shared.SharedDependencies
-import player.ui.shared.isMinOsForPip
+import player.common.ui.SharedDependencies
+import player.common.ui.isMinOsForPip
 
 internal class LibraryModule(
     private val activity: FragmentActivity,
@@ -36,7 +36,6 @@ internal class LibraryModule(
             PlayerFragment(
                 vmFactory = playerViewModelFactory,
                 playerViewWrapperFactory = module.playerViewWrapperFactory,
-                playbackUiFactories = LibraryInitializer.playbackUiFactories(),
                 errorRenderer = SnackbarErrorRenderer(),
                 deps = SharedDependencies(
                     context = activity,

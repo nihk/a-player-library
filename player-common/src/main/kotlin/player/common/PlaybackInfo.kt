@@ -1,5 +1,7 @@
 package player.common
 
+import player.common.ui.PlaybackUi
+
 sealed class PlaybackInfo {
     data class Batched(val playbackInfos: List<PlaybackInfo>) : PlaybackInfo() {
         init {
@@ -22,7 +24,7 @@ sealed class PlaybackInfo {
             val uri: String,
             val imageUri: String,
             val durationMillis: Long,
-            val playbackUiFactory: Class<*>
+            val playbackUiFactory: Class<out PlaybackUi.Factory>
         )
     }
 }

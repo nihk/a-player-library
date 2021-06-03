@@ -1,4 +1,4 @@
-package player.ui.shared
+package player.common.ui
 
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.flow.Flow

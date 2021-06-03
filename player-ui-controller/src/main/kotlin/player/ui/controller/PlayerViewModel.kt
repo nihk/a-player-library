@@ -25,9 +25,9 @@ import player.common.SeekData
 import player.common.SeekDataUpdater
 import player.common.TrackInfo
 import player.common.requireNotNull
-import player.ui.shared.PlayerController
-import player.ui.shared.TracksState
-import player.ui.shared.UiState
+import player.common.ui.PlayerController
+import player.common.ui.TracksState
+import player.common.ui.UiState
 import kotlin.time.Duration
 
 class PlayerViewModel(

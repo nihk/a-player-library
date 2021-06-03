@@ -1,4 +1,4 @@
-package player.ui.shared
+package player.common.ui
 
 import android.view.View
 import player.common.PlaybackInfo

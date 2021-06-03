@@ -11,21 +11,19 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import player.ui.shared.OnUserLeaveHintViewModel
-import player.common.PlayerViewWrapper
-import player.ui.R
-import player.ui.databinding.PlayerFragmentBinding
-import player.ui.shared.EnterPipResult
-import player.ui.shared.PipEvent
-import player.ui.shared.PlaybackUi
-import player.ui.shared.PlayerArguments
-import player.ui.shared.SharedDependencies
-import player.ui.shared.toPlayerArguments
+import player.common.databinding.PlayerFragmentBinding
+import player.common.ui.OnUserLeaveHintViewModel
+import player.common.ui.PlayerViewWrapper
+import player.common.ui.EnterPipResult
+import player.common.ui.PipEvent
+import player.common.ui.PlaybackUi
+import player.common.ui.PlayerArguments
+import player.common.ui.SharedDependencies
+import player.common.ui.toPlayerArguments
 
 class PlayerFragment(
     private val vmFactory: PlayerViewModel.Factory,
     private val playerViewWrapperFactory: PlayerViewWrapper.Factory,
-    private val playbackUiFactories: List<PlaybackUi.Factory>,
     private val deps: SharedDependencies,
     private val errorRenderer: ErrorRenderer
 ) : Fragment(R.layout.player_fragment) {
@@ -82,9 +80,8 @@ class PlayerFragment(
         val binding = PlayerFragmentBinding.bind(view)
         playerViewWrapper = playerViewWrapperFactory.create(view.context)
         binding.playerContainer.addView(requirePlayerViewWrapper().view)
-        playbackUi = playbackUiFactories.first { factory ->
-            playerArguments.playbackUiFactory.isAssignableFrom(factory::class.java)
-        }.create(deps, playerViewModel, playerArguments)
+        playbackUi = playerArguments.playbackUiFactory.newInstance()
+            .create(deps, playerViewModel, playerArguments)
         binding.playbackUi.addView(requirePlaybackUi().view)
 
         listenToPlayer(binding)

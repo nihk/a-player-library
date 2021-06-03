@@ -4,15 +4,14 @@ import android.os.Bundle
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.commit
-import nick.sample.R
 import nick.sample.databinding.MainActivityBinding
 import player.core.LibraryActivity
 import player.core.LibraryFragment
 import player.ui.def.DefaultPlaybackUi
-import player.ui.shared.OnUserLeaveHintViewModel
-import player.ui.shared.PictureInPictureConfig
-import player.ui.shared.PlayerArguments
-import player.ui.shared.toBundle
+import player.common.ui.OnUserLeaveHintViewModel
+import player.common.ui.PictureInPictureConfig
+import player.common.ui.PlayerArguments
+import player.common.ui.toBundle
 import player.ui.sve.SvePlaybackUi
 
 class MainActivity : AppCompatActivity() {

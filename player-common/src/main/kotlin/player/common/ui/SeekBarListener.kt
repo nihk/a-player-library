@@ -1,4 +1,4 @@
-package player.ui.shared
+package player.common.ui
 
 import android.widget.SeekBar
 import kotlin.time.Duration

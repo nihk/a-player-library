@@ -1,4 +1,4 @@
-package player.ui.shared
+package player.common.ui
 
 import player.common.SeekData
 import player.common.TrackInfo

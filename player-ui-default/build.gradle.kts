@@ -8,7 +8,6 @@ androidLibraryConfig()
 
 dependencies {
     implementation(project(Modules.Player.common))
-    api(project(Modules.Player.Ui.shared))
 
     implementation(Dependencies.activity)
     implementation(Dependencies.Fragment.runtime)

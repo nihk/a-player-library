@@ -1,4 +1,4 @@
-package player.ui.shared
+package player.common.ui
 
 import android.os.Bundle
 import android.os.Parcelable
@@ -12,7 +12,7 @@ data class PlayerArguments(
     val uri: String,
     val pipConfig: PictureInPictureConfig? = null,
     val seekConfiguration: SeekConfiguration = SeekConfiguration.DEFAULT,
-    val playbackUiFactory: Class<*>
+    val playbackUiFactory: Class<out PlaybackUi.Factory>
 ) : Parcelable {
     @Parcelize
     data class SeekConfiguration(

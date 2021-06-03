@@ -8,7 +8,6 @@ object Modules {
         const val test = "$prefix-test"
         object Ui {
             private const val prefix = "${Player.prefix}-ui"
-            const val shared = "$prefix-shared"
             const val default = "$prefix-default"
             const val sve = "$prefix-sve"
             const val controller = "$prefix-controller"
