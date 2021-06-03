@@ -17,13 +17,11 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.emptyFlow
 import player.common.PlayerEvent
-import player.common.ui.EnterPipResult
 import player.common.ui.PipController
-import player.common.ui.PipEvent
 
 class NoOpPipController : PipController {
-    override fun events(): Flow<PipEvent> = emptyFlow()
-    override fun enterPip(isPlaying: Boolean) = EnterPipResult.DidNotEnterPip
+    override fun events(): Flow<PipController.Event> = emptyFlow()
+    override fun enterPip(isPlaying: Boolean) = PipController.Result.DidNotEnterPip
     override fun onEvent(playerEvent: PlayerEvent) = Unit
     override fun isInPip(): Boolean = false
 }
@@ -32,18 +30,18 @@ class NoOpPipController : PipController {
 class AndroidPipController(private val activity: Activity) : PipController {
     private var canShowActions = false
 
-    override fun events(): Flow<PipEvent> = callbackFlow {
+    override fun events(): Flow<PipController.Event> = callbackFlow {
         val broadcastReceiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context, intent: Intent?) {
                 if (intent?.action != ActionPip) return
 
                 when (intent.getIntExtra(KeyControl, -1)) {
                     ControlPause -> {
-                        trySend(PipEvent.Pause)
+                        trySend(PipController.Event.Pause)
                         updateActions(isPlaying = false)
                     }
                     ControlPlay -> {
-                        trySend(PipEvent.Play)
+                        trySend(PipController.Event.Play)
                         updateActions(isPlaying = true)
                     }
                 }
@@ -58,13 +56,13 @@ class AndroidPipController(private val activity: Activity) : PipController {
         awaitClose { activity.unregisterReceiver(broadcastReceiver) }
     }
 
-    override fun enterPip(isPlaying: Boolean): EnterPipResult {
+    override fun enterPip(isPlaying: Boolean): PipController.Result {
         return try {
             val pipParams = pipParams(isPlaying)
             activity.enterPictureInPictureMode(pipParams)
-            EnterPipResult.EnteredPip
+            PipController.Result.EnteredPip
         } catch (throwable: Throwable) {
-            EnterPipResult.DidNotEnterPip
+            PipController.Result.DidNotEnterPip
         }
     }
 

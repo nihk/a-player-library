@@ -12,9 +12,8 @@ import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import player.common.ui.OnUserLeaveHintViewModel
+import player.common.ui.PipController
 import player.common.ui.PlayerViewWrapper
-import player.common.ui.EnterPipResult
-import player.common.ui.PipEvent
 import player.common.ui.PlaybackUi
 import player.common.ui.PlayerArguments
 import player.common.ui.SharedDependencies
@@ -60,7 +59,7 @@ class PlayerFragment(
                 val pipOnBackPress = pipConfig?.enabled == true && pipConfig.onBackPresses
                 if (pipOnBackPress) {
                     val result = enterPip()
-                    if (result == EnterPipResult.DidNotEnterPip) {
+                    if (result == PipController.Result.DidNotEnterPip) {
                         yield()
                     }
                 } else {
@@ -71,7 +70,7 @@ class PlayerFragment(
         requireActivity().onBackPressedDispatcher.addCallback(this, onBackPressed)
     }
 
-    private fun enterPip(): EnterPipResult {
+    private fun enterPip(): PipController.Result {
         return deps.pipController.enterPip(playerViewModel.isPlaying())
     }
 
@@ -119,8 +118,8 @@ class PlayerFragment(
             deps.pipController.events()
                 .onEach { pipAction ->
                     when (pipAction) {
-                        PipEvent.Pause -> playerViewModel.pause()
-                        PipEvent.Play -> playerViewModel.play()
+                        PipController.Event.Pause -> playerViewModel.pause()
+                        PipController.Event.Play -> playerViewModel.play()
                     }
                 }
                 .launchIn(viewLifecycleOwner.lifecycleScope)

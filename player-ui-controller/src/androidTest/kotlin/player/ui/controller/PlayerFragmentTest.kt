@@ -24,12 +24,11 @@ import player.common.ui.PlayerViewWrapper
 import player.common.ShareDelegate
 import player.common.TrackInfo
 import player.test.NoOpPlayerViewWrapper
-import player.common.ui.DefaultSeekBarListener
-import player.common.ui.EnterPipResult
+import player.common.ui.Result
 import player.common.ui.Navigator
 import player.common.ui.PictureInPictureConfig
 import player.common.ui.PipController
-import player.common.ui.PipEvent
+import player.common.ui.Event
 import player.common.ui.PlaybackUi
 import player.common.ui.PlayerArguments
 import player.common.ui.PlayerController
@@ -183,10 +182,10 @@ class FakePlayerViewWrapperFactory(val playerViewWrapper: PlayerViewWrapper) : P
 }
 
 class FakePipController(
-    private val flow: Flow<PipEvent> = emptyFlow()
+    private val flow: Flow<Event> = emptyFlow()
 ) : PipController {
     override fun events() = flow
-    override fun enterPip(isPlaying: Boolean) = EnterPipResult.EnteredPip
+    override fun enterPip(isPlaying: Boolean) = Result.EnteredPip
     override fun isInPip(): Boolean = false
     override fun onEvent(playerEvent: PlayerEvent) = Unit
 }
