@@ -42,10 +42,7 @@ internal class ExoPlayerWrapper(
                     .setUri(mediaUri.uri)
                     .addCaptions(captions)
                     .build()
-                player.setMediaItem(mediaItem)
-                player.prepare()
-                player.seekTo(initial.positionMillis)
-                player.playWhenReady = initial.isPlaying
+                prepare(mediaItem, initial.positionMillis, initial.isPlaying)
             }
         } else {
             val currentSubtitles = currentMediaItem.playbackProperties?.subtitles ?: emptyList()
@@ -54,14 +51,16 @@ internal class ExoPlayerWrapper(
                 val mediaItem = currentMediaItem.buildUpon()
                     .addCaptions(captions)
                     .build()
-                val contentPosition = player.contentPosition
-                val playWhenReady = player.playWhenReady
-                player.setMediaItem(mediaItem)
-                player.prepare()
-                player.seekTo(contentPosition)
-                player.playWhenReady = playWhenReady
+                prepare(mediaItem, player.contentPosition, player.playWhenReady)
             }
         }
+    }
+
+    private fun prepare(mediaItem: MediaItem, contentPosition: Long, playWhenReady: Boolean) {
+        player.setMediaItem(mediaItem)
+        player.prepare()
+        player.seekTo(contentPosition)
+        player.playWhenReady = playWhenReady
     }
 
     private fun List<MediaItem.Subtitle>.contains(captions: PlaybackInfo.Captions): Boolean {
