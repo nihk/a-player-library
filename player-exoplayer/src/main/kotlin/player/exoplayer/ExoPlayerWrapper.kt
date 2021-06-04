@@ -33,7 +33,11 @@ internal class ExoPlayerWrapper(
 
     override fun handlePlaybackInfos(playbackInfos: List<PlaybackInfo>) {
         val currentMediaItem = player.currentMediaItem
-        val captions = playbackInfos.filterIsInstance<PlaybackInfo.Captions>().firstOrNull()
+        val captions = playbackInfos.filterIsInstance<PlaybackInfo.Captions>()
+            .firstOrNull()
+        val relatedMediaItems = playbackInfos.filterIsInstance<PlaybackInfo.RelatedMedia>()
+            .firstOrNull()
+            .toMediaItems()
 
         if (currentMediaItem == null) {
             val mediaUri = playbackInfos.filterIsInstance<PlaybackInfo.MediaUri>().firstOrNull()
@@ -42,7 +46,7 @@ internal class ExoPlayerWrapper(
                     .setUri(mediaUri.uri)
                     .addCaptions(captions)
                     .build()
-                prepare(mediaItem, initial.positionMillis, initial.isPlaying)
+                prepare(mediaItem, initial.positionMillis, initial.isPlaying, relatedMediaItems)
             }
         } else {
             val currentSubtitles = currentMediaItem.playbackProperties?.subtitles ?: emptyList()
@@ -51,16 +55,34 @@ internal class ExoPlayerWrapper(
                 val mediaItem = currentMediaItem.buildUpon()
                     .addCaptions(captions)
                     .build()
-                prepare(mediaItem, player.contentPosition, player.playWhenReady)
+                prepare(mediaItem, player.contentPosition, player.playWhenReady, relatedMediaItems)
             }
         }
     }
 
-    private fun prepare(mediaItem: MediaItem, contentPosition: Long, playWhenReady: Boolean) {
+    private fun prepare(
+        mediaItem: MediaItem,
+        contentPosition: Long,
+        playWhenReady: Boolean,
+        relatedMedia: List<MediaItem>
+    ) {
         player.setMediaItem(mediaItem)
+        val currentUris = player.mediaItems.mapNotNull { currentMediaItem -> currentMediaItem.playbackProperties?.uri?.toString() }
+        val filtered = relatedMedia.filter { related -> requireNotNull(related.playbackProperties?.uri?.toString()) !in currentUris }
+        if (filtered.isNotEmpty()) {
+            player.addMediaItems(filtered)
+        }
         player.prepare()
         player.seekTo(contentPosition)
         player.playWhenReady = playWhenReady
+    }
+
+    private val ExoPlayer.mediaItems: List<MediaItem> get() {
+        val list = mutableListOf<MediaItem>()
+        for (i in 0 until mediaItemCount) {
+            list += getMediaItemAt(i)
+        }
+        return list
     }
 
     private fun List<MediaItem.Subtitle>.contains(captions: PlaybackInfo.Captions): Boolean {
@@ -80,6 +102,14 @@ internal class ExoPlayerWrapper(
             )
         }
         return setSubtitles(subtitles)
+    }
+
+    private fun PlaybackInfo.RelatedMedia?.toMediaItems(): List<MediaItem> {
+        return this?.metadata?.map { metadata ->
+            MediaItem.Builder()
+                .setUri(metadata.uri)
+                .build()
+        }.orEmpty()
     }
 
     override fun handleTrackInfoAction(action: TrackInfo.Action) {
