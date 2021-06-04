@@ -10,7 +10,8 @@ object Modules {
             private const val prefix = "${Player.prefix}-ui"
             const val default = "$prefix-default"
             const val sve = "$prefix-sve"
-            const val controller = "$prefix-controller"
+            const val core = "$prefix-core"
+            const val common = "$prefix-common"
         }
     }
 }

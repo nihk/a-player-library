@@ -5,8 +5,8 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.ListAdapter
 import coil.ImageLoader
 import player.common.TimeFormatter
-import player.common.ui.Navigator
-import player.common.ui.PlayerArguments
+import player.ui.common.Navigator
+import player.ui.common.PlayerArguments
 import player.ui.sve.databinding.SveItemBinding
 
 class SveAdapter(

@@ -3,7 +3,7 @@ package player.test
 import android.view.View
 import player.common.AppPlayer
 import player.common.PlayerEvent
-import player.common.ui.PlayerViewWrapper
+import player.common.PlayerViewWrapper
 
 open class NoOpPlayerViewWrapper : PlayerViewWrapper {
     var attachCount: Int = 0

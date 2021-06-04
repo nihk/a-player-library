@@ -5,17 +5,17 @@ import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentFactory
 import androidx.fragment.app.FragmentManager
 import player.common.PlayerModule
+import player.ui.common.Navigator
+import player.ui.common.PipController
+import player.ui.common.SharedDependencies
+import player.ui.common.isMinOsForPip
 import player.ui.controller.AndroidPipController
+import player.ui.controller.DefaultSeekBarListener
 import player.ui.controller.NoOpPipController
 import player.ui.controller.PlayerFragment
-import player.common.ui.Navigator
-import player.common.ui.PipController
+import player.ui.controller.PlayerViewModel
 import player.ui.controller.SnackbarErrorRenderer
 import player.ui.controller.TracksPickerFragment
-import player.ui.controller.PlayerViewModel
-import player.common.ui.SharedDependencies
-import player.common.ui.isMinOsForPip
-import player.ui.controller.DefaultSeekBarListener
 
 internal class LibraryModule(
     private val activity: FragmentActivity,

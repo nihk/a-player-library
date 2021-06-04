@@ -8,10 +8,10 @@ import nick.sample.databinding.MainActivityBinding
 import player.core.LibraryActivity
 import player.core.LibraryFragment
 import player.ui.def.DefaultPlaybackUi
-import player.common.ui.OnUserLeaveHintViewModel
-import player.common.ui.PictureInPictureConfig
-import player.common.ui.PlayerArguments
-import player.common.ui.toBundle
+import player.ui.common.OnUserLeaveHintViewModel
+import player.ui.common.PictureInPictureConfig
+import player.ui.common.PlayerArguments
+import player.ui.common.toBundle
 import player.ui.sve.SvePlaybackUi
 
 class MainActivity : AppCompatActivity() {

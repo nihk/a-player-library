@@ -8,11 +8,11 @@ import android.os.Process
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import player.common.requireNotNull
-import player.common.ui.OnUserLeaveHintViewModel
-import player.common.ui.PlayerArguments
-import player.common.ui.isMinOsForPip
-import player.common.ui.toBundle
-import player.common.ui.toPlayerArguments
+import player.ui.common.OnUserLeaveHintViewModel
+import player.ui.common.PlayerArguments
+import player.ui.common.isMinOsForPip
+import player.ui.common.toBundle
+import player.ui.common.toPlayerArguments
 
 abstract class LibraryActivity : AppCompatActivity(R.layout.library_activity) {
     private val onUserLeaveHintViewModel: OnUserLeaveHintViewModel by viewModels()

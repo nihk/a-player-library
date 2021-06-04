@@ -7,7 +7,8 @@ androidLibraryConfig()
 
 dependencies {
     api(project(Modules.Player.common))
-    implementation(project(Modules.Player.Ui.controller))
+    implementation(project(Modules.Player.Ui.core))
+    implementation(project(Modules.Player.Ui.common))
 
     implementation(Dependencies.activity)
     implementation(Dependencies.appCompat)

@@ -4,8 +4,8 @@ import androidx.recyclerview.widget.RecyclerView
 import coil.ImageLoader
 import coil.load
 import player.common.TimeFormatter
-import player.common.ui.Navigator
-import player.common.ui.PlayerArguments
+import player.ui.common.Navigator
+import player.ui.common.PlayerArguments
 import player.ui.sve.databinding.SveItemBinding
 
 class SveViewHolder(
@@ -22,11 +22,7 @@ class SveViewHolder(
         binding.image.load(sveItem.imageUri, imageLoader)
         binding.duration.text = timeFormatter.playerTime(sveItem.duration)
         binding.root.setOnClickListener {
-            val args = playerArguments.copy(
-                uri = sveItem.uri,
-                playbackUiFactory = sveItem.playbackUiFactory
-            )
-            navigator.toPlayer(args)
+            // todo: player controller toPlaylistItem(index: Int)
         }
     }
 }

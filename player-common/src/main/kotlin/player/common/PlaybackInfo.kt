@@ -1,7 +1,5 @@
 package player.common
 
-import player.common.ui.PlaybackUi
-
 sealed class PlaybackInfo {
     data class Batched(val playbackInfos: List<PlaybackInfo>) : PlaybackInfo() {
         init {
@@ -19,12 +17,12 @@ sealed class PlaybackInfo {
         )
     }
     data class MediaTitle(val title: String) : PlaybackInfo()
+    // todo: think about what other values to enforce, e.g. captions tracks
     data class RelatedMedia(val metadata: List<Metadata>) : PlaybackInfo() {
         data class Metadata(
             val uri: String,
             val imageUri: String,
-            val durationMillis: Long,
-            val playbackUiFactory: Class<out PlaybackUi.Factory>
+            val durationMillis: Long
         )
     }
 }

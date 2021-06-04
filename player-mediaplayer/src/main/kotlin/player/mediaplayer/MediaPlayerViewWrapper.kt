@@ -9,7 +9,7 @@ import android.view.View
 import androidx.constraintlayout.widget.ConstraintSet
 import player.common.AppPlayer
 import player.common.PlayerEvent
-import player.common.ui.PlayerViewWrapper
+import player.common.PlayerViewWrapper
 import player.mediaplayer.databinding.LibraryMediaPlayerBinding
 
 internal class MediaPlayerViewWrapper(context: Context) : PlayerViewWrapper {

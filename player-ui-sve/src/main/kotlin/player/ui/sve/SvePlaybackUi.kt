@@ -11,12 +11,12 @@ import player.common.PlaybackInfo
 import player.common.PlayerEvent
 import player.common.SeekData
 import player.common.requireNotNull
-import player.common.ui.PlaybackUi
-import player.common.ui.PlayerArguments
-import player.common.ui.PlayerController
-import player.common.ui.SharedDependencies
-import player.common.ui.TracksState
-import player.common.ui.UiState
+import player.ui.common.PlaybackUi
+import player.ui.common.PlayerArguments
+import player.ui.common.PlayerController
+import player.ui.common.SharedDependencies
+import player.ui.common.TracksState
+import player.ui.common.UiState
 import player.ui.sve.databinding.SvePlaybackUiBinding
 import kotlin.time.Duration
 import kotlin.time.DurationUnit
@@ -26,7 +26,7 @@ class SvePlaybackUi(
     private val deps: SharedDependencies,
     private val playerController: PlayerController,
     private val playerArguments: PlayerArguments,
-    private val imageLoader: ImageLoader
+    imageLoader: ImageLoader
 ) : PlaybackUi {
     @SuppressLint("InflateParams")
     override val view: View = LayoutInflater.from(deps.context)
@@ -76,8 +76,7 @@ class SvePlaybackUi(
                         SveItem(
                             uri = metadata.uri,
                             imageUri = metadata.imageUri,
-                            duration = metadata.durationMillis.toDuration(DurationUnit.MILLISECONDS),
-                            playbackUiFactory = metadata.playbackUiFactory
+                            duration = metadata.durationMillis.toDuration(DurationUnit.MILLISECONDS)
                         )
                     }
                     adapter.submitList(sveItems)

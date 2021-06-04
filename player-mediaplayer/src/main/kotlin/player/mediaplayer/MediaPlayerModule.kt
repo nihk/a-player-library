@@ -3,7 +3,7 @@ package player.mediaplayer
 import player.common.AppPlayer
 import player.common.PlayerEventStream
 import player.common.PlayerModule
-import player.common.ui.PlayerViewWrapper
+import player.common.PlayerViewWrapper
 import player.common.SeekDataUpdater
 
 class MediaPlayerModule : PlayerModule {
