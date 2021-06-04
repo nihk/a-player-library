@@ -5,8 +5,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.widget.SeekBar
 import androidx.core.view.isVisible
+import androidx.viewpager2.widget.ViewPager2
 import coil.ImageLoader
 import coil.imageLoader
+import com.google.android.material.tabs.TabLayoutMediator
 import player.common.PlaybackInfo
 import player.common.PlayerEvent
 import player.common.SeekData
@@ -38,7 +40,7 @@ class SvePlaybackUi(
         },
         seekTo = playerController::seekTo
     )
-    private val adapter = SveAdapter(imageLoader, deps.navigator, playerArguments, deps.timeFormatter)
+    private val adapter = SveAdapter()
 
     init {
         bindControls()
@@ -92,12 +94,23 @@ class SvePlaybackUi(
     }
 
     private fun bindControls() {
-        binding.recyclerView.adapter = adapter
+        binding.viewPager.adapter = adapter
+        TabLayoutMediator(binding.tabLayout, binding.viewPager) { tab, position ->
+            tab.text = adapter.currentList[position].uri
+        }.attach()
+        binding.viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
+            override fun onPageSelected(position: Int) {
+                // fixme: config change is calling this
+                val uri = adapter.currentList[position].uri
+                playerController.toPlaylistItem(uri)
+            }
+        })
 
         deps.shareDelegate?.run {
             binding.share.apply {
                 isVisible = true
                 setOnClickListener {
+                    // fixme: this needs to be the currently selected
                     share(deps.context, playerArguments.uri)
                 }
             }

@@ -25,6 +25,7 @@ object Dependencies {
     const val timber = "com.jakewharton.timber:timber:${Versions.timber}"
     const val transition = "androidx.transition:transition-ktx:${Versions.transition}"
     const val vectorDrawable = "androidx.vectordrawable:vectordrawable:${Versions.vectorDrawable}"
+    const val viewPager2 = "androidx.viewpager2:viewpager2:${Versions.viewPager2}"
     const val webkit = "androidx.webkit:webkit:${Versions.webkit}"
 
     object AndroidTest {

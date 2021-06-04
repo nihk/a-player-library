@@ -164,6 +164,10 @@ class PlayerViewModel(
         requireNotNull(appPlayer).seekTo(duration)
     }
 
+    override fun toPlaylistItem(uri: String) {
+        requireNotNull(appPlayer).toPlaylistItem(uri)
+    }
+
     override fun latestSeekData(): SeekData {
         return uiStates.value.seekData
     }

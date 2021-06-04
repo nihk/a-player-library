@@ -8,6 +8,11 @@
     tools:background="@android:color/black"
     tools:visibility="visible">
 
+    <androidx.viewpager2.widget.ViewPager2
+        android:id="@+id/view_pager"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
     <TextView
         android:id="@+id/title"
         android:layout_width="wrap_content"
@@ -93,7 +98,7 @@
         android:layout_marginBottom="16dp"
         android:minWidth="@dimen/minimum_a11y_side"
         android:minHeight="@dimen/minimum_a11y_side"
-        app:layout_constraintBottom_toTopOf="@id/recycler_view"
+        app:layout_constraintBottom_toTopOf="@id/tab_layout"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:srcCompat="@drawable/play" />
@@ -110,15 +115,12 @@
         app:layout_constraintTop_toTopOf="@id/play_pause"
         app:srcCompat="@drawable/fast_forward" />
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recycler_view"
+    <com.google.android.material.tabs.TabLayout
+        android:id="@+id/tab_layout"
         android:layout_width="0dp"
         android:layout_height="@dimen/item_side_length"
-        android:orientation="horizontal"
-        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        tools:listitem="@layout/sve_item" />
+        app:layout_constraintStart_toStartOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

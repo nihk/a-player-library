@@ -79,6 +79,10 @@ class MediaPlayerWrapper(
         mediaPlayer.seekTo(duration.inWholeMilliseconds.toInt())
     }
 
+    override fun toPlaylistItem(uri: String) {
+        // todo
+    }
+
     override fun release() {
         with(mediaPlayer) {
             stop()

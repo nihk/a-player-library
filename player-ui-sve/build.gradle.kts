@@ -16,6 +16,7 @@ dependencies {
     implementation(Dependencies.coreKtx)
     implementation(Dependencies.vectorDrawable)
     implementation(Dependencies.constraintLayout)
+    implementation(Dependencies.viewPager2)
     implementation(Dependencies.material)
     implementation(Dependencies.multidex)
     implementation(Dependencies.Kotlin.coroutines)

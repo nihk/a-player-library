@@ -6,6 +6,11 @@
     android:layout_height="match_parent"
     tools:background="@android:color/black">
 
+    <androidx.viewpager2.widget.ViewPager2
+        android:id="@+id/view_pager"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
     <TextView
         android:id="@+id/title"
         android:layout_width="wrap_content"
@@ -57,7 +62,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
         android:textColor="@android:color/white"
-        app:layout_constraintBottom_toTopOf="@id/recycler_view"
+        app:layout_constraintBottom_toTopOf="@id/tab_layout"
         app:layout_constraintStart_toStartOf="parent"
         tools:text="02:21" />
 
@@ -67,7 +72,7 @@
         android:layout_height="wrap_content"
         android:layout_marginEnd="16dp"
         android:textColor="@android:color/white"
-        app:layout_constraintBottom_toTopOf="@id/recycler_view"
+        app:layout_constraintBottom_toTopOf="@id/tab_layout"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@id/position"
         tools:text="-20:35" />
@@ -108,15 +113,12 @@
         app:layout_constraintTop_toTopOf="@id/play_pause"
         app:srcCompat="@drawable/fast_forward" />
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recycler_view"
+    <com.google.android.material.tabs.TabLayout
+        android:id="@+id/tab_layout"
         android:layout_width="0dp"
         android:layout_height="@dimen/item_side_length"
-        android:orientation="horizontal"
-        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        tools:listitem="@layout/sve_item" />
+        app:layout_constraintStart_toStartOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

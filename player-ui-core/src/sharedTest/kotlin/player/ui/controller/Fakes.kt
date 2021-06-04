@@ -53,6 +53,10 @@ class FakeAppPlayer(
         error("unused")
     }
 
+    override fun toPlaylistItem(uri: String) {
+        error("unused")
+    }
+
     override fun release() {
         ++releaseCount
     }

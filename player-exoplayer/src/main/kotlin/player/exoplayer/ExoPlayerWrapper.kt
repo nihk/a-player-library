@@ -140,6 +140,12 @@ internal class ExoPlayerWrapper(
         player.seekTo(duration.inWholeMilliseconds)
     }
 
+    override fun toPlaylistItem(uri: String) {
+        val index = player.mediaItems
+            .indexOfFirst { it.playbackProperties?.uri?.toString() == uri }
+        player.seekTo(index, 0L)
+    }
+
     override fun release() {
         player.release()
     }

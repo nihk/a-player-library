@@ -46,5 +46,6 @@ object Versions {
     const val transition = "1.4.0"
     const val vectorDrawable = "1.2.0-alpha02"
     const val webkit = "1.4.0"
+    const val viewPager2 = "1.1.0-alpha01"
     const val work = "2.4.0-rc01"
 }
