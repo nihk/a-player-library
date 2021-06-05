@@ -36,7 +36,7 @@ class PlayerViewModelTest {
 
     @Test
     fun `player state is used when creating new player`() = playerViewModel {
-        val playerState = PlayerState(positionMillis = 5000L, isPlaying = false)
+        val playerState = PlayerState(itemIndex = 0, positionMillis = 5000L, isPlaying = false)
         setPlayerState(playerState)
         getPlayer()
         assertPlayerCreatedWithState(playerState)
