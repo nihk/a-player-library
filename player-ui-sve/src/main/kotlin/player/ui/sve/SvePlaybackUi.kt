@@ -8,6 +8,7 @@ import androidx.core.view.isVisible
 import androidx.viewpager2.widget.ViewPager2
 import coil.ImageLoader
 import coil.imageLoader
+import coil.load
 import com.google.android.material.tabs.TabLayoutMediator
 import player.common.PlaybackInfo
 import player.common.PlayerEvent
@@ -19,6 +20,7 @@ import player.ui.common.PlayerController
 import player.ui.common.SharedDependencies
 import player.ui.common.TracksState
 import player.ui.common.UiState
+import player.ui.sve.databinding.SveItemBinding
 import player.ui.sve.databinding.SvePlaybackUiBinding
 import kotlin.time.Duration
 import kotlin.time.DurationUnit
@@ -28,7 +30,7 @@ class SvePlaybackUi(
     private val deps: SharedDependencies,
     private val playerController: PlayerController,
     private val playerArguments: PlayerArguments,
-    imageLoader: ImageLoader
+    private val imageLoader: ImageLoader
 ) : PlaybackUi {
     @SuppressLint("InflateParams")
     override val view: View = LayoutInflater.from(deps.context)
@@ -105,7 +107,12 @@ class SvePlaybackUi(
     private fun bindControls() {
         binding.viewPager.adapter = adapter
         TabLayoutMediator(binding.tabLayout, binding.viewPager) { tab, position ->
-            tab.text = adapter.currentList[position].uri
+            val item = adapter.currentList[position]
+            val inflater = LayoutInflater.from(tab.view.context)
+            val binding = SveItemBinding.inflate(inflater)
+            binding.duration.text = deps.timeFormatter.playerTime(item.duration)
+            binding.image.load(item.imageUri, imageLoader)
+            tab.customView = binding.root
         }.attach()
         binding.viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
             // Avoids initial onPageSelected callback.
