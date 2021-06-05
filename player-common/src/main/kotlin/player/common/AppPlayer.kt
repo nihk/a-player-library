@@ -12,7 +12,7 @@ interface AppPlayer {
     fun pause()
     fun seekRelative(duration: Duration)
     fun seekTo(duration: Duration)
-    fun toPlaylistItem(uri: String)
+    fun toPlaylistItem(index: Int)
     fun release()
 
     fun onEvent(playerEvent: PlayerEvent) = Unit

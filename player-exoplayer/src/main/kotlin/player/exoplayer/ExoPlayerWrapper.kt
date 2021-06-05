@@ -41,13 +41,17 @@ internal class ExoPlayerWrapper(
 
         if (currentMediaItem == null) {
             val mediaUri = playbackInfos.filterIsInstance<PlaybackInfo.MediaUri>().firstOrNull()
-            if (mediaUri != null) {
+            val mediaItem = if (mediaUri != null) {
                 val mediaItem = MediaItem.Builder()
                     .setUri(mediaUri.uri)
                     .addCaptions(captions)
                     .build()
-                prepare(mediaItem, initial.positionMillis, initial.isPlaying, relatedMediaItems)
+                listOf(mediaItem)
+            } else {
+                emptyList()
             }
+
+            prepare(mediaItem + relatedMediaItems, initial.positionMillis, initial.isPlaying)
         } else {
             val currentSubtitles = currentMediaItem.playbackProperties?.subtitles ?: emptyList()
             if (captions != null && !currentSubtitles.contains(captions)) {
@@ -55,20 +59,18 @@ internal class ExoPlayerWrapper(
                 val mediaItem = currentMediaItem.buildUpon()
                     .addCaptions(captions)
                     .build()
-                prepare(mediaItem, player.contentPosition, player.playWhenReady, relatedMediaItems)
+                prepare(listOf(mediaItem) + relatedMediaItems, player.contentPosition, player.playWhenReady)
             }
         }
     }
 
     private fun prepare(
-        mediaItem: MediaItem,
+        mediaItems: List<MediaItem>,
         contentPosition: Long,
-        playWhenReady: Boolean,
-        relatedMedia: List<MediaItem>
+        playWhenReady: Boolean
     ) {
-        player.setMediaItem(mediaItem)
         val currentUris = player.mediaItems.mapNotNull { currentMediaItem -> currentMediaItem.playbackProperties?.uri?.toString() }
-        val filtered = relatedMedia.filter { related -> requireNotNull(related.playbackProperties?.uri?.toString()) !in currentUris }
+        val filtered = mediaItems.filter { related -> requireNotNull(related.playbackProperties?.uri?.toString()) !in currentUris }
         if (filtered.isNotEmpty()) {
             player.addMediaItems(filtered)
         }
@@ -140,10 +142,8 @@ internal class ExoPlayerWrapper(
         player.seekTo(duration.inWholeMilliseconds)
     }
 
-    override fun toPlaylistItem(uri: String) {
-        val index = player.mediaItems
-            .indexOfFirst { it.playbackProperties?.uri?.toString() == uri }
-        player.seekTo(index, 0L)
+    override fun toPlaylistItem(index: Int) {
+        player.seekTo(index, C.TIME_UNSET)
     }
 
     override fun release() {

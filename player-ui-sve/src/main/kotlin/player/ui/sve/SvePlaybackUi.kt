@@ -73,18 +73,27 @@ class SvePlaybackUi(
                         text = playbackInfo.title
                     }
                 }
-                is PlaybackInfo.RelatedMedia -> {
-                    val sveItems = playbackInfo.metadata.map { metadata ->
-                        SveItem(
-                            uri = metadata.uri,
-                            imageUri = metadata.imageUri,
-                            duration = metadata.durationMillis.toDuration(DurationUnit.MILLISECONDS)
-                        )
-                    }
-                    adapter.submitList(sveItems)
-                }
             }
         }
+
+        val mainUri = playbackInfos.filterIsInstance<PlaybackInfo.MediaUri>()
+            .map { mediaUri ->
+                SveItem(
+                    uri = mediaUri.uri,
+                    imageUri = "",
+                    duration = Duration.ZERO
+                )
+            }
+        val relatedMedia = playbackInfos.filterIsInstance<PlaybackInfo.RelatedMedia>()
+            .flatMap(PlaybackInfo.RelatedMedia::metadata)
+            .map { metadata ->
+                SveItem(
+                    uri = metadata.uri,
+                    imageUri = metadata.imageUri,
+                    duration = metadata.durationMillis.toDuration(DurationUnit.MILLISECONDS)
+                )
+            }
+        adapter.submitList(mainUri + relatedMedia)
     }
 
     private fun SeekBar.update(seekData: SeekData) {
@@ -99,10 +108,14 @@ class SvePlaybackUi(
             tab.text = adapter.currentList[position].uri
         }.attach()
         binding.viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
+            // Avoids initial onPageSelected callback.
+            private var firstLoad = true
             override fun onPageSelected(position: Int) {
-                // fixme: config change is calling this
-                val uri = adapter.currentList[position].uri
-                playerController.toPlaylistItem(uri)
+                if (firstLoad) {
+                    firstLoad = false
+                    return
+                }
+                playerController.toPlaylistItem(position)
             }
         })
 

@@ -79,7 +79,7 @@ class MediaPlayerWrapper(
         mediaPlayer.seekTo(duration.inWholeMilliseconds.toInt())
     }
 
-    override fun toPlaylistItem(uri: String) {
+    override fun toPlaylistItem(index: Int) {
         // todo
     }
 

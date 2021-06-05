@@ -17,7 +17,8 @@ sealed class PlaybackInfo {
         )
     }
     data class MediaTitle(val title: String) : PlaybackInfo()
-    // todo: think about what other values to enforce, e.g. captions tracks
+    // todo: maybe maybe SvePlaybackUi throw on receiving MediaUri
+    //  and rename this to Playlist
     data class RelatedMedia(val metadata: List<Metadata>) : PlaybackInfo() {
         data class Metadata(
             val uri: String,

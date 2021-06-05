@@ -53,7 +53,7 @@ class FakeAppPlayer(
         error("unused")
     }
 
-    override fun toPlaylistItem(uri: String) {
+    override fun toPlaylistItem(index: Int) {
         error("unused")
     }
 

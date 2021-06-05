@@ -30,6 +30,7 @@ import player.ui.common.TracksState
 import player.ui.common.UiState
 import kotlin.time.Duration
 
+// todo: need to reconcile state saving/restoring for playlists
 class PlayerViewModel(
     private val playerSavedState: PlayerSavedState,
     private val appPlayerFactory: AppPlayer.Factory,
@@ -164,8 +165,8 @@ class PlayerViewModel(
         requireNotNull(appPlayer).seekTo(duration)
     }
 
-    override fun toPlaylistItem(uri: String) {
-        requireNotNull(appPlayer).toPlaylistItem(uri)
+    override fun toPlaylistItem(index: Int) {
+        requireNotNull(appPlayer).toPlaylistItem(index)
     }
 
     override fun latestSeekData(): SeekData {
