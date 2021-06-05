@@ -19,6 +19,7 @@ class MediaPlayerWrapper(
     override val state: PlayerState
         get() {
             return PlayerState(
+                itemIndex = 0, // todo
                 positionMillis = mediaPlayer.currentPosition.toLong(),
                 isPlaying = mediaPlayer.isPlaying
             )

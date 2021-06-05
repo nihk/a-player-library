@@ -2,7 +2,6 @@ package player.exoplayer
 
 import android.content.Context
 import androidx.core.net.toUri
-import com.google.android.exoplayer2.C
 import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.MediaItem
 import com.google.android.exoplayer2.Player
@@ -24,6 +23,7 @@ internal class ExoPlayerWrapper(
 
     override val state: PlayerState
         get() = PlayerState(
+            itemIndex = player.currentWindowIndex,
             positionMillis = player.currentPosition,
             isPlaying = player.isPlaying
         )
@@ -31,6 +31,8 @@ internal class ExoPlayerWrapper(
     override val tracks: List<TrackInfo>
         get() = player.getTrackInfos(KNOWN_TRACK_TYPES, trackNameProvider)
 
+    // fixme: this is getting too complex and raises a lot of questions about handling 1 video
+    //  piecemeal vs a playlist.
     override fun handlePlaybackInfos(playbackInfos: List<PlaybackInfo>) {
         val currentMediaItem = player.currentMediaItem
         val captions = playbackInfos.filterIsInstance<PlaybackInfo.Captions>()
@@ -51,7 +53,12 @@ internal class ExoPlayerWrapper(
                 emptyList()
             }
 
-            prepare(mediaItem + relatedMediaItems, initial.positionMillis, initial.isPlaying)
+            prepare(
+                mediaItems = mediaItem + relatedMediaItems,
+                windowIndex = initial.itemIndex,
+                contentPosition = initial.positionMillis,
+                playWhenReady = initial.isPlaying
+            )
         } else {
             val currentSubtitles = currentMediaItem.playbackProperties?.subtitles ?: emptyList()
             if (captions != null && !currentSubtitles.contains(captions)) {
@@ -59,23 +66,30 @@ internal class ExoPlayerWrapper(
                 val mediaItem = currentMediaItem.buildUpon()
                     .addCaptions(captions)
                     .build()
-                prepare(listOf(mediaItem) + relatedMediaItems, player.contentPosition, player.playWhenReady)
+                prepare(
+                    mediaItems = listOf(element = mediaItem) + relatedMediaItems,
+                    windowIndex = player.currentWindowIndex,
+                    contentPosition = player.contentPosition,
+                    playWhenReady = player.playWhenReady
+                )
             }
         }
     }
 
     private fun prepare(
         mediaItems: List<MediaItem>,
+        windowIndex: Int,
         contentPosition: Long,
         playWhenReady: Boolean
     ) {
         val currentUris = player.mediaItems.mapNotNull { currentMediaItem -> currentMediaItem.playbackProperties?.uri?.toString() }
-        val filtered = mediaItems.filter { related -> requireNotNull(related.playbackProperties?.uri?.toString()) !in currentUris }
-        if (filtered.isNotEmpty()) {
-            player.addMediaItems(filtered)
+        val toAdd = mediaItems.filter { related -> requireNotNull(related.playbackProperties?.uri?.toString()) !in currentUris }
+        if (toAdd.isEmpty()) {
+            return
         }
+        player.addMediaItems(toAdd)
         player.prepare()
-        player.seekTo(contentPosition)
+        player.seekTo(windowIndex, contentPosition)
         player.playWhenReady = playWhenReady
     }
 
@@ -122,9 +136,6 @@ internal class ExoPlayerWrapper(
     }
 
     override fun play() {
-        if (player.playbackState == Player.STATE_ENDED) {
-            player.seekTo(player.currentWindowIndex, C.TIME_UNSET)
-        }
         player.play()
     }
 
@@ -143,7 +154,9 @@ internal class ExoPlayerWrapper(
     }
 
     override fun toPlaylistItem(index: Int) {
-        player.seekTo(index, C.TIME_UNSET)
+        if (player.currentWindowIndex == index) return
+        player.seekToDefaultPosition(index)
+        player.playWhenReady = true
     }
 
     override fun release() {
@@ -155,7 +168,12 @@ internal class ExoPlayerWrapper(
         private val trackNameProvider: TrackNameProvider
     ) : AppPlayer.Factory {
         override fun create(initial: PlayerState): AppPlayer {
-            val player = SimpleExoPlayer.Builder(appContext).build()
+            val player = SimpleExoPlayer.Builder(appContext)
+                .setPauseAtEndOfMediaItems(true)
+                .build()
+                .apply {
+                    repeatMode = Player.REPEAT_MODE_ONE
+                }
             return ExoPlayerWrapper(player, trackNameProvider, initial)
         }
     }

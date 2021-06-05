@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.filterNot
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.runningFold
@@ -30,7 +31,6 @@ import player.ui.common.TracksState
 import player.ui.common.UiState
 import kotlin.time.Duration
 
-// todo: need to reconcile state saving/restoring for playlists
 class PlayerViewModel(
     private val playerSavedState: PlayerSavedState,
     private val appPlayerFactory: AppPlayer.Factory,
@@ -65,6 +65,7 @@ class PlayerViewModel(
                 listOf(playbackInfo)
             }
         }
+        .filterNot { playbackInfos -> playbackInfos.isEmpty() }
         .onEach { playbackInfos -> appPlayer?.handlePlaybackInfos(playbackInfos) }
         .stateIn(
             scope = viewModelScope,
@@ -76,7 +77,10 @@ class PlayerViewModel(
         if (appPlayer == null) {
             appPlayer = appPlayerFactory.create(playerSavedState.state)
             val appPlayer = appPlayer.requireNotNull()
-            appPlayer.handlePlaybackInfos(playbackInfos.value)
+            val playbackInfos = playbackInfos.value
+            if (playbackInfos.isNotEmpty()) {
+                appPlayer.handlePlaybackInfos(playbackInfos)
+            }
             playerJobs += listenToPlayerEvents(appPlayer)
             playerJobs += seekDataUpdater.seekData(appPlayer)
                 .onEach { seekData -> uiStates.value = uiStates.value.copy(seekData = seekData) }

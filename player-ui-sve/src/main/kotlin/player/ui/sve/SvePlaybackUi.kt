@@ -115,13 +115,7 @@ class SvePlaybackUi(
             tab.customView = binding.root
         }.attach()
         binding.viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
-            // Avoids initial onPageSelected callback.
-            private var firstLoad = true
             override fun onPageSelected(position: Int) {
-                if (firstLoad) {
-                    firstLoad = false
-                    return
-                }
                 playerController.toPlaylistItem(position)
             }
         })
