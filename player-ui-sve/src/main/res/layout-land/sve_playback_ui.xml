@@ -116,11 +116,17 @@
     <com.google.android.material.tabs.TabLayout
         android:id="@+id/tab_layout"
         android:layout_width="0dp"
-        android:layout_height="@dimen/item_side_length"
+        android:layout_height="@dimen/tab_layout_height"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:tabIndicatorGravity="top"
-        app:tabMode="scrollable" />
+        app:tabIndicator="@drawable/sve_tab_indicator"
+        app:tabIndicatorAnimationMode="elastic"
+        app:tabIndicatorColor="@android:color/white"
+        app:tabMode="scrollable"
+        app:tabPaddingBottom="0dp"
+        app:tabPaddingEnd="@dimen/tab_padding_horizontal"
+        app:tabPaddingStart="@dimen/tab_padding_horizontal"
+        app:tabPaddingTop="0dp" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

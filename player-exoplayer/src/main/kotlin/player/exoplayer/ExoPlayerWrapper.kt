@@ -33,6 +33,7 @@ internal class ExoPlayerWrapper(
 
     // fixme: this is getting too complex and raises a lot of questions about handling 1 video
     //  piecemeal vs a playlist.
+    // fixme: standalone captions PlaybackInfo isn't correctly updating when there's a playlist
     override fun handlePlaybackInfos(playbackInfos: List<PlaybackInfo>) {
         val currentMediaItem = player.currentMediaItem
         val captions = playbackInfos.filterIsInstance<PlaybackInfo.Captions>()

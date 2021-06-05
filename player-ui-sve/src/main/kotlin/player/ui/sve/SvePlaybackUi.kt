@@ -1,10 +1,15 @@
 package player.ui.sve
 
 import android.annotation.SuppressLint
+import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.SeekBar
+import androidx.core.os.bundleOf
 import androidx.core.view.isVisible
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.savedstate.SavedStateRegistryOwner
 import androidx.viewpager2.widget.ViewPager2
 import coil.ImageLoader
 import coil.imageLoader
@@ -30,6 +35,7 @@ class SvePlaybackUi(
     private val deps: SharedDependencies,
     private val playerController: PlayerController,
     private val playerArguments: PlayerArguments,
+    private val registryOwner: SavedStateRegistryOwner,
     private val imageLoader: ImageLoader
 ) : PlaybackUi {
     @SuppressLint("InflateParams")
@@ -45,6 +51,12 @@ class SvePlaybackUi(
     private val adapter = SveAdapter()
 
     init {
+        registryOwner.lifecycle.addObserver(LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_CREATE) {
+                val registry = registryOwner.savedStateRegistry
+                registry.registerSavedStateProvider(PROVIDER, this)
+            }
+        })
         bindControls()
     }
 
@@ -95,7 +107,11 @@ class SvePlaybackUi(
                     duration = metadata.durationMillis.toDuration(DurationUnit.MILLISECONDS)
                 )
             }
-        adapter.submitList(mainUri + relatedMedia)
+        val toSubmit = mainUri + relatedMedia
+        if (toSubmit.isNotEmpty()) {
+            adapter.submitList(toSubmit)
+            restoreSelectedPageState()
+        }
     }
 
     private fun SeekBar.update(seekData: SeekData) {
@@ -108,14 +124,18 @@ class SvePlaybackUi(
         binding.viewPager.adapter = adapter
         TabLayoutMediator(binding.tabLayout, binding.viewPager) { tab, position ->
             val item = adapter.currentList[position]
-            val inflater = LayoutInflater.from(tab.view.context)
-            val binding = SveItemBinding.inflate(inflater)
+            tab.setCustomView(R.layout.sve_item)
+            val binding = SveItemBinding.bind(tab.customView.requireNotNull())
             binding.duration.text = deps.timeFormatter.playerTime(item.duration)
             binding.image.load(item.imageUri, imageLoader)
-            tab.customView = binding.root
         }.attach()
         binding.viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
+            private var swallowInitialEvent = true
             override fun onPageSelected(position: Int) {
+                if (swallowInitialEvent) {
+                    swallowInitialEvent = false
+                    return
+                }
                 playerController.toPlaylistItem(position)
             }
         })
@@ -124,8 +144,7 @@ class SvePlaybackUi(
             binding.share.apply {
                 isVisible = true
                 setOnClickListener {
-                    // fixme: this needs to be the currently selected
-                    share(deps.context, playerArguments.uri)
+                    share(deps.context, adapter.currentList[binding.viewPager.currentItem].uri)
                 }
             }
         }
@@ -169,14 +188,31 @@ class SvePlaybackUi(
         binding.playPause.setImageResource(resource)
     }
 
+    override fun saveState(): Bundle {
+        return bundleOf(TAB_POSITION to binding.tabLayout.selectedTabPosition)
+    }
+
+    private fun restoreSelectedPageState() {
+        val registry = registryOwner.savedStateRegistry
+        val state = registry.consumeRestoredStateForKey(PROVIDER) ?: return
+        val position = state.getInt(TAB_POSITION)
+        binding.viewPager.setCurrentItem(position, false)
+    }
+
+    companion object {
+        private const val PROVIDER = "sve_playback_ui"
+        private const val TAB_POSITION = "tab_position"
+    }
+
     class Factory : PlaybackUi.Factory {
         override fun create(
             deps: SharedDependencies,
             playerController: PlayerController,
-            playerArguments: PlayerArguments
+            playerArguments: PlayerArguments,
+            registryOwner: SavedStateRegistryOwner
         ): PlaybackUi {
             val imageLoader = deps.context.applicationContext.imageLoader
-            return SvePlaybackUi(deps, playerController, playerArguments, imageLoader)
+            return SvePlaybackUi(deps, playerController, playerArguments, registryOwner, imageLoader)
         }
     }
 }

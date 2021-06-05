@@ -1,4 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <dimen name="item_side_length">128dp</dimen>
+    <dimen name="tab_padding_horizontal">4dp</dimen>
+    <dimen name="item_side_length">112dp</dimen>
+    <!-- TODO: consider doing this programmatically, instead -->
+    <!-- Important: tab_padding_horizontal * 2 + item_side_length -->
+    <dimen name="tab_layout_height">120dp</dimen>
 </resources>

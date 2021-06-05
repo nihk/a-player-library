@@ -1,12 +1,14 @@
 package player.ui.controller
 
 import android.content.Context
+import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import androidx.fragment.app.testing.FragmentScenario
 import androidx.fragment.app.testing.launchFragmentInContainer
 import androidx.lifecycle.Lifecycle
+import androidx.savedstate.SavedStateRegistryOwner
 import androidx.test.core.app.ApplicationProvider
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -207,13 +209,15 @@ class FakePlaybackUi : PlaybackUi {
     override fun onUiState(uiState: player.ui.common.UiState) = Unit
     override fun onTracksState(tracksState: player.ui.common.TracksState) = Unit
     override fun onPlaybackInfos(playbackInfos: List<PlaybackInfo>) = Unit
+    override fun saveState(): Bundle = Bundle()
 }
 
 class FakePlaybackUiFactory : PlaybackUi.Factory {
     override fun create(
         deps: SharedDependencies,
         playerController: PlayerController,
-        playerArguments: PlayerArguments
+        playerArguments: PlayerArguments,
+        registryOwner: SavedStateRegistryOwner
     ): PlaybackUi {
         return FakePlaybackUi()
     }

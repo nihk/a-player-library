@@ -36,6 +36,26 @@ class SlowPlaybackInfoResolver : PlaybackInfoResolver {
                     imageUri = "https://i.imgur.com/9OPnZNk.png",
                     durationMillis = TimeUnit.SECONDS.toMillis(13L)
                 ),
+                PlaybackInfo.RelatedMedia.Metadata(
+                    uri = "https://multiplatform-f.akamaihd.net/i/multi/april11/cctv/cctv_,512x288_450_b,640x360_700_b,768x432_1000_b,1024x576_1400_m,.mp4.csmil/master.m3u8",
+                    imageUri = "https://i.imgur.com/MYmm7E1.jpg",
+                    durationMillis = TimeUnit.SECONDS.toMillis(50L)
+                ),
+                PlaybackInfo.RelatedMedia.Metadata(
+                    uri = "https://bitmovin-a.akamaihd.net/content/MI201109210084_1/MI201109210084_mpeg-4_hd_high_1080p25_10mbits.mp4",
+                    imageUri = "https://i.imgur.com/ecnSVVk.jpg",
+                    durationMillis = TimeUnit.SECONDS.toMillis(62L)
+                ),
+                PlaybackInfo.RelatedMedia.Metadata(
+                    uri = "https://bestvpn.org/html5demos/assets/dizzy.mp4",
+                    imageUri = "https://i.imgur.com/cB7oqeF.jpeg",
+                    durationMillis = TimeUnit.SECONDS.toMillis(98L)
+                ),
+                PlaybackInfo.RelatedMedia.Metadata(
+                    uri = "https://devstreaming-cdn.apple.com/videos/streaming/examples/bipbop_16x9/bipbop_16x9_variant.m3u8",
+                    imageUri = "https://i.imgur.com/9OPnZNk.png",
+                    durationMillis = TimeUnit.SECONDS.toMillis(500L)
+                ),
             )
         )
         emit(PlaybackInfo.Batched(listOf(mediaUri, relatedMedia)))

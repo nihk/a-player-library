@@ -1,10 +1,12 @@
 package player.ui.def
 
 import android.annotation.SuppressLint
+import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.SeekBar
 import androidx.core.view.isVisible
+import androidx.savedstate.SavedStateRegistryOwner
 import player.common.PlaybackInfo
 import player.common.PlayerEvent
 import player.common.SeekData
@@ -26,6 +28,7 @@ class DefaultPlaybackUi(
     private val deps: SharedDependencies,
     private val playerController: PlayerController,
     private val playerArguments: PlayerArguments,
+    private val registryOwner: SavedStateRegistryOwner
 ) : PlaybackUi {
     @SuppressLint("InflateParams")
     override val view: View = LayoutInflater.from(deps.context)
@@ -159,9 +162,10 @@ class DefaultPlaybackUi(
         override fun create(
             deps: SharedDependencies,
             playerController: PlayerController,
-            playerArguments: PlayerArguments
+            playerArguments: PlayerArguments,
+            registryOwner: SavedStateRegistryOwner
         ): PlaybackUi {
-            return DefaultPlaybackUi(deps, playerController, playerArguments)
+            return DefaultPlaybackUi(deps, playerController, playerArguments, registryOwner)
         }
     }
 }
