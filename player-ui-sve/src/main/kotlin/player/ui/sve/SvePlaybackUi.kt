@@ -1,11 +1,13 @@
 package player.ui.sve
 
 import android.annotation.SuppressLint
+import android.content.res.Resources
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.SeekBar
 import androidx.core.os.bundleOf
+import androidx.core.view.ViewCompat
 import androidx.core.view.isVisible
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
@@ -122,6 +124,7 @@ class SvePlaybackUi(
 
     private fun bindControls() {
         binding.viewPager.adapter = adapter
+
         TabLayoutMediator(binding.tabLayout, binding.viewPager) { tab, position ->
             val item = adapter.currentList[position]
             tab.setCustomView(R.layout.sve_item)
@@ -129,6 +132,8 @@ class SvePlaybackUi(
             binding.duration.text = deps.timeFormatter.playerTime(item.duration)
             binding.image.load(item.imageUri, imageLoader)
         }.attach()
+
+        binding.viewPager.registerOnPageChangeCallback(binding.tabLayout.pageChangeCallback)
         binding.viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
             private var swallowInitialEvent = true
             override fun onPageSelected(position: Int) {
@@ -139,6 +144,8 @@ class SvePlaybackUi(
                 playerController.toPlaylistItem(position)
             }
         })
+
+        addTabLayoutInsets()
 
         deps.shareDelegate?.run {
             binding.share.apply {
@@ -168,6 +175,15 @@ class SvePlaybackUi(
             val amount = playerArguments.seekConfiguration.forwardAmount.toDuration(DurationUnit.MILLISECONDS)
             playerController.seekRelative(amount)
         }
+    }
+
+    private fun addTabLayoutInsets() {
+        // A bit of a hack, but the API isn't flexible.
+        val slidingTabIndicator = binding.tabLayout.getChildAt(0)
+        val itemWidth = binding.root.context.resources.getDimension(R.dimen.sve_item_width)
+        val screenWidth = Resources.getSystem().displayMetrics.widthPixels
+        val padding = (screenWidth / 2 - itemWidth / 2).toInt()
+        ViewCompat.setPaddingRelative(slidingTabIndicator, padding, 0, padding, 0)
     }
 
     private fun updateTimestamps(
