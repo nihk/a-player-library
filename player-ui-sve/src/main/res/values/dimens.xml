@@ -2,9 +2,8 @@
 <resources>
     <dimen name="tab_padding_vertical">0dp</dimen>
     <dimen name="tab_padding_horizontal">4dp</dimen>
-    <dimen name="sve_item_width">72dp</dimen>
-    <dimen name="sve_item_height">112dp</dimen>
+    <dimen name="sve_item_side_length">72dp</dimen>
     <!-- TODO: consider doing this programmatically, instead -->
-    <!-- Important: tab_padding_horizontal * 2 + sve_item_height -->
-    <dimen name="tab_layout_height">120dp</dimen>
+    <!-- Important: tab_padding_horizontal * 2 + sve_item_side_length -->
+    <dimen name="tab_layout_height">80dp</dimen>
 </resources>

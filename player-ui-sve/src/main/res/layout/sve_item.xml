@@ -2,8 +2,8 @@
 <androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="@dimen/sve_item_width"
-    android:layout_height="@dimen/sve_item_height"
+    android:layout_width="@dimen/sve_item_side_length"
+    android:layout_height="@dimen/sve_item_side_length"
     app:cardCornerRadius="8dp">
 
     <androidx.constraintlayout.widget.ConstraintLayout

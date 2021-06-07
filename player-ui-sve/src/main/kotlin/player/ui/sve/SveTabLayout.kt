@@ -1,8 +1,10 @@
 package player.ui.sve
 
 import android.content.Context
+import android.content.res.Resources
 import android.graphics.Canvas
 import android.util.AttributeSet
+import androidx.core.view.ViewCompat
 import androidx.viewpager2.widget.ViewPager2
 import com.google.android.material.tabs.TabLayout
 
@@ -24,6 +26,10 @@ internal class SveTabLayout : TabLayout {
 
     private var shouldDraw = false
 
+    init {
+        addTabLayoutInsets()
+    }
+
     val pageChangeCallback = object : ViewPager2.OnPageChangeCallback() {
         override fun onPageScrollStateChanged(state: Int) {
             shouldDraw = state != ViewPager2.SCROLL_STATE_IDLE
@@ -35,5 +41,14 @@ internal class SveTabLayout : TabLayout {
         if (shouldDraw) {
             tabSelectedIndicator.draw(canvas)
         }
+    }
+
+    private fun addTabLayoutInsets() {
+        // A bit of a hack, but the API isn't flexible.
+        val slidingTabIndicator = getChildAt(0)
+        val itemWidth = context.resources.getDimension(R.dimen.sve_item_side_length)
+        val screenWidth = Resources.getSystem().displayMetrics.widthPixels
+        val padding = (screenWidth / 2 - itemWidth / 2).toInt()
+        ViewCompat.setPaddingRelative(slidingTabIndicator, padding, 0, padding, 0)
     }
 }
