@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="@dimen/sve_item_side_length"
     android:layout_height="@dimen/sve_item_side_length"
-    app:cardCornerRadius="8dp">
+    app:cardCornerRadius="@dimen/tab_item_corner_radius">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"

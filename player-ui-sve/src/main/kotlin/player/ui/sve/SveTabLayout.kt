@@ -48,7 +48,8 @@ internal class SveTabLayout : TabLayout {
         val slidingTabIndicator = getChildAt(0)
         val itemWidth = context.resources.getDimension(R.dimen.sve_item_side_length)
         val screenWidth = Resources.getSystem().displayMetrics.widthPixels
-        val padding = (screenWidth / 2 - itemWidth / 2).toInt()
+        val itemPadding = context.resources.getDimension(R.dimen.tab_padding_horizontal)
+        val padding = (screenWidth / 2 - itemWidth / 2 - itemPadding / 2).toInt()
         ViewCompat.setPaddingRelative(slidingTabIndicator, padding, 0, padding, 0)
     }
 }

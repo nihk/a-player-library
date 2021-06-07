@@ -122,6 +122,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:tabIndicator="@drawable/sve_tab_indicator"
         app:tabIndicatorColor="@android:color/white"
+        app:tabMinWidth="0dp"
         app:tabMode="scrollable"
         app:tabPaddingBottom="@dimen/tab_padding_vertical"
         app:tabPaddingEnd="@dimen/tab_padding_horizontal"
