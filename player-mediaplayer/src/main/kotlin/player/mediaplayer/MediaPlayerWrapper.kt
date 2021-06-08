@@ -31,9 +31,13 @@ class MediaPlayerWrapper(
     override fun handlePlaybackInfos(playbackInfos: List<PlaybackInfo>) {
         playbackInfos.forEach { playbackInfo ->
             when (playbackInfo) {
-                is PlaybackInfo.MediaUri -> {
+                is PlaybackInfo.RelatedMedia, is PlaybackInfo.MediaUri -> {
+                    val relatedMedia = playbackInfo as? PlaybackInfo.RelatedMedia
+                    val mediaUri = playbackInfo as? PlaybackInfo.MediaUri
+                    val uri = relatedMedia?.uri ?: mediaUri?.uri ?: error("This should never happen")
+
                     if (!didSetMediaSource) {
-                        mediaPlayer.setDataSource(playbackInfo.uri)
+                        mediaPlayer.setDataSource(uri)
                         mediaPlayer.prepareAsync()
                         didSetMediaSource = true
                     }

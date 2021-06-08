@@ -103,20 +103,23 @@ class PlayerViewModel(
             playbackInfos.forEach { it.sideEffect() }
         } else {
             when (this) {
-                is PlaybackInfo.MediaUri -> uiStates.value = uiStates.value.copy(showLoading = false)
+                is PlaybackInfo.RelatedMedia, is PlaybackInfo.MediaUri ->
+                    uiStates.value = uiStates.value.copy(showLoading = false)
             }
         }
     }
 
     private fun listenToPlayerEvents(appPlayer: AppPlayer): Job {
         return playerEventStream.listen(appPlayer)
-            .onEach { playerEvent -> appPlayer.onEvent(playerEvent) }
-            .onEach { playerEvent -> playerEvents.emit(playerEvent) }
-            .onEach { playerEvent -> telemetry?.onPlayerEvent(playerEvent) }
             .onEach { playerEvent ->
+                appPlayer.onEvent(playerEvent)
+                playerEvents.emit(playerEvent)
+                telemetry?.onPlayerEvent(playerEvent)
+
                 when (playerEvent) {
                     is PlayerEvent.Initial -> uiStates.value = uiStates.value.copy(isControllerUsable = true)
                     is PlayerEvent.OnTracksChanged -> {
+                        if (playerEvent.trackInfos.isEmpty()) return@onEach
                         val trackIndices = playerEvent.trackInfos.map(TrackInfo::indices)
                         val settableTracks = playerSavedState.manuallySetTracks
                             .filter { trackInfo -> trackInfo.indices in trackIndices }

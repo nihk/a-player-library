@@ -79,38 +79,41 @@ class SvePlaybackUi(
     override fun onTracksState(tracksState: TracksState) = Unit
 
     override fun onPlaybackInfos(playbackInfos: List<PlaybackInfo>) {
-        playbackInfos.forEach { playbackInfo ->
-            when (playbackInfo) {
-                is PlaybackInfo.MediaTitle -> {
-                    binding.title.apply {
-                        isVisible = true
-                        text = playbackInfo.title
-                    }
-                }
-            }
-        }
+        val titles = playbackInfos.filterIsInstance<PlaybackInfo.MediaTitle>()
+            .associate { it.mediaUriRef to it.title }
 
         val mainUri = playbackInfos.filterIsInstance<PlaybackInfo.MediaUri>()
             .map { mediaUri ->
                 SveItem(
+                    title = titles[mediaUri.uri],
                     uri = mediaUri.uri,
                     imageUri = "",
                     duration = Duration.ZERO
                 )
             }
         val relatedMedia = playbackInfos.filterIsInstance<PlaybackInfo.RelatedMedia>()
-            .flatMap(PlaybackInfo.RelatedMedia::metadata)
-            .map { metadata ->
+            .map { relatedMedia ->
                 SveItem(
-                    uri = metadata.uri,
-                    imageUri = metadata.imageUri,
-                    duration = metadata.durationMillis.toDuration(DurationUnit.MILLISECONDS)
+                    title = titles[relatedMedia.uri],
+                    uri = relatedMedia.uri,
+                    imageUri = relatedMedia.imageUri,
+                    duration = relatedMedia.durationMillis.toDuration(DurationUnit.MILLISECONDS)
                 )
             }
         val toSubmit = mainUri + relatedMedia
         if (toSubmit.isNotEmpty()) {
+            val item = toSubmit[binding.viewPager.currentItem]
+            setTitle(item.title)
+
             adapter.submitList(toSubmit)
             restoreSelectedPageState()
+        }
+    }
+
+    private fun setTitle(title: String?) {
+        binding.title.apply {
+            isVisible = title != null
+            text = title
         }
     }
 
@@ -128,15 +131,19 @@ class SvePlaybackUi(
             tab.setCustomView(R.layout.sve_item)
             val binding = SveItemBinding.bind(tab.customView.requireNotNull())
             binding.duration.text = deps.timeFormatter.playerTime(item.duration)
+            binding.duration.isVisible = item.duration != Duration.ZERO
             binding.image.load(item.imageUri, imageLoader)
         }.attach()
 
         binding.viewPager.registerOnPageChangeCallback(binding.tabLayout.pageChangeCallback)
         binding.viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
-            private var swallowInitialEvent = true
+            private var ignoreInitialTrigger = true
             override fun onPageSelected(position: Int) {
-                if (swallowInitialEvent) {
-                    swallowInitialEvent = false
+                val item = adapter.currentList[position]
+                setTitle(item.title)
+
+                if (ignoreInitialTrigger) {
+                    ignoreInitialTrigger = false
                     return
                 }
                 playerController.toPlaylistItem(position)

@@ -8,22 +8,28 @@ sealed class PlaybackInfo {
             }
         }
     }
+
     data class MediaUri(val uri: String) : PlaybackInfo()
-    data class Captions(val metadata: List<Metadata>) : PlaybackInfo() {
+
+    data class Captions(
+        val metadata: List<Metadata>,
+        val mediaUriRef: String
+    ) : PlaybackInfo() {
         data class Metadata(
             val uri: String,
             val mimeType: String,
             val language: String
         )
     }
-    data class MediaTitle(val title: String) : PlaybackInfo()
-    // todo: maybe maybe SvePlaybackUi throw on receiving MediaUri
-    //  and rename this to Playlist
-    data class RelatedMedia(val metadata: List<Metadata>) : PlaybackInfo() {
-        data class Metadata(
-            val uri: String,
-            val imageUri: String,
-            val durationMillis: Long
-        )
-    }
+
+    data class MediaTitle(
+        val title: String,
+        val mediaUriRef: String
+    ) : PlaybackInfo()
+
+    data class RelatedMedia(
+        val imageUri: String,
+        val durationMillis: Long,
+        val uri: String
+    ) : PlaybackInfo()
 }

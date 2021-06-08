@@ -31,102 +31,73 @@ internal class ExoPlayerWrapper(
     override val tracks: List<TrackInfo>
         get() = player.getTrackInfos(KNOWN_TRACK_TYPES, trackNameProvider)
 
-    // fixme: this is getting too complex and raises a lot of questions about handling 1 video
-    //  piecemeal vs a playlist.
-    // fixme: standalone captions PlaybackInfo isn't correctly updating when there's a playlist
     override fun handlePlaybackInfos(playbackInfos: List<PlaybackInfo>) {
-        val currentMediaItem = player.currentMediaItem
+        val isInitializing = player.currentMediaItem == null
+
         val captions = playbackInfos.filterIsInstance<PlaybackInfo.Captions>()
-            .firstOrNull()
-        val relatedMediaItems = playbackInfos.filterIsInstance<PlaybackInfo.RelatedMedia>()
-            .firstOrNull()
-            .toMediaItems()
+            .associate { captions -> captions.mediaUriRef to captions.metadata.toSubtitles() }
+        val uris = playbackInfos.filterIsInstance<PlaybackInfo.MediaUri>()
+            .map(PlaybackInfo.MediaUri::uri) + playbackInfos.filterIsInstance<PlaybackInfo.RelatedMedia>()
+            .map(PlaybackInfo.RelatedMedia::uri)
 
-        if (currentMediaItem == null) {
-            val mediaUri = playbackInfos.filterIsInstance<PlaybackInfo.MediaUri>().firstOrNull()
-            val mediaItem = if (mediaUri != null) {
-                val mediaItem = MediaItem.Builder()
-                    .setUri(mediaUri.uri)
-                    .addCaptions(captions)
-                    .build()
-                listOf(mediaItem)
-            } else {
-                emptyList()
-            }
+        val currentMediaItems = player.mediaItems()
+        val mediaItems = uris.map { it.uriToMediaItem() }.applySubtitles(captions)
 
-            prepare(
-                mediaItems = mediaItem + relatedMediaItems,
-                windowIndex = initial.itemIndex,
-                contentPosition = initial.positionMillis,
-                playWhenReady = initial.isPlaying
-            )
-        } else {
-            val currentSubtitles = currentMediaItem.playbackProperties?.subtitles ?: emptyList()
-            if (captions != null && !currentSubtitles.contains(captions)) {
-                // Load subtitles that came in after media content had already started
-                val mediaItem = currentMediaItem.buildUpon()
-                    .addCaptions(captions)
-                    .build()
-                prepare(
-                    mediaItems = listOf(element = mediaItem) + relatedMediaItems,
-                    windowIndex = player.currentWindowIndex,
-                    contentPosition = player.contentPosition,
-                    playWhenReady = player.playWhenReady
-                )
-            }
-        }
-    }
-
-    private fun prepare(
-        mediaItems: List<MediaItem>,
-        windowIndex: Int,
-        contentPosition: Long,
-        playWhenReady: Boolean
-    ) {
-        val currentUris = player.mediaItems.mapNotNull { currentMediaItem -> currentMediaItem.playbackProperties?.uri?.toString() }
-        val toAdd = mediaItems.filter { related -> requireNotNull(related.playbackProperties?.uri?.toString()) !in currentUris }
-        if (toAdd.isEmpty()) {
+        if (currentMediaItems == mediaItems) {
+            // Nothing new to update/add.
             return
         }
-        player.addMediaItems(toAdd)
-        player.prepare()
-        player.seekTo(windowIndex, contentPosition)
-        player.playWhenReady = playWhenReady
+
+        val currentPosition = player.contentPosition
+        val currentWindow = player.currentWindowIndex
+
+        player.clearMediaItems()
+        player.addMediaItems(mediaItems)
+
+        if (isInitializing) {
+            player.prepare()
+            player.seekTo(initial.itemIndex, initial.positionMillis)
+            player.playWhenReady = initial.isPlaying
+        } else {
+            player.seekTo(currentWindow, currentPosition)
+        }
     }
 
-    private val ExoPlayer.mediaItems: List<MediaItem> get() {
-        val list = mutableListOf<MediaItem>()
+    private fun ExoPlayer.mediaItems(): List<MediaItem> {
+        val mediaItems = mutableListOf<MediaItem>()
         for (i in 0 until mediaItemCount) {
-            list += getMediaItemAt(i)
+            mediaItems += getMediaItemAt(i)
         }
-        return list
+        return mediaItems
     }
 
-    private fun List<MediaItem.Subtitle>.contains(captions: PlaybackInfo.Captions): Boolean {
-        return map { it.uri.toString() }.containsAll(captions.metadata.map { it.uri })
+    private fun List<MediaItem>.applySubtitles(map: Map<String, List<MediaItem.Subtitle>>): List<MediaItem> {
+        return map { mediaItem ->
+            val subtitles = map[mediaItem.playbackProperties?.uri.toString()]
+            if (subtitles != null) {
+                mediaItem.buildUpon()
+                    .setSubtitles(subtitles)
+                    .build()
+            } else {
+                mediaItem
+            }
+        }
     }
 
-    private fun MediaItem.Builder.addCaptions(captions: PlaybackInfo.Captions?): MediaItem.Builder {
-        if (captions == null) {
-            return this
-        }
+    private fun String.uriToMediaItem(): MediaItem {
+        return MediaItem.Builder()
+            .setUri(this)
+            .build()
+    }
 
-        val subtitles = captions.metadata.map { metadata ->
+    private fun List<PlaybackInfo.Captions.Metadata>.toSubtitles(): List<MediaItem.Subtitle> {
+        return map { metadata ->
             MediaItem.Subtitle(
                 metadata.uri.toUri(),
                 metadata.mimeType,
                 metadata.language
             )
         }
-        return setSubtitles(subtitles)
-    }
-
-    private fun PlaybackInfo.RelatedMedia?.toMediaItems(): List<MediaItem> {
-        return this?.metadata?.map { metadata ->
-            MediaItem.Builder()
-                .setUri(metadata.uri)
-                .build()
-        }.orEmpty()
     }
 
     override fun handleTrackInfoAction(action: TrackInfo.Action) {

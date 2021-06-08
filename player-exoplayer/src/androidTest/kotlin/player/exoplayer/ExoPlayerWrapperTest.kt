@@ -36,19 +36,22 @@ import okhttp3.mockwebserver.RecordedRequest
 import okio.Buffer
 import okio.source
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
 import org.junit.Assert.fail
 import org.junit.Test
-import player.common.AppPlayer
+import player.common.PlaybackInfo
 import player.common.PlayerState
 import player.common.TrackInfo
 import java.io.Closeable
+import java.util.concurrent.TimeUnit
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.resume
 
 class ExoPlayerWrapperTest {
     @Test
     fun validateTracksForMp4() = player {
-        play(uri = "dizzy.mp4".asset())
+        createPlayer(uri = "dizzy.mp4".asset(), awaitPlaying = true)
 
         assertVideoTracks(count = 1)
         assertTextTracks(count = 0)
@@ -57,7 +60,11 @@ class ExoPlayerWrapperTest {
 
     @Test
     fun validateTracksForMp4_withSubtitles() = player {
-        play(uri = "dizzy.mp4".asset(), vttCaptions = "vtt-captions".asset())
+        createPlayer(
+            uri = "dizzy.mp4".asset(),
+            vttCaptions = "vtt-captions".asset(),
+            awaitPlaying = true
+        )
 
         assertVideoTracks(count = 1)
         assertTextTracks(count = 1)
@@ -66,7 +73,7 @@ class ExoPlayerWrapperTest {
 
     @Test
     fun validateTracksForHls() = player {
-        play(uri = "offline_hls/master.m3u8".asset())
+        createPlayer(uri = "offline_hls/master.m3u8".asset(), awaitPlaying = true)
 
         assertVideoTracks(count = 4)
         assertTextTracks(count = 0)
@@ -78,7 +85,7 @@ class ExoPlayerWrapperTest {
         webServer {
             val baseUrl = start()
             player {
-                play(uri = "${baseUrl}dizzy.mp4")
+                createPlayer(uri = "${baseUrl}dizzy.mp4", awaitPlaying = true)
 
                 assertVideoTracks(count = 1)
                 assertTextTracks(count = 0)
@@ -92,7 +99,7 @@ class ExoPlayerWrapperTest {
         webServer {
             val baseUrl = start()
             player {
-                play(uri = "${baseUrl}offline_hls/master.m3u8")
+                createPlayer(uri = "${baseUrl}offline_hls/master.m3u8", awaitPlaying = true)
 
                 assertVideoTracks(count = 4)
                 assertTextTracks(count = 0)
@@ -106,7 +113,10 @@ class ExoPlayerWrapperTest {
         webServer {
             val baseUrl = start()
             player {
-                play(uri = "${baseUrl}offline_hls/master_with_missing_file.m3u8")
+                createPlayer(
+                    uri = "${baseUrl}offline_hls/master_with_missing_file.m3u8",
+                    awaitPlaying = true
+                )
 
                 fail("Expected exception was not thrown")
             }
@@ -119,11 +129,123 @@ class ExoPlayerWrapperTest {
             val path = "offline_hls/master.m3u8"
             val baseUrl = start(customResponseCodes = mapOf("/$path" to 404))
             player {
-                play(uri = "$baseUrl$path")
+                createPlayer(uri = "$baseUrl$path", awaitPlaying = true)
 
                 fail("Expected exception was not thrown")
             }
         }
+    }
+
+    @Test
+    fun mediaUriPlaybackInfoAddsMediaItem() = player {
+        val wrapper = createPlayer()
+        val uri = "dizzy.mp4".asset()
+        val mediaUri = PlaybackInfo.MediaUri(uri = uri)
+
+        wrapper.handlePlaybackInfos(listOf(mediaUri))
+
+        assertNotNull(wrapper.player.currentMediaItem)
+        assertEquals(uri.toUri(), wrapper.player.currentMediaItem?.playbackProperties?.uri)
+        assertEquals(1, wrapper.player.mediaItemCount)
+    }
+
+    @Test
+    fun captionsPlaybackInfoBeforeMediaUriDoesNotAddsMediaItem() = player {
+        val captionsUri = "vtt-captions".asset()
+        val captions = PlaybackInfo.Captions(
+            metadata = listOf(
+                PlaybackInfo.Captions.Metadata(
+                    uri = captionsUri,
+                    mimeType = "text/vtt",
+                    language = "en"
+                )
+            ),
+            mediaUriRef = "dizzy.mp4".asset()
+        )
+        val wrapper = createPlayer()
+
+        wrapper.handlePlaybackInfos(listOf(captions))
+
+        assertNull(wrapper.player.currentMediaItem)
+        assertEquals(0, wrapper.player.mediaItemCount)
+    }
+
+    @Test
+    fun captionsPlaybackInfoWithMediaUriAddsMediaItemWithSubtitles() = player {
+        val uri = "dizzy.mp4".asset()
+        val mediaUri = PlaybackInfo.MediaUri(uri = uri)
+        val captionsUri = "vtt-captions".asset()
+        val captions = PlaybackInfo.Captions(
+            metadata = listOf(
+                PlaybackInfo.Captions.Metadata(
+                    uri = captionsUri,
+                    mimeType = "text/vtt",
+                    language = "en"
+                )
+            ),
+            mediaUriRef = "dizzy.mp4".asset()
+        )
+        val wrapper = createPlayer()
+
+        wrapper.handlePlaybackInfos(listOf(captions, mediaUri))
+
+        assertNotNull(wrapper.player.currentMediaItem)
+        assertEquals(uri.toUri(), wrapper.player.currentMediaItem?.playbackProperties?.uri)
+        assertEquals(captionsUri.toUri(), wrapper.player.currentMediaItem?.playbackProperties?.subtitles?.first()?.uri)
+        assertEquals(1, wrapper.player.mediaItemCount)
+    }
+
+    @Test
+    fun relatedMediaPlaybackInfoAddsMediaItems() = player {
+        val mp4 = "dizzy.mp4".asset()
+        val hls = "offline_hls/master.m3u8".asset()
+        val relatedMedia = listOf(
+            PlaybackInfo.RelatedMedia(
+                uri = mp4,
+                imageUri = "",
+                durationMillis = TimeUnit.SECONDS.toMillis(141L)
+            ),
+            PlaybackInfo.RelatedMedia(
+                uri = hls,
+                imageUri = "",
+                durationMillis = TimeUnit.SECONDS.toMillis(43L)
+            ),
+        )
+        val wrapper = createPlayer()
+
+        wrapper.handlePlaybackInfos(relatedMedia)
+
+        assertEquals(2, wrapper.player.mediaItemCount)
+        val first = wrapper.player.getMediaItemAt(0)
+        val second = wrapper.player.getMediaItemAt(1)
+        assertEquals(mp4.toUri(), first.playbackProperties?.uri)
+        assertEquals(hls.toUri(), second.playbackProperties?.uri)
+    }
+
+    @Test
+    fun captionsAfterMediaUriUpdatesMediaUri() = player {
+        val uri = "dizzy.mp4".asset()
+        val mediaUri = PlaybackInfo.MediaUri(uri = uri)
+        val captionsUri = "vtt-captions".asset()
+        val captions = PlaybackInfo.Captions(
+            metadata = listOf(
+                PlaybackInfo.Captions.Metadata(
+                    uri = captionsUri,
+                    mimeType = "text/vtt",
+                    language = "en"
+                )
+            ),
+            mediaUriRef = "dizzy.mp4".asset()
+        )
+        val wrapper = createPlayer()
+
+        wrapper.handlePlaybackInfos(listOf(mediaUri))
+        wrapper.handlePlaybackInfos(listOf(mediaUri, captions))
+
+        assertNotNull(wrapper.player.currentMediaItem)
+        assertEquals(uri.toUri(), wrapper.player.currentMediaItem?.playbackProperties?.uri)
+        assertEquals(captionsUri.toUri(), wrapper.player.currentMediaItem?.playbackProperties?.subtitles?.first()?.uri)
+        assertEquals(1, wrapper.player.mediaItemCount)
     }
 
     private fun String.asset(): String {
@@ -178,46 +300,52 @@ class ExoPlayerWrapperTest {
     }
 
     private fun player(block: suspend ExoPlayerWrapperRobot.() -> Unit) = runBlocking {
-        val robot = ExoPlayerWrapperRobot()
-        try {
-            robot.block()
-        } finally {
-            robot.release()
+        withContext(Dispatchers.Main) {
+            val robot = ExoPlayerWrapperRobot()
+            try {
+                robot.block()
+            } finally {
+                robot.release()
+            }
         }
     }
 
     private class ExoPlayerWrapperRobot(private val context: CoroutineContext = Dispatchers.Main) {
         private val appContext: Context get() = ApplicationProvider.getApplicationContext()
-        private var appPlayer: AppPlayer? = null
+        private var appPlayer: ExoPlayerWrapper? = null
 
-        suspend fun assertVideoTracks(count: Int) = withContext(context) {
+        fun assertVideoTracks(count: Int) {
             assertEquals(count, appPlayer!!.tracks.filter { it.type == TrackInfo.Type.VIDEO }.size)
         }
 
-        suspend fun assertTextTracks(count: Int) = withContext(context) {
+        fun assertTextTracks(count: Int) {
             assertEquals(count, appPlayer!!.tracks.filter { it.type == TrackInfo.Type.TEXT }.size)
         }
 
-        suspend fun assertAudioTracks(count: Int) = withContext(context) {
+        fun assertAudioTracks(count: Int) {
             assertEquals(count, appPlayer!!.tracks.filter { it.type == TrackInfo.Type.AUDIO }.size)
         }
 
-        suspend fun play(
-            uri: String,
-            vttCaptions: String? = null
-        ) = withContext(context) {
-            val player = createPlayer(uri, vttCaptions)
+        suspend fun createPlayer(
+            uri: String? = null,
+            vttCaptions: String? = null,
+            awaitPlaying: Boolean = false
+        ): ExoPlayerWrapper {
+            val player = createExoPlayer(uri, vttCaptions)
             appPlayer = ExoPlayerWrapper(player, FakeTrackNameProvider(), PlayerState.INITIAL)
-            player.awaitPlaying()
+            if (awaitPlaying) {
+                player.awaitPlaying()
+            }
+            return appPlayer!!
         }
 
-        suspend fun release() = withContext(context) {
-            appPlayer!!.release()
+        fun release() {
+            appPlayer?.release()
             appPlayer = null
         }
 
-        private fun createPlayer(
-            uri: String,
+        private fun createExoPlayer(
+            uri: String? = null,
             vttCaptions: String? = null
         ): ExoPlayer {
             val mediaItem = MediaItem.Builder()
@@ -237,16 +365,18 @@ class ExoPlayerWrapperTest {
 
             val httpDataSourceFactory = DefaultHttpDataSource.Factory()
                 .setReadTimeoutMs(500) // Fail fast!
-            val dataSourceFactory = DefaultDataSourceFactory(appContext, null, httpDataSourceFactory)
-            val mediaSourceFactory = DefaultMediaSourceFactory(dataSourceFactory, DefaultExtractorsFactory()).apply {
-                // Don't retry at all
-                setLoadErrorHandlingPolicy(object : DefaultLoadErrorHandlingPolicy() {
-                    override fun getMinimumLoadableRetryCount(dataType: Int) = 0
-                    override fun getRetryDelayMsFor(
-                        loadErrorInfo: LoadErrorHandlingPolicy.LoadErrorInfo
-                    ) = C.TIME_UNSET
-                })
-            }
+            val dataSourceFactory =
+                DefaultDataSourceFactory(appContext, null, httpDataSourceFactory)
+            val mediaSourceFactory =
+                DefaultMediaSourceFactory(dataSourceFactory, DefaultExtractorsFactory()).apply {
+                    // Don't retry at all
+                    setLoadErrorHandlingPolicy(object : DefaultLoadErrorHandlingPolicy() {
+                        override fun getMinimumLoadableRetryCount(dataType: Int) = 0
+                        override fun getRetryDelayMsFor(
+                            loadErrorInfo: LoadErrorHandlingPolicy.LoadErrorInfo
+                        ) = C.TIME_UNSET
+                    })
+                }
 
             return SimpleExoPlayer.Builder(
                 appContext,
@@ -259,30 +389,33 @@ class ExoPlayerWrapperTest {
             )
                 .build()
                 .apply {
-                    setMediaItem(mediaItem)
+                    if (uri != null) {
+                        setMediaItem(mediaItem)
+                    }
                     prepare()
                 }
         }
 
-        private suspend fun Player.awaitPlaying() = suspendCancellableCoroutine<Unit> { continuation ->
-            val listener = object : Player.Listener {
-                override fun onPlaybackStateChanged(state: Int) {
-                    if (state == Player.STATE_READY) {
+        private suspend fun Player.awaitPlaying() =
+            suspendCancellableCoroutine<Unit> { continuation ->
+                val listener = object : Player.Listener {
+                    override fun onPlaybackStateChanged(state: Int) {
+                        if (state == Player.STATE_READY) {
+                            removeListener(this)
+                            continuation.resume(Unit)
+                        }
+                    }
+
+                    override fun onPlayerError(error: ExoPlaybackException) {
                         removeListener(this)
-                        continuation.resume(Unit)
+                        continuation.cancel(error)
                     }
                 }
 
-                override fun onPlayerError(error: ExoPlaybackException) {
-                    removeListener(this)
-                    continuation.cancel(error)
-                }
+                addListener(listener)
+
+                continuation.invokeOnCancellation { removeListener(listener) }
             }
-
-            addListener(listener)
-
-            continuation.invokeOnCancellation { removeListener(listener) }
-        }
     }
 }
 
