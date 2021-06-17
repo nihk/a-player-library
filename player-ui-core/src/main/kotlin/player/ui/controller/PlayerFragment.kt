@@ -25,7 +25,8 @@ class PlayerFragment(
     private val vmFactory: PlayerViewModel.Factory,
     private val playerViewWrapperFactory: PlayerViewWrapper.Factory,
     private val deps: SharedDependencies,
-    private val errorRenderer: ErrorRenderer
+    private val errorRenderer: ErrorRenderer,
+    private val pipControllerFactory: PipController.Factory
 ) : Fragment(R.layout.player_fragment) {
 
     private val playerViewModel: PlayerViewModel by viewModels { vmFactory.create(this, playerArguments.uri) }
@@ -33,6 +34,7 @@ class PlayerFragment(
     private var playerViewWrapper: PlayerViewWrapper? = null
     private var playbackUi: PlaybackUi? = null
     private val playerArguments: PlayerArguments get() = requireArguments().toPlayerArguments()
+    private val pipController: PipController by lazy { pipControllerFactory.create(playerViewModel) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -62,7 +64,7 @@ class PlayerFragment(
     }
 
     private fun enterPip(): PipController.Result {
-        return deps.pipController.enterPip(playerViewModel.isPlaying())
+        return pipController.enterPip()
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -71,7 +73,7 @@ class PlayerFragment(
         playerViewWrapper = playerViewWrapperFactory.create(view.context)
         binding.playerContainer.addView(requirePlayerViewWrapper().view)
         playbackUi = playerArguments.playbackUiFactory.newInstance()
-            .create(deps, playerViewModel, playerArguments, this)
+            .create(deps, pipController, playerViewModel, playerArguments, this)
         binding.playbackUi.addView(requirePlaybackUi().view)
 
         listenToPlayer(binding)
@@ -82,7 +84,7 @@ class PlayerFragment(
             .onEach { playerEvent ->
                 requirePlayerViewWrapper().onEvent(playerEvent)
                 requirePlaybackUi().onPlayerEvent(playerEvent)
-                deps.pipController.onEvent(playerEvent)
+                pipController.onEvent(playerEvent)
             }
             .launchIn(viewLifecycleOwner.lifecycleScope)
 
@@ -106,7 +108,7 @@ class PlayerFragment(
             .launchIn(viewLifecycleOwner.lifecycleScope)
 
         if (playerArguments.pipConfig?.enabled == true) {
-            deps.pipController.events()
+            pipController.events()
                 .onEach { pipAction ->
                     when (pipAction) {
                         PipController.Event.Pause -> playerViewModel.pause()

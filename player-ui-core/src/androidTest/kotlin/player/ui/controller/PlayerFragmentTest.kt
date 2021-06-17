@@ -88,7 +88,7 @@ class PlayerFragmentTest {
         private val telemetry = FakePlayerTelemetry()
         private val shareDelegate: ShareDelegate? = null
         private val pipConfig = PictureInPictureConfig(enabled = false, onBackPresses = false)
-        private val pipController = FakePipController()
+        private val pipControllerFactory = FakePipController.Factory()
         private val errorRenderer = FakeErrorRenderer()
         private val playbackInfoResolver = DefaultPlaybackInfoResolver()
         private val seekDataUpdater = FakeSeekDataUpdater()
@@ -123,9 +123,9 @@ class PlayerFragmentTest {
                         context = ApplicationProvider.getApplicationContext(),
                         seekBarListenerFactory = seekBarListenerFactory,
                         timeFormatter = timeFormatter,
-                        pipController = pipController,
                         navigator = navigator
-                    )
+                    ),
+                    pipControllerFactory = pipControllerFactory
                 )
             }
         }
@@ -183,9 +183,15 @@ class FakePipController(
     private val flow: Flow<PipController.Event> = emptyFlow()
 ) : PipController {
     override fun events() = flow
-    override fun enterPip(isPlaying: Boolean) = PipController.Result.EnteredPip
+    override fun enterPip() = PipController.Result.EnteredPip
     override fun isInPip(): Boolean = false
     override fun onEvent(playerEvent: PlayerEvent) = Unit
+
+    class Factory : PipController.Factory {
+        override fun create(playerController: PlayerController): PipController {
+            return FakePipController()
+        }
+    }
 }
 
 class FakeErrorRenderer : ErrorRenderer {
@@ -215,6 +221,7 @@ class FakePlaybackUi : PlaybackUi {
 class FakePlaybackUiFactory : PlaybackUi.Factory {
     override fun create(
         deps: SharedDependencies,
+        pipController: PipController,
         playerController: PlayerController,
         playerArguments: PlayerArguments,
         registryOwner: SavedStateRegistryOwner

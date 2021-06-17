@@ -20,7 +20,7 @@ class SlowPlaybackInfoResolver : PlaybackInfoResolver {
                 durationMillis = TimeUnit.SECONDS.toMillis(400L)
             ),
             PlaybackInfo.RelatedMedia(
-                uri = "https://multiplatform-f.akamaihd.net/i/multi/april11/cctv/cctv_,512x288_450_b,640x360_700_b,768x432_1000_b,1024x576_1400_m,.mp4.csmil/master.m3u8",
+                uri = "https://manifest.prod.boltdns.net/manifest/v2/hls/v7/clear/avc1/1752604059001/e6fa7db4-3567-49b8-8b92-68e7b9f322f0/10s/master.m3u8?fastly_token=NjBlYzVmMzFfYWY4ZGYxZmM0NDExYzMzOGEzNzg0MThhZTJiYzkyNDE4OGQzYTY5MjZiMTIwM2NiMWJmNmZhZDA1YjI0MjdjOA%3D%3D",
                 imageUri = "https://i.imgur.com/MYmm7E1.jpg",
                 durationMillis = TimeUnit.SECONDS.toMillis(141L)
             ),

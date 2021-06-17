@@ -136,6 +136,10 @@ class PlayerViewModel(
 
     override fun isPlaying(): Boolean = appPlayer?.state?.isPlaying == true
 
+    override fun aspectRatio(): Pair<Int, Int>? {
+        return appPlayer?.aspectRatio
+    }
+
     override fun play() {
         requireNotNull(appPlayer).play()
     }

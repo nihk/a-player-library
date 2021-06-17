@@ -10,6 +10,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.graphics.drawable.Icon
 import android.os.Build
+import android.util.Rational
 import androidx.annotation.DrawableRes
 import androidx.annotation.RequiresApi
 import kotlinx.coroutines.channels.awaitClose
@@ -18,17 +19,28 @@ import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.emptyFlow
 import player.common.PlayerEvent
 import player.ui.common.PipController
+import player.ui.common.PlayerController
 import player.ui.core.R
 
 class NoOpPipController : PipController {
     override fun events(): Flow<PipController.Event> = emptyFlow()
-    override fun enterPip(isPlaying: Boolean) = PipController.Result.DidNotEnterPip
+    override fun enterPip() = PipController.Result.DidNotEnterPip
     override fun onEvent(playerEvent: PlayerEvent) = Unit
     override fun isInPip(): Boolean = false
+
+    class Factory : PipController.Factory {
+        override fun create(playerController: PlayerController): PipController {
+            return NoOpPipController()
+        }
+    }
 }
 
 @RequiresApi(Build.VERSION_CODES.O)
-class AndroidPipController(private val activity: Activity) : PipController {
+class AndroidPipController(
+    private val activity: Activity,
+    private val playerController: PlayerController
+) : PipController {
+    // fixme: eliminate this stateful field?
     private var canShowActions = false
 
     override fun events(): Flow<PipController.Event> = callbackFlow {
@@ -57,9 +69,9 @@ class AndroidPipController(private val activity: Activity) : PipController {
         awaitClose { activity.unregisterReceiver(broadcastReceiver) }
     }
 
-    override fun enterPip(isPlaying: Boolean): PipController.Result {
+    override fun enterPip(): PipController.Result {
         return try {
-            val pipParams = pipParams(isPlaying)
+            val pipParams = pipParams(playerController.isPlaying())
             activity.enterPictureInPictureMode(pipParams)
             PipController.Result.EnteredPip
         } catch (throwable: Throwable) {
@@ -92,8 +104,11 @@ class AndroidPipController(private val activity: Activity) : PipController {
             emptyList()
         }
 
+        val rational = playerController.aspectRatio()?.let { pair -> Rational(pair.first, pair.second) }
+
         return PictureInPictureParams.Builder()
             .setActions(actions)
+            .setAspectRatio(rational)
             .build()
     }
 
@@ -147,5 +162,11 @@ class AndroidPipController(private val activity: Activity) : PipController {
         const val RequestPlay = 1
         const val ControlPause = 0
         const val ControlPlay = 1
+    }
+
+    class Factory(private val activity: Activity) : PipController.Factory {
+        override fun create(playerController: PlayerController): PipController {
+            return AndroidPipController(activity, playerController)
+        }
     }
 }

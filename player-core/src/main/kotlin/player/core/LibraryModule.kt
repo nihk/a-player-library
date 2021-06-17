@@ -25,10 +25,10 @@ internal class LibraryModule(
 
     private val module: PlayerModule = LibraryInitializer.playerModule()
 
-    private val pipController: PipController = if (isMinOsForPip) {
-        AndroidPipController(activity)
+    private val pipControllerFactory: PipController.Factory = if (isMinOsForPip) {
+        AndroidPipController.Factory(activity)
     } else {
-        NoOpPipController()
+        NoOpPipController.Factory()
     }
 
     private val fragmentMap: Map<Class<out Fragment>, () -> Fragment> get() = mapOf(
@@ -42,9 +42,9 @@ internal class LibraryModule(
                     shareDelegate = LibraryInitializer.shareDelegate(),
                     seekBarListenerFactory = DefaultSeekBarListener.Factory(),
                     timeFormatter = LibraryInitializer.timeFormatter(),
-                    pipController = pipController,
                     navigator = navigator,
-                )
+                ),
+                pipControllerFactory = pipControllerFactory
             )
         },
         TracksPickerFragment::class.java to { TracksPickerFragment() }

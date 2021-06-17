@@ -9,6 +9,7 @@ interface PlayerController {
     fun play()
     fun pause()
     fun isPlaying(): Boolean
+    fun aspectRatio(): Pair<Int, Int>?
     fun seekRelative(duration: Duration)
     fun seekTo(duration: Duration)
     fun toPlaylistItem(index: Int)

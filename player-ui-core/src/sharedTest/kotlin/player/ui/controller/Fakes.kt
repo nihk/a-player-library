@@ -32,6 +32,7 @@ class FakeAppPlayer(
 
     override val state: PlayerState get() = PlayerState.INITIAL
     override val tracks: List<TrackInfo> get() = fakeTracks
+    override val aspectRatio: Pair<Int, Int> = Pair(0, 0)
 
     override fun onEvent(playerEvent: PlayerEvent) {
         collectedEvents += playerEvent

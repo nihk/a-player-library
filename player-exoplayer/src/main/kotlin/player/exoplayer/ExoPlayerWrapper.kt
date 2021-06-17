@@ -31,6 +31,14 @@ internal class ExoPlayerWrapper(
     override val tracks: List<TrackInfo>
         get() = player.getTrackInfos(KNOWN_TRACK_TYPES, trackNameProvider)
 
+    override val aspectRatio: Pair<Int, Int>
+        get() = player.videoSize.let { videoSize ->
+            Pair(
+                videoSize.width,
+                videoSize.height
+            )
+        }
+
     override fun handlePlaybackInfos(playbackInfos: List<PlaybackInfo>) {
         val isInitializing = player.currentMediaItem == null
 

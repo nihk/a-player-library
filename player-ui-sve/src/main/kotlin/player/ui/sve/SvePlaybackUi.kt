@@ -19,6 +19,7 @@ import player.common.PlaybackInfo
 import player.common.PlayerEvent
 import player.common.SeekData
 import player.common.requireNotNull
+import player.ui.common.PipController
 import player.ui.common.PlaybackUi
 import player.ui.common.PlayerArguments
 import player.ui.common.PlayerController
@@ -33,6 +34,7 @@ import kotlin.time.toDuration
 
 class SvePlaybackUi(
     private val deps: SharedDependencies,
+    private val pipController: PipController,
     private val playerController: PlayerController,
     private val playerArguments: PlayerArguments,
     private val registryOwner: SavedStateRegistryOwner,
@@ -68,7 +70,7 @@ class SvePlaybackUi(
     }
 
     override fun onUiState(uiState: UiState) {
-        binding.root.isVisible = uiState.isControllerUsable && !deps.pipController.isInPip()
+        binding.root.isVisible = uiState.isControllerUsable && !pipController.isInPip()
         if (!seekBarListener.requireNotNull().isSeekBarBeingTouched) {
             val seekData = uiState.seekData
             binding.seekBar.update(seekData)
@@ -217,12 +219,13 @@ class SvePlaybackUi(
     class Factory : PlaybackUi.Factory {
         override fun create(
             deps: SharedDependencies,
+            pipController: PipController,
             playerController: PlayerController,
             playerArguments: PlayerArguments,
             registryOwner: SavedStateRegistryOwner
         ): PlaybackUi {
             val imageLoader = deps.context.applicationContext.imageLoader
-            return SvePlaybackUi(deps, playerController, playerArguments, registryOwner, imageLoader)
+            return SvePlaybackUi(deps, pipController, playerController, playerArguments, registryOwner, imageLoader)
         }
     }
 }

@@ -28,6 +28,9 @@ class MediaPlayerWrapper(
     override val tracks: List<TrackInfo>
         get() = emptyList()
 
+    override val aspectRatio: Pair<Int, Int>
+        get() = Pair(0, 0) // todo
+
     override fun handlePlaybackInfos(playbackInfos: List<PlaybackInfo>) {
         playbackInfos.forEach { playbackInfo ->
             when (playbackInfo) {

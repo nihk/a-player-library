@@ -9,6 +9,5 @@ data class SharedDependencies(
     val shareDelegate: ShareDelegate?,
     val seekBarListenerFactory: SeekBarListener.Factory,
     val timeFormatter: TimeFormatter,
-    val pipController: PipController,
     val navigator: Navigator
 )

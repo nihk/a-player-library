@@ -5,7 +5,7 @@ import player.common.PlayerEvent
 
 interface PipController {
     fun events(): Flow<Event>
-    fun enterPip(isPlaying: Boolean): Result
+    fun enterPip(): Result
     fun onEvent(playerEvent: PlayerEvent)
     fun isInPip(): Boolean
 
@@ -13,8 +13,13 @@ interface PipController {
         EnteredPip,
         DidNotEnterPip
     }
+
     enum class Event {
         Pause,
         Play
+    }
+
+    interface Factory {
+        fun create(playerController: PlayerController): PipController
     }
 }

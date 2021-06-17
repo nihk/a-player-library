@@ -1,7 +1,6 @@
 package player.ui.def
 
 import android.annotation.SuppressLint
-import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.SeekBar
@@ -12,6 +11,7 @@ import player.common.PlayerEvent
 import player.common.SeekData
 import player.common.TrackInfo
 import player.common.requireNotNull
+import player.ui.common.PipController
 import player.ui.def.databinding.DefaultPlaybackUiBinding
 import player.ui.common.PlaybackUi
 import player.ui.common.PlayerArguments
@@ -26,6 +26,7 @@ import kotlin.time.toDuration
 // todo: this should be more composable for shared components across PlaybackUis, e.g. the seekbar
 class DefaultPlaybackUi(
     private val deps: SharedDependencies,
+    private val pipController: PipController,
     private val playerController: PlayerController,
     private val playerArguments: PlayerArguments,
     private val registryOwner: SavedStateRegistryOwner
@@ -54,7 +55,7 @@ class DefaultPlaybackUi(
     }
 
     override fun onUiState(uiState: UiState) {
-        binding.root.isVisible = uiState.isControllerUsable && !deps.pipController.isInPip()
+        binding.root.isVisible = uiState.isControllerUsable && !pipController.isInPip()
         if (!seekBarListener.requireNotNull().isSeekBarBeingTouched) {
             val seekData = uiState.seekData
             binding.seekBar.update(seekData)
@@ -161,11 +162,12 @@ class DefaultPlaybackUi(
     class Factory : PlaybackUi.Factory {
         override fun create(
             deps: SharedDependencies,
+            pipController: PipController,
             playerController: PlayerController,
             playerArguments: PlayerArguments,
             registryOwner: SavedStateRegistryOwner
         ): PlaybackUi {
-            return DefaultPlaybackUi(deps, playerController, playerArguments, registryOwner)
+            return DefaultPlaybackUi(deps, pipController, playerController, playerArguments, registryOwner)
         }
     }
 }
