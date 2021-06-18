@@ -6,6 +6,8 @@ import nick.sample.data.LoggingPlayerTelemetry
 import nick.sample.data.SlowPlaybackInfoResolver
 import player.core.LibraryInitializer
 import player.exoplayer.ExoPlayerModule
+import player.ui.def.DefaultPlaybackUi
+import player.ui.sve.SvePlaybackUi
 
 class App : Application() {
     override fun onCreate() {
@@ -14,6 +16,7 @@ class App : Application() {
             playerModule = ExoPlayerModule(this),
             // Uncomment to use MediaPlayer APIs instead of ExoPlayer
 //            playerModule = MediaPlayerModule(),
+            playbackUiFactories = listOf(DefaultPlaybackUi.Factory(), SvePlaybackUi.Factory()),
             telemetry = LoggingPlayerTelemetry(),
             shareDelegate = AndroidShareDelegate(),
             playbackInfoResolver = SlowPlaybackInfoResolver()

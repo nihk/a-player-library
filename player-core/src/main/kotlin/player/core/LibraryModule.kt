@@ -44,7 +44,8 @@ internal class LibraryModule(
                     timeFormatter = LibraryInitializer.timeFormatter(),
                     navigator = navigator,
                 ),
-                pipControllerFactory = pipControllerFactory
+                pipControllerFactory = pipControllerFactory,
+                playbackUiFactories = LibraryInitializer.playbackUiFactories()
             )
         },
         TracksPickerFragment::class.java to { TracksPickerFragment() }

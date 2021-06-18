@@ -7,6 +7,7 @@ import player.common.PlayerModule
 import player.common.PlayerTelemetry
 import player.common.ShareDelegate
 import player.common.TimeFormatter
+import player.ui.common.PlaybackUi
 import java.util.*
 
 // Required and optional dependencies to inject into the library.
@@ -17,16 +18,19 @@ object LibraryInitializer {
     private var shareDelegate: ShareDelegate? = null
     private var playbackInfoResolver: PlaybackInfoResolver? = null
     private var timeFormatter: TimeFormatter? = null
+    private var playbackUiFactories: List<PlaybackUi.Factory>? = null
 
     internal fun playerModule(): PlayerModule = playerModule.requireInitialized()
     internal fun telemetry(): PlayerTelemetry? = telemetry
     internal fun shareDelegate(): ShareDelegate? = shareDelegate
     internal fun playbackInfoResolver(): PlaybackInfoResolver = playbackInfoResolver.requireInitialized()
     internal fun timeFormatter(): TimeFormatter = timeFormatter.requireInitialized()
+    internal fun playbackUiFactories(): List<PlaybackUi.Factory> = playbackUiFactories.requireInitialized()
 
     // Must be called from Application.onCreate().
     fun initialize(
         playerModule: PlayerModule,
+        playbackUiFactories: List<PlaybackUi.Factory>,
         telemetry: PlayerTelemetry? = null,
         shareDelegate: ShareDelegate? = null,
         playbackInfoResolver: PlaybackInfoResolver? = DefaultPlaybackInfoResolver(),
@@ -39,6 +43,7 @@ object LibraryInitializer {
         LibraryInitializer.shareDelegate = shareDelegate
         LibraryInitializer.playbackInfoResolver = playbackInfoResolver
         LibraryInitializer.timeFormatter = timeFormatter
+        LibraryInitializer.playbackUiFactories = playbackUiFactories
     }
 
     private fun <T> T?.requireInitialized(): T {

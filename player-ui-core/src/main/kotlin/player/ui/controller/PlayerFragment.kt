@@ -25,7 +25,8 @@ class PlayerFragment(
     private val playerViewWrapperFactory: PlayerViewWrapper.Factory,
     private val deps: SharedDependencies,
     private val errorRenderer: ErrorRenderer,
-    private val pipControllerFactory: PipController.Factory
+    private val pipControllerFactory: PipController.Factory,
+    private val playbackUiFactories: List<PlaybackUi.Factory>
 ) : Fragment(R.layout.player_fragment) {
 
     private val playerViewModel: PlayerViewModel by viewModels { vmFactory.create(this, playerArguments.uri) }
@@ -69,8 +70,17 @@ class PlayerFragment(
         super.onViewCreated(view, savedInstanceState)
         val binding = PlayerFragmentBinding.bind(view)
         val playerViewWrapper = playerViewWrapperFactory.create(view.context)
-        playbackUi = playerArguments.playbackUiFactory.newInstance()
-            .create(deps, playerViewWrapper, pipController, playerViewModel, playerArguments, this)
+        val playbackUiFactory = playbackUiFactories.first { factory ->
+            playerArguments.playbackUiFactory.isAssignableFrom(factory::class.java)
+        }
+        playbackUi = playbackUiFactory.create(
+            deps = deps,
+            playerViewWrapper = playerViewWrapper,
+            pipController = pipController,
+            playerController = playerViewModel,
+            playerArguments = playerArguments,
+            registryOwner = this
+        )
         binding.playbackUi.addView(requirePlaybackUi().view)
 
         listenToPlayer()

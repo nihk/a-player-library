@@ -68,7 +68,7 @@ class DefaultPlaybackUi(
     }
 
     override fun onUiState(uiState: UiState) {
-        binding.root.isVisible = uiState.isControllerUsable && !pipController.isInPip()
+        binding.playerController.isVisible = uiState.isControllerUsable && !pipController.isInPip()
         binding.progressBar.isVisible = uiState.showLoading
         if (!seekBarListener.requireNotNull().isSeekBarBeingTouched) {
             val seekData = uiState.seekData

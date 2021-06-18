@@ -18,6 +18,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
+import player.common.AppPlayer
 import player.common.DefaultPlaybackInfoResolver
 import player.common.PlaybackInfo
 import player.common.PlayerEvent
@@ -96,6 +97,8 @@ class PlayerFragmentTest {
         private val navigator = NoOpNavigator()
         private val seekBarListenerFactory = DefaultSeekBarListener.Factory()
         private val scenario: FragmentScenario<PlayerFragment>
+        private val playbackUi = FakePlaybackUi()
+        private val playbackUiFactory = FakePlaybackUiFactory(playbackUi)
 
         init {
             val vmFactory = PlayerViewModel.Factory(
@@ -125,7 +128,8 @@ class PlayerFragmentTest {
                         timeFormatter = timeFormatter,
                         navigator = navigator
                     ),
-                    pipControllerFactory = pipControllerFactory
+                    pipControllerFactory = pipControllerFactory,
+                    playbackUiFactories = listOf(playbackUiFactory)
                 )
             }
         }
@@ -147,11 +151,11 @@ class PlayerFragmentTest {
         }
 
         fun assertPlayerAttached(times: Int) {
-            assertEquals(times, playerViewWrapper.attachCount)
+            assertEquals(times, playbackUi.attachCount)
         }
 
         fun assertPlayerDetached(times: Int) {
-            assertEquals(times, playerViewWrapper.detachCount)
+            assertEquals(times, playbackUi.detachCount)
         }
 
         fun assertPlayerReleased(times: Int) {
@@ -209,6 +213,8 @@ class NoOpNavigator : Navigator {
 }
 
 class FakePlaybackUi : PlaybackUi {
+    var attachCount: Int = 0
+    var detachCount: Int = 0
     override val view: View get() = FrameLayout(ApplicationProvider.getApplicationContext())
 
     override fun onPlayerEvent(playerEvent: PlayerEvent) = Unit
@@ -216,16 +222,23 @@ class FakePlaybackUi : PlaybackUi {
     override fun onTracksState(tracksState: player.ui.common.TracksState) = Unit
     override fun onPlaybackInfos(playbackInfos: List<PlaybackInfo>) = Unit
     override fun saveState(): Bundle = Bundle()
+    override fun attach(appPlayer: AppPlayer) {
+        ++attachCount
+    }
+    override fun detachPlayer() {
+        ++detachCount
+    }
 }
 
-class FakePlaybackUiFactory : PlaybackUi.Factory {
+class FakePlaybackUiFactory(private val playbackUi: PlaybackUi) : PlaybackUi.Factory {
     override fun create(
         deps: SharedDependencies,
+        playerViewWrapper: PlayerViewWrapper,
         pipController: PipController,
         playerController: PlayerController,
         playerArguments: PlayerArguments,
         registryOwner: SavedStateRegistryOwner
     ): PlaybackUi {
-        return FakePlaybackUi()
+        return playbackUi
     }
 }
