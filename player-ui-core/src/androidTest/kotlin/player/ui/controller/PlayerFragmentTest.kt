@@ -233,7 +233,7 @@ class FakePlaybackUi : PlaybackUi {
 class FakePlaybackUiFactory(private val playbackUi: PlaybackUi) : PlaybackUi.Factory {
     override fun create(
         deps: SharedDependencies,
-        playerViewWrapper: PlayerViewWrapper,
+        playerViewWrapperFactory: PlayerViewWrapper.Factory,
         pipController: PipController,
         playerController: PlayerController,
         playerArguments: PlayerArguments,

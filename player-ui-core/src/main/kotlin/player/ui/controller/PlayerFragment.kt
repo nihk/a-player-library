@@ -69,13 +69,12 @@ class PlayerFragment(
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         val binding = PlayerFragmentBinding.bind(view)
-        val playerViewWrapper = playerViewWrapperFactory.create(view.context)
         val playbackUiFactory = playbackUiFactories.first { factory ->
             playerArguments.playbackUiFactory.isAssignableFrom(factory::class.java)
         }
         playbackUi = playbackUiFactory.create(
             deps = deps,
-            playerViewWrapper = playerViewWrapper,
+            playerViewWrapperFactory = playerViewWrapperFactory,
             pipController = pipController,
             playerController = playerViewModel,
             playerArguments = playerArguments,

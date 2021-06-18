@@ -28,7 +28,7 @@ import kotlin.time.toDuration
 // todo: this should be more composable for shared components across PlaybackUis, e.g. the seekbar
 class DefaultPlaybackUi(
     private val deps: SharedDependencies,
-    private val playerViewWrapper: PlayerViewWrapper,
+    private val playerViewWrapperFactory: PlayerViewWrapper.Factory,
     private val pipController: PipController,
     private val playerController: PlayerController,
     private val playerArguments: PlayerArguments,
@@ -45,6 +45,7 @@ class DefaultPlaybackUi(
         },
         seekTo = playerController::seekTo
     )
+    private val playerViewWrapper = playerViewWrapperFactory.create(deps.context)
 
     init {
         binding.playerContainer.addView(playerViewWrapper.view)
@@ -176,13 +177,13 @@ class DefaultPlaybackUi(
     class Factory : PlaybackUi.Factory {
         override fun create(
             deps: SharedDependencies,
-            playerViewWrapper: PlayerViewWrapper,
+            playerViewWrapperFactory: PlayerViewWrapper.Factory,
             pipController: PipController,
             playerController: PlayerController,
             playerArguments: PlayerArguments,
             registryOwner: SavedStateRegistryOwner
         ): PlaybackUi {
-            return DefaultPlaybackUi(deps, playerViewWrapper, pipController, playerController, playerArguments, registryOwner)
+            return DefaultPlaybackUi(deps, playerViewWrapperFactory, pipController, playerController, playerArguments, registryOwner)
         }
     }
 }

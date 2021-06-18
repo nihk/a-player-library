@@ -38,7 +38,7 @@ import kotlin.time.toDuration
 //  that are being swiped (Player instances are attached/removed from them as pages change)
 class SvePlaybackUi(
     private val deps: SharedDependencies,
-    private val playerViewWrapper: PlayerViewWrapper,
+    private val playerViewWrapperFactory: PlayerViewWrapper.Factory,
     private val pipController: PipController,
     private val playerController: PlayerController,
     private val playerArguments: PlayerArguments,
@@ -56,6 +56,7 @@ class SvePlaybackUi(
         seekTo = playerController::seekTo
     )
     private val adapter = SveAdapter()
+    private val playerViewWrapper = playerViewWrapperFactory.create(deps.context)
 
     init {
         registryOwner.lifecycle.addObserver(LifecycleEventObserver { _, event ->
@@ -235,14 +236,14 @@ class SvePlaybackUi(
     class Factory : PlaybackUi.Factory {
         override fun create(
             deps: SharedDependencies,
-            playerViewWrapper: PlayerViewWrapper,
+            playerViewWrapperFactory: PlayerViewWrapper.Factory,
             pipController: PipController,
             playerController: PlayerController,
             playerArguments: PlayerArguments,
             registryOwner: SavedStateRegistryOwner
         ): PlaybackUi {
             val imageLoader = deps.context.applicationContext.imageLoader
-            return SvePlaybackUi(deps, playerViewWrapper, pipController, playerController, playerArguments, registryOwner, imageLoader)
+            return SvePlaybackUi(deps, playerViewWrapperFactory, pipController, playerController, playerArguments, registryOwner, imageLoader)
         }
     }
 }
