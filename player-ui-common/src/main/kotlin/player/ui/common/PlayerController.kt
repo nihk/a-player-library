@@ -1,5 +1,6 @@
 package player.ui.common
 
+import player.common.AspectRatio
 import player.common.SeekData
 import player.common.TrackInfo
 import kotlin.time.Duration
@@ -9,7 +10,7 @@ interface PlayerController {
     fun play()
     fun pause()
     fun isPlaying(): Boolean
-    fun aspectRatio(): Pair<Int, Int>?
+    fun aspectRatio(): AspectRatio?
     fun seekRelative(duration: Duration)
     fun seekTo(duration: Duration)
     fun toPlaylistItem(index: Int)

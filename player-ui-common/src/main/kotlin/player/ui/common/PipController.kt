@@ -15,8 +15,8 @@ interface PipController {
     }
 
     enum class Event {
-        Pause,
-        Play
+        Play,
+        Pause
     }
 
     interface Factory {

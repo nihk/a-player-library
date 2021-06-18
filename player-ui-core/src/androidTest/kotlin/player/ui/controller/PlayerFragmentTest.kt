@@ -10,9 +10,7 @@ import androidx.fragment.app.testing.launchFragmentInContainer
 import androidx.lifecycle.Lifecycle
 import androidx.savedstate.SavedStateRegistryOwner
 import androidx.test.core.app.ApplicationProvider
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.filterNotNull
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -118,7 +116,7 @@ class PlayerFragmentTest {
                     vmFactory = vmFactory,
                     playerViewWrapperFactory = playerViewWrapperFactory,
                     errorRenderer = errorRenderer,
-                    deps = player.ui.common.SharedDependencies(
+                    deps = SharedDependencies(
                         shareDelegate = shareDelegate,
                         context = ApplicationProvider.getApplicationContext(),
                         seekBarListenerFactory = seekBarListenerFactory,
@@ -175,14 +173,13 @@ class FakePlayerViewWrapper(context: Context) : NoOpPlayerViewWrapper() {
     }
 }
 
-class FakePlayerViewWrapperFactory(val playerViewWrapper: PlayerViewWrapper) : PlayerViewWrapper.Factory {
+class FakePlayerViewWrapperFactory(
+    private val playerViewWrapper: PlayerViewWrapper
+) : PlayerViewWrapper.Factory {
     override fun create(context: Context) = playerViewWrapper
 }
 
-class FakePipController(
-    private val flow: Flow<PipController.Event> = emptyFlow()
-) : PipController {
-    override fun events() = flow
+class FakePipController : PipController {
     override fun enterPip() = PipController.Result.EnteredPip
     override fun isInPip(): Boolean = false
     override fun onEvent(playerEvent: PlayerEvent) = Unit

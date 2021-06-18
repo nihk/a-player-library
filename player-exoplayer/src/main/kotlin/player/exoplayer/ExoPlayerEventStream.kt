@@ -8,10 +8,13 @@ import com.google.android.exoplayer2.analytics.AnalyticsListener
 import com.google.android.exoplayer2.source.TrackGroupArray
 import com.google.android.exoplayer2.trackselection.TrackSelectionArray
 import com.google.android.exoplayer2.ui.TrackNameProvider
+import com.google.android.exoplayer2.video.VideoSize
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import player.common.AppPlayer
+import player.common.AspectRatio
+import player.common.PlaybackState
 import player.common.PlayerEvent
 import player.common.PlayerEventStream
 import player.common.PlayerException
@@ -35,7 +38,14 @@ internal class ExoPlayerEventStream(
             }
 
             override fun onPlaybackStateChanged(state: Int) {
-                trySend(PlayerEvent.OnPlaybackStateChanged(state))
+                val playbackState = when (state) {
+                    Player.STATE_READY -> PlaybackState.Ready
+                    Player.STATE_ENDED -> PlaybackState.Ended
+                    Player.STATE_BUFFERING -> PlaybackState.Buffering
+                    Player.STATE_IDLE -> PlaybackState.Idle
+                    else -> error("Unknown ExoPlayer state: $state")
+                }
+                trySend(PlayerEvent.OnPlaybackStateChanged(playbackState))
             }
 
             override fun onTracksChanged(
@@ -68,6 +78,11 @@ internal class ExoPlayerEventStream(
 
             override fun onIsPlayingChanged(isPlaying: Boolean) {
                 trySend(PlayerEvent.OnIsPlayingChanged(isPlaying))
+            }
+
+            override fun onVideoSizeChanged(videoSize: VideoSize) {
+                val aspectRatio = AspectRatio(videoSize.width, videoSize.height)
+                trySend(PlayerEvent.OnAspectRatioChanged(aspectRatio))
             }
         }
 

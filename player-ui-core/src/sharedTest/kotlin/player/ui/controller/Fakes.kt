@@ -3,6 +3,7 @@ package player.ui.controller
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import player.common.AppPlayer
+import player.common.AspectRatio
 import player.common.PlaybackInfo
 import player.common.PlayerEvent
 import player.common.PlayerEventStream
@@ -32,7 +33,7 @@ class FakeAppPlayer(
 
     override val state: PlayerState get() = PlayerState.INITIAL
     override val tracks: List<TrackInfo> get() = fakeTracks
-    override val aspectRatio: Pair<Int, Int> = Pair(0, 0)
+    override val aspectRatio: AspectRatio = AspectRatio(0, 0)
 
     override fun onEvent(playerEvent: PlayerEvent) {
         collectedEvents += playerEvent

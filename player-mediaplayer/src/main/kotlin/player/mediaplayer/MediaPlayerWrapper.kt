@@ -2,6 +2,7 @@ package player.mediaplayer
 
 import android.media.MediaPlayer
 import player.common.AppPlayer
+import player.common.AspectRatio
 import player.common.PlaybackInfo
 import player.common.PlayerEvent
 import player.common.PlayerState
@@ -28,8 +29,8 @@ class MediaPlayerWrapper(
     override val tracks: List<TrackInfo>
         get() = emptyList()
 
-    override val aspectRatio: Pair<Int, Int>
-        get() = Pair(0, 0) // todo
+    override val aspectRatio: AspectRatio
+        get() = AspectRatio(0, 0) // todo
 
     override fun handlePlaybackInfos(playbackInfos: List<PlaybackInfo>) {
         playbackInfos.forEach { playbackInfo ->

@@ -1,6 +1,5 @@
 package player.ui.controller
 
-import android.app.Activity
 import android.app.PendingIntent
 import android.app.PictureInPictureParams
 import android.app.RemoteAction
@@ -13,10 +12,12 @@ import android.os.Build
 import android.util.Rational
 import androidx.annotation.DrawableRes
 import androidx.annotation.RequiresApi
+import androidx.core.app.ComponentActivity
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.emptyFlow
+import player.common.AspectRatio
 import player.common.PlayerEvent
 import player.ui.common.PipController
 import player.ui.common.PlayerController
@@ -35,12 +36,12 @@ class NoOpPipController : PipController {
     }
 }
 
+// fixme: entering PiP when video is ended won't ever set canShowAction to true
 @RequiresApi(Build.VERSION_CODES.O)
 class AndroidPipController(
-    private val activity: Activity,
+    private val activity: ComponentActivity,
     private val playerController: PlayerController
 ) : PipController {
-    // fixme: eliminate this stateful field?
     private var canShowActions = false
 
     override fun events(): Flow<PipController.Event> = callbackFlow {
@@ -50,12 +51,12 @@ class AndroidPipController(
 
                 when (intent.getIntExtra(KeyControl, -1)) {
                     ControlPause -> {
+                        playerController.pause()
                         trySend(PipController.Event.Pause)
-                        updateActions(isPlaying = false)
                     }
                     ControlPlay -> {
+                        playerController.play()
                         trySend(PipController.Event.Play)
-                        updateActions(isPlaying = true)
                     }
                 }
             }
@@ -80,12 +81,15 @@ class AndroidPipController(
     }
 
     override fun onEvent(playerEvent: PlayerEvent) {
+        if (!activity.isInPictureInPictureMode) return
         when (playerEvent) {
             is PlayerEvent.OnPlayerPrepared -> {
-                if (canShowActions || !activity.isInPictureInPictureMode) return
+                if (canShowActions) return
                 canShowActions = true
                 updateActions(isPlaying = playerEvent.playWhenReady)
             }
+            is PlayerEvent.OnIsPlayingChanged -> updateActions(isPlaying = playerEvent.isPlaying)
+            is PlayerEvent.OnAspectRatioChanged -> updateActions(isPlaying = playerController.isPlaying())
         }
     }
 
@@ -104,13 +108,21 @@ class AndroidPipController(
             emptyList()
         }
 
-        val rational = playerController.aspectRatio()?.let { pair -> Rational(pair.first, pair.second) }
-
         return PictureInPictureParams.Builder()
             .setActions(actions)
-            .setAspectRatio(rational)
+            .setAspectRatio(playerController.aspectRatio()?.asRational())
             .build()
     }
+
+    private fun AspectRatio.asRational(): Rational {
+        return if (isUnknown) {
+            return DefaultAspectRatio
+        } else {
+            Rational(width, height)
+        }
+    }
+
+    private val AspectRatio.isUnknown: Boolean get() = width == 0 && height == 0
 
     private fun updateActions(isPlaying: Boolean) {
         val pipParams = pipParams(isPlaying)
@@ -156,15 +168,17 @@ class AndroidPipController(
     }
 
     companion object {
-        const val KeyControl = "control"
-        const val ActionPip = "action_pip"
-        const val RequestPause = 0
-        const val RequestPlay = 1
-        const val ControlPause = 0
-        const val ControlPlay = 1
+        private const val KeyControl = "control"
+        private const val ActionPip = "action_pip"
+        private const val RequestPause = 0
+        private const val RequestPlay = 1
+        private const val ControlPause = 0
+        private const val ControlPlay = 1
+
+        private val DefaultAspectRatio = Rational(16, 9)
     }
 
-    class Factory(private val activity: Activity) : PipController.Factory {
+    class Factory(private val activity: ComponentActivity) : PipController.Factory {
         override fun create(playerController: PlayerController): PipController {
             return AndroidPipController(activity, playerController)
         }

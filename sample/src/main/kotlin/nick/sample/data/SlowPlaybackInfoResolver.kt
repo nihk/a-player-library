@@ -13,16 +13,18 @@ import kotlin.time.toDuration
 
 class SlowPlaybackInfoResolver : PlaybackInfoResolver {
     override fun playbackInfos(uri: String): Flow<PlaybackInfo> = flow {
+        delay(2.toDuration(DurationUnit.SECONDS))
+
         val relatedMedias = listOf(
-            PlaybackInfo.RelatedMedia(
-                uri = "https://devstreaming-cdn.apple.com/videos/streaming/examples/bipbop_16x9/bipbop_16x9_variant.m3u8",
-                imageUri = "https://i.imgur.com/9OPnZNk.png",
-                durationMillis = TimeUnit.SECONDS.toMillis(400L)
-            ),
             PlaybackInfo.RelatedMedia(
                 uri = "https://manifest.prod.boltdns.net/manifest/v2/hls/v7/clear/avc1/1752604059001/e6fa7db4-3567-49b8-8b92-68e7b9f322f0/10s/master.m3u8?fastly_token=NjBlYzVmMzFfYWY4ZGYxZmM0NDExYzMzOGEzNzg0MThhZTJiYzkyNDE4OGQzYTY5MjZiMTIwM2NiMWJmNmZhZDA1YjI0MjdjOA%3D%3D",
                 imageUri = "https://i.imgur.com/MYmm7E1.jpg",
                 durationMillis = TimeUnit.SECONDS.toMillis(141L)
+            ),
+            PlaybackInfo.RelatedMedia(
+                uri = "https://devstreaming-cdn.apple.com/videos/streaming/examples/bipbop_16x9/bipbop_16x9_variant.m3u8",
+                imageUri = "https://i.imgur.com/9OPnZNk.png",
+                durationMillis = TimeUnit.SECONDS.toMillis(400L)
             ),
             PlaybackInfo.RelatedMedia(
                 uri = "https://bitmovin-a.akamaihd.net/content/MI201109210084_1/MI201109210084_mpeg-4_hd_high_1080p25_10mbits.mp4",
@@ -91,6 +93,10 @@ class SlowPlaybackInfoResolver : PlaybackInfoResolver {
                 title = "Title for: https://devstreaming-cdn.apple.com/videos/streaming/examples/bipbop_16x9/bipbop_16x9_variant.m3u8",
                 mediaUriRef = "https://devstreaming-cdn.apple.com/videos/streaming/examples/bipbop_16x9/bipbop_16x9_variant.m3u8"
             ),
+            PlaybackInfo.MediaTitle(
+                title = "Title for: https://manifest.prod.boltdns.net/manifest/v2/hls/v7/clear/avc1/1752604059001/e6fa7db4-3567-49b8-8b92-68e7b9f322f0/10s/master.m3u8?fastly_token=NjBlYzVmMzFfYWY4ZGYxZmM0NDExYzMzOGEzNzg0MThhZTJiYzkyNDE4OGQzYTY5MjZiMTIwM2NiMWJmNmZhZDA1YjI0MjdjOA%3D%3D",
+                mediaUriRef = "https://manifest.prod.boltdns.net/manifest/v2/hls/v7/clear/avc1/1752604059001/e6fa7db4-3567-49b8-8b92-68e7b9f322f0/10s/master.m3u8?fastly_token=NjBlYzVmMzFfYWY4ZGYxZmM0NDExYzMzOGEzNzg0MThhZTJiYzkyNDE4OGQzYTY5MjZiMTIwM2NiMWJmNmZhZDA1YjI0MjdjOA%3D%3D"
+            )
         )
         val batched = PlaybackInfo.Batched(listOf(captions) + titles)
         emit(batched)

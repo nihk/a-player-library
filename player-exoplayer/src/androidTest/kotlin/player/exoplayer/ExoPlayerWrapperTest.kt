@@ -45,7 +45,6 @@ import player.common.PlayerState
 import player.common.TrackInfo
 import java.io.Closeable
 import java.util.concurrent.TimeUnit
-import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.resume
 
 class ExoPlayerWrapperTest {
@@ -310,7 +309,7 @@ class ExoPlayerWrapperTest {
         }
     }
 
-    private class ExoPlayerWrapperRobot(private val context: CoroutineContext = Dispatchers.Main) {
+    private class ExoPlayerWrapperRobot {
         private val appContext: Context get() = ApplicationProvider.getApplicationContext()
         private var appPlayer: ExoPlayerWrapper? = null
 

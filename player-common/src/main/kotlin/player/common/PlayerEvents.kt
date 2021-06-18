@@ -10,10 +10,11 @@ sealed class PlayerEvent {
     data class OnVideoSizeChanged(val width: Int, val height: Int) : PlayerEvent()
     data class OnIsLoadingChanged(val isLoading: Boolean) : PlayerEvent()
     data class OnPlayWhenReadyChanged(val playWhenReady: Boolean, val reason: Int) : PlayerEvent()
-    data class OnPlaybackStateChanged(val state: Int) : PlayerEvent()
+    data class OnPlaybackStateChanged(val state: PlaybackState) : PlayerEvent()
     data class OnTracksChanged(val trackInfos: List<TrackInfo>) : PlayerEvent()
     data class OnPlayerError(val exception: PlayerException) : PlayerEvent()
     data class OnIsPlayingChanged(val isPlaying: Boolean) : PlayerEvent()
+    data class OnAspectRatioChanged(val aspectRatio: AspectRatio): PlayerEvent()
 }
 
 interface PlayerEventStream {

@@ -26,6 +26,7 @@ import player.common.SeekData
 import player.common.SeekDataUpdater
 import player.common.TrackInfo
 import player.common.requireNotNull
+import player.common.AspectRatio
 import player.ui.common.PlayerController
 import player.ui.common.TracksState
 import player.ui.common.UiState
@@ -136,7 +137,7 @@ class PlayerViewModel(
 
     override fun isPlaying(): Boolean = appPlayer?.state?.isPlaying == true
 
-    override fun aspectRatio(): Pair<Int, Int>? {
+    override fun aspectRatio(): AspectRatio? {
         return appPlayer?.aspectRatio
     }
 

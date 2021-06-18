@@ -5,7 +5,7 @@ import kotlin.time.Duration
 interface AppPlayer {
     val state: PlayerState
     val tracks: List<TrackInfo>
-    val aspectRatio: Pair<Int, Int>
+    val aspectRatio: AspectRatio
 
     fun handlePlaybackInfos(playbackInfos: List<PlaybackInfo>)
     fun handleTrackInfoAction(action: TrackInfo.Action)

@@ -109,12 +109,6 @@ class PlayerFragment(
 
         if (playerArguments.pipConfig?.enabled == true) {
             pipController.events()
-                .onEach { pipAction ->
-                    when (pipAction) {
-                        PipController.Event.Pause -> playerViewModel.pause()
-                        PipController.Event.Play -> playerViewModel.play()
-                    }
-                }
                 .launchIn(viewLifecycleOwner.lifecycleScope)
 
             onUserLeaveHintViewModel.onUserLeaveHints()
