@@ -3,7 +3,6 @@ package player.ui.controller
 import android.os.Bundle
 import android.view.View
 import androidx.activity.OnBackPressedCallback
-import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.setFragmentResultListener
@@ -74,10 +73,10 @@ class PlayerFragment(
             .create(deps, playerViewWrapper, pipController, playerViewModel, playerArguments, this)
         binding.playbackUi.addView(requirePlaybackUi().view)
 
-        listenToPlayer(binding)
+        listenToPlayer()
     }
 
-    private fun listenToPlayer(binding: PlayerFragmentBinding) {
+    private fun listenToPlayer() {
         playerViewModel.playerEvents()
             .onEach { playerEvent ->
                 requirePlaybackUi().onPlayerEvent(playerEvent)
