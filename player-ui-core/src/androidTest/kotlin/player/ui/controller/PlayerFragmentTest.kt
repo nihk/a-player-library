@@ -10,7 +10,9 @@ import androidx.fragment.app.testing.launchFragmentInContainer
 import androidx.lifecycle.Lifecycle
 import androidx.savedstate.SavedStateRegistryOwner
 import androidx.test.core.app.ApplicationProvider
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.filterNotNull
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -180,6 +182,7 @@ class FakePlayerViewWrapperFactory(
 }
 
 class FakePipController : PipController {
+    override fun events(): Flow<PipController.Event> = emptyFlow()
     override fun enterPip() = PipController.Result.EnteredPip
     override fun isInPip(): Boolean = false
     override fun onEvent(playerEvent: PlayerEvent) = Unit
