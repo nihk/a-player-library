@@ -140,6 +140,10 @@ internal class ExoPlayerWrapper(
         player.playWhenReady = true
     }
 
+    override fun hasMedia(): Boolean {
+        return player.mediaItemCount != 0
+    }
+
     override fun release() {
         player.release()
     }

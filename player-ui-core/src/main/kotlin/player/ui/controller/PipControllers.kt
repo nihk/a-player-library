@@ -36,14 +36,11 @@ class NoOpPipController : PipController {
     }
 }
 
-// fixme: entering PiP when video is ended won't ever set canShowAction to true, because PipController
-//  is recreated along with Activity.
 @RequiresApi(Build.VERSION_CODES.O)
 class AndroidPipController(
     private val activity: ComponentActivity,
     private val playerController: PlayerController
 ) : PipController {
-    private var canShowActions = false
 
     override fun events(): Flow<PipController.Event> = callbackFlow {
         val broadcastReceiver = object : BroadcastReceiver() {
@@ -82,7 +79,6 @@ class AndroidPipController(
     }
 
     override fun onEvent(playerEvent: PlayerEvent) {
-        if (playerEvent is PlayerEvent.OnPlayerPrepared) canShowActions = true
         if (!activity.isInPictureInPictureMode) return
 
         when (playerEvent) {
@@ -95,7 +91,7 @@ class AndroidPipController(
     override fun isInPip(): Boolean = activity.isInPictureInPictureMode
 
     private fun pipParams(isPlaying: Boolean): PictureInPictureParams {
-        val actions = if (canShowActions) {
+        val actions = if (playerController.hasMedia()) {
             listOf(
                 if (isPlaying) {
                     pauseAction()

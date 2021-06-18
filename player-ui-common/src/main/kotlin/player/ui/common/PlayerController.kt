@@ -10,6 +10,7 @@ interface PlayerController {
     fun play()
     fun pause()
     fun isPlaying(): Boolean
+    fun hasMedia(): Boolean
     fun aspectRatio(): AspectRatio?
     fun seekRelative(duration: Duration)
     fun seekTo(duration: Duration)

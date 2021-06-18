@@ -59,6 +59,10 @@ class FakeAppPlayer(
         error("unused")
     }
 
+    override fun hasMedia(): Boolean {
+        error("unused")
+    }
+
     override fun release() {
         ++releaseCount
     }

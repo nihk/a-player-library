@@ -14,6 +14,7 @@ interface AppPlayer {
     fun seekRelative(duration: Duration)
     fun seekTo(duration: Duration)
     fun toPlaylistItem(index: Int)
+    fun hasMedia(): Boolean
     fun release()
 
     fun onEvent(playerEvent: PlayerEvent) = Unit

@@ -92,6 +92,10 @@ class MediaPlayerWrapper(
         // todo
     }
 
+    override fun hasMedia(): Boolean {
+        return didSetMediaSource
+    }
+
     override fun release() {
         with(mediaPlayer) {
             stop()

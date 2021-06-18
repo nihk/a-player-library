@@ -137,6 +137,8 @@ class PlayerViewModel(
 
     override fun isPlaying(): Boolean = appPlayer?.state?.isPlaying == true
 
+    override fun hasMedia(): Boolean = appPlayer?.hasMedia() == true
+
     override fun aspectRatio(): AspectRatio? {
         return appPlayer?.aspectRatio
     }
