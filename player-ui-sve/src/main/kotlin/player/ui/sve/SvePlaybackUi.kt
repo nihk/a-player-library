@@ -15,8 +15,10 @@ import coil.ImageLoader
 import coil.imageLoader
 import coil.load
 import com.google.android.material.tabs.TabLayoutMediator
+import player.common.AppPlayer
 import player.common.PlaybackInfo
 import player.common.PlayerEvent
+import player.common.PlayerViewWrapper
 import player.common.SeekData
 import player.common.requireNotNull
 import player.ui.common.PipController
@@ -32,8 +34,11 @@ import kotlin.time.Duration
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 
+// todo: swiping left/right could potentially have the full pager effect if it's just PlayerViews
+//  that are being swiped (Player instances are attached/removed from them as pages change)
 class SvePlaybackUi(
     private val deps: SharedDependencies,
+    private val playerViewWrapper: PlayerViewWrapper,
     private val pipController: PipController,
     private val playerController: PlayerController,
     private val playerArguments: PlayerArguments,
@@ -59,10 +64,20 @@ class SvePlaybackUi(
                 registry.registerSavedStateProvider(PROVIDER, this)
             }
         })
+        binding.playerContainer.addView(playerViewWrapper.view)
         bindControls()
     }
 
+    override fun attach(appPlayer: AppPlayer) {
+        playerViewWrapper.attach(appPlayer)
+    }
+
+    override fun detachPlayer() {
+        playerViewWrapper.detachPlayer()
+    }
+
     override fun onPlayerEvent(playerEvent: PlayerEvent) {
+        playerViewWrapper.onEvent(playerEvent)
         when (playerEvent) {
             is PlayerEvent.Initial -> setPlayPause(playerController.isPlaying())
             is PlayerEvent.OnIsPlayingChanged -> setPlayPause(playerEvent.isPlaying)
@@ -70,7 +85,8 @@ class SvePlaybackUi(
     }
 
     override fun onUiState(uiState: UiState) {
-        binding.root.isVisible = uiState.isControllerUsable && !pipController.isInPip()
+        binding.playerController.isVisible = uiState.isControllerUsable && !pipController.isInPip()
+        binding.progressBar.isVisible = uiState.showLoading
         if (!seekBarListener.requireNotNull().isSeekBarBeingTouched) {
             val seekData = uiState.seekData
             binding.seekBar.update(seekData)
@@ -219,13 +235,14 @@ class SvePlaybackUi(
     class Factory : PlaybackUi.Factory {
         override fun create(
             deps: SharedDependencies,
+            playerViewWrapper: PlayerViewWrapper,
             pipController: PipController,
             playerController: PlayerController,
             playerArguments: PlayerArguments,
             registryOwner: SavedStateRegistryOwner
         ): PlaybackUi {
             val imageLoader = deps.context.applicationContext.imageLoader
-            return SvePlaybackUi(deps, pipController, playerController, playerArguments, registryOwner, imageLoader)
+            return SvePlaybackUi(deps, playerViewWrapper, pipController, playerController, playerArguments, registryOwner, imageLoader)
         }
     }
 }

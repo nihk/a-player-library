@@ -6,8 +6,10 @@ import android.view.View
 import android.widget.SeekBar
 import androidx.core.view.isVisible
 import androidx.savedstate.SavedStateRegistryOwner
+import player.common.AppPlayer
 import player.common.PlaybackInfo
 import player.common.PlayerEvent
+import player.common.PlayerViewWrapper
 import player.common.SeekData
 import player.common.TrackInfo
 import player.common.requireNotNull
@@ -26,6 +28,7 @@ import kotlin.time.toDuration
 // todo: this should be more composable for shared components across PlaybackUis, e.g. the seekbar
 class DefaultPlaybackUi(
     private val deps: SharedDependencies,
+    private val playerViewWrapper: PlayerViewWrapper,
     private val pipController: PipController,
     private val playerController: PlayerController,
     private val playerArguments: PlayerArguments,
@@ -44,10 +47,20 @@ class DefaultPlaybackUi(
     )
 
     init {
+        binding.playerContainer.addView(playerViewWrapper.view)
         bindControls()
     }
 
+    override fun attach(appPlayer: AppPlayer) {
+        playerViewWrapper.attach(appPlayer)
+    }
+
+    override fun detachPlayer() {
+        playerViewWrapper.detachPlayer()
+    }
+
     override fun onPlayerEvent(playerEvent: PlayerEvent) {
+        playerViewWrapper.onEvent(playerEvent)
         when (playerEvent) {
             is PlayerEvent.Initial -> setPlayPause(playerController.isPlaying())
             is PlayerEvent.OnIsPlayingChanged -> setPlayPause(playerEvent.isPlaying)
@@ -56,6 +69,7 @@ class DefaultPlaybackUi(
 
     override fun onUiState(uiState: UiState) {
         binding.root.isVisible = uiState.isControllerUsable && !pipController.isInPip()
+        binding.progressBar.isVisible = uiState.showLoading
         if (!seekBarListener.requireNotNull().isSeekBarBeingTouched) {
             val seekData = uiState.seekData
             binding.seekBar.update(seekData)
@@ -162,12 +176,13 @@ class DefaultPlaybackUi(
     class Factory : PlaybackUi.Factory {
         override fun create(
             deps: SharedDependencies,
+            playerViewWrapper: PlayerViewWrapper,
             pipController: PipController,
             playerController: PlayerController,
             playerArguments: PlayerArguments,
             registryOwner: SavedStateRegistryOwner
         ): PlaybackUi {
-            return DefaultPlaybackUi(deps, pipController, playerController, playerArguments, registryOwner)
+            return DefaultPlaybackUi(deps, playerViewWrapper, pipController, playerController, playerArguments, registryOwner)
         }
     }
 }

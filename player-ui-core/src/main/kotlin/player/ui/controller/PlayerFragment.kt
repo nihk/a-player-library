@@ -31,7 +31,6 @@ class PlayerFragment(
 
     private val playerViewModel: PlayerViewModel by viewModels { vmFactory.create(this, playerArguments.uri) }
     private val onUserLeaveHintViewModel: OnUserLeaveHintViewModel by activityViewModels()
-    private var playerViewWrapper: PlayerViewWrapper? = null
     private var playbackUi: PlaybackUi? = null
     private val playerArguments: PlayerArguments get() = requireArguments().toPlayerArguments()
     private val pipController: PipController by lazy { pipControllerFactory.create(playerViewModel) }
@@ -70,10 +69,9 @@ class PlayerFragment(
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         val binding = PlayerFragmentBinding.bind(view)
-        playerViewWrapper = playerViewWrapperFactory.create(view.context)
-        binding.playerContainer.addView(requirePlayerViewWrapper().view)
+        val playerViewWrapper = playerViewWrapperFactory.create(view.context)
         playbackUi = playerArguments.playbackUiFactory.newInstance()
-            .create(deps, pipController, playerViewModel, playerArguments, this)
+            .create(deps, playerViewWrapper, pipController, playerViewModel, playerArguments, this)
         binding.playbackUi.addView(requirePlaybackUi().view)
 
         listenToPlayer(binding)
@@ -82,17 +80,13 @@ class PlayerFragment(
     private fun listenToPlayer(binding: PlayerFragmentBinding) {
         playerViewModel.playerEvents()
             .onEach { playerEvent ->
-                requirePlayerViewWrapper().onEvent(playerEvent)
                 requirePlaybackUi().onPlayerEvent(playerEvent)
                 pipController.onEvent(playerEvent)
             }
             .launchIn(viewLifecycleOwner.lifecycleScope)
 
         playerViewModel.uiStates()
-            .onEach { uiState ->
-                binding.progressBar.isVisible = uiState.showLoading
-                requirePlaybackUi().onUiState(uiState)
-            }
+            .onEach { uiState -> requirePlaybackUi().onUiState(uiState) }
             .launchIn(viewLifecycleOwner.lifecycleScope)
 
         playerViewModel.tracksStates()
@@ -120,12 +114,12 @@ class PlayerFragment(
     override fun onStart() {
         super.onStart()
         val appPlayer = playerViewModel.getPlayer()
-        requirePlayerViewWrapper().attach(appPlayer)
+        requirePlaybackUi().attach(appPlayer)
     }
 
     override fun onStop() {
         super.onStop()
-        requirePlayerViewWrapper().detachPlayer()
+        requirePlaybackUi().detachPlayer()
         if (!requireActivity().isChangingConfigurations) {
             playerViewModel.onAppBackgrounded()
         }
@@ -137,10 +131,8 @@ class PlayerFragment(
 
     override fun onDestroyView() {
         super.onDestroyView()
-        playerViewWrapper = null
         playbackUi = null
     }
 
-    private fun requirePlayerViewWrapper() = requireNotNull(playerViewWrapper)
     private fun requirePlaybackUi() = requireNotNull(playbackUi)
 }
