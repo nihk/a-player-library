@@ -68,11 +68,7 @@ internal class ExoPlayerEventStream(
                 trySend(PlayerEvent.OnPlayerError(exception))
             }
 
-            override fun onRenderedFirstFrame(
-                eventTime: AnalyticsListener.EventTime,
-                output: Any,
-                renderTimeMs: Long
-            ) {
+            override fun onRenderedFirstFrame() {
                 trySend(PlayerEvent.OnPlayerPrepared(player.playWhenReady))
             }
 

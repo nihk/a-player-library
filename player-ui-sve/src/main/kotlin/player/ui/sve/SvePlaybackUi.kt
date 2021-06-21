@@ -28,14 +28,13 @@ import player.ui.common.PlayerController
 import player.ui.common.SharedDependencies
 import player.ui.common.TracksState
 import player.ui.common.UiState
-import player.ui.sve.databinding.SveItemBinding
 import player.ui.sve.databinding.SvePlaybackUiBinding
+import player.ui.sve.databinding.SveTabItemBinding
 import kotlin.time.Duration
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 
-// todo: swiping left/right could potentially have the full pager effect if it's just PlayerViews
-//  that are being swiped (Player instances are attached/removed from them as pages change)
+// todo: move title TextView to ViewHolder?
 class SvePlaybackUi(
     private val deps: SharedDependencies,
     private val playerViewWrapperFactory: PlayerViewWrapper.Factory,
@@ -55,8 +54,14 @@ class SvePlaybackUi(
         },
         seekTo = playerController::seekTo
     )
-    private val adapter = SveAdapter()
+    private var didRestoreViewPagerState = false
+    private val savedPagePosition: Int = run {
+        val registry = registryOwner.savedStateRegistry
+        val state = registry.consumeRestoredStateForKey(PROVIDER)
+        state?.getInt(TAB_POSITION) ?: 0
+    }
     private val playerViewWrapper = playerViewWrapperFactory.create(deps.context)
+    private val adapter = SveAdapter(playerViewWrapper, imageLoader)
 
     init {
         registryOwner.lifecycle.addObserver(LifecycleEventObserver { _, event ->
@@ -65,7 +70,6 @@ class SvePlaybackUi(
                 registry.registerSavedStateProvider(PROVIDER, this)
             }
         })
-        binding.playerContainer.addView(playerViewWrapper.view)
         bindControls()
     }
 
@@ -125,7 +129,10 @@ class SvePlaybackUi(
             setTitle(item.title)
 
             adapter.submitList(toSubmit)
-            restoreSelectedPageState()
+            if (!didRestoreViewPagerState) {
+                didRestoreViewPagerState = true
+                binding.viewPager.setCurrentItem(savedPagePosition, false)
+            }
         }
     }
 
@@ -147,8 +154,8 @@ class SvePlaybackUi(
 
         TabLayoutMediator(binding.tabLayout, binding.viewPager) { tab, position ->
             val item = adapter.currentList[position]
-            tab.setCustomView(R.layout.sve_item)
-            val binding = SveItemBinding.bind(tab.customView.requireNotNull())
+            tab.setCustomView(R.layout.sve_tab_item)
+            val binding = SveTabItemBinding.bind(tab.customView.requireNotNull())
             binding.duration.text = deps.timeFormatter.playerTime(item.duration)
             binding.duration.isVisible = item.duration != Duration.ZERO
             binding.image.load(item.imageUri, imageLoader)
@@ -156,16 +163,20 @@ class SvePlaybackUi(
 
         binding.viewPager.registerOnPageChangeCallback(binding.tabLayout.pageChangeCallback)
         binding.viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
-            private var ignoreInitialTrigger = true
             override fun onPageSelected(position: Int) {
                 val item = adapter.currentList[position]
                 setTitle(item.title)
+            }
 
-                if (ignoreInitialTrigger) {
-                    ignoreInitialTrigger = false
-                    return
+            override fun onPageScrolled(
+                position: Int,
+                positionOffset: Float,
+                positionOffsetPixels: Int
+            ) {
+                if (positionOffsetPixels == 0) {
+                    playerController.toPlaylistItem(position)
+                    adapter.onPageSettled(position)
                 }
-                playerController.toPlaylistItem(position)
             }
         })
 
@@ -219,13 +230,6 @@ class SvePlaybackUi(
 
     override fun saveState(): Bundle {
         return bundleOf(TAB_POSITION to binding.tabLayout.selectedTabPosition)
-    }
-
-    private fun restoreSelectedPageState() {
-        val registry = registryOwner.savedStateRegistry
-        val state = registry.consumeRestoredStateForKey(PROVIDER) ?: return
-        val position = state.getInt(TAB_POSITION)
-        binding.viewPager.setCurrentItem(position, false)
     }
 
     companion object {
