@@ -209,6 +209,10 @@ class SvePlaybackUi(
             val amount = playerArguments.seekConfiguration.forwardAmount.toDuration(DurationUnit.MILLISECONDS)
             playerController.seekRelative(amount)
         }
+
+        binding.close.setOnClickListener {
+            deps.closeDelegate?.onClose(deps.activity)
+        }
     }
 
     private fun updateTimestamps(
