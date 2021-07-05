@@ -55,11 +55,6 @@ class SvePlaybackUi(
         seekTo = playerController::seekTo
     )
     private var didRestoreViewPagerState = false
-    private val savedPagePosition: Int = run {
-        val registry = registryOwner.savedStateRegistry
-        val state = registry.consumeRestoredStateForKey(PROVIDER)
-        state?.getInt(TAB_POSITION) ?: 0
-    }
     private val playerViewWrapper = playerViewWrapperFactory.create(deps.context)
     private val adapter = SveAdapter(playerViewWrapper, imageLoader)
 
@@ -131,9 +126,15 @@ class SvePlaybackUi(
             adapter.submitList(toSubmit)
             if (!didRestoreViewPagerState) {
                 didRestoreViewPagerState = true
-                binding.viewPager.setCurrentItem(savedPagePosition, false)
+                binding.viewPager.setCurrentItem(savedPagePosition(), false)
             }
         }
+    }
+
+    private fun savedPagePosition(default: Int = 0): Int {
+        val registry = registryOwner.savedStateRegistry
+        val state = registry.consumeRestoredStateForKey(PROVIDER)
+        return state?.getInt(TAB_POSITION) ?: default
     }
 
     private fun setTitle(title: String?) {
