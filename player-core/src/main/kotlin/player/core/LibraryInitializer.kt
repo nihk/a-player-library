@@ -1,5 +1,6 @@
 package player.core
 
+import player.common.CloseDelegate
 import player.common.DefaultPlaybackInfoResolver
 import player.common.DefaultTimeFormatter
 import player.common.PlaybackInfoResolver
@@ -16,6 +17,7 @@ object LibraryInitializer {
     private var playerModule: PlayerModule? = null
     private var telemetry: PlayerTelemetry? = null
     private var shareDelegate: ShareDelegate? = null
+    private var closeDelegate: CloseDelegate? = null
     private var playbackInfoResolver: PlaybackInfoResolver? = null
     private var timeFormatter: TimeFormatter? = null
     private var playbackUiFactories: List<PlaybackUi.Factory>? = null
@@ -23,6 +25,7 @@ object LibraryInitializer {
     internal fun playerModule(): PlayerModule = playerModule.requireInitialized()
     internal fun telemetry(): PlayerTelemetry? = telemetry
     internal fun shareDelegate(): ShareDelegate? = shareDelegate
+    internal fun closeDelegate(): CloseDelegate? = closeDelegate
     internal fun playbackInfoResolver(): PlaybackInfoResolver = playbackInfoResolver.requireInitialized()
     internal fun timeFormatter(): TimeFormatter = timeFormatter.requireInitialized()
     internal fun playbackUiFactories(): List<PlaybackUi.Factory> = playbackUiFactories.requireInitialized()
@@ -33,6 +36,7 @@ object LibraryInitializer {
         playbackUiFactories: List<PlaybackUi.Factory>,
         telemetry: PlayerTelemetry? = null,
         shareDelegate: ShareDelegate? = null,
+        closeDelegate: CloseDelegate? = null,
         playbackInfoResolver: PlaybackInfoResolver? = DefaultPlaybackInfoResolver(),
         timeFormatter: TimeFormatter = DefaultTimeFormatter(Locale.getDefault())
     ) {
@@ -41,6 +45,7 @@ object LibraryInitializer {
         LibraryInitializer.playerModule = playerModule
         LibraryInitializer.telemetry = telemetry
         LibraryInitializer.shareDelegate = shareDelegate
+        LibraryInitializer.closeDelegate = closeDelegate
         LibraryInitializer.playbackInfoResolver = playbackInfoResolver
         LibraryInitializer.timeFormatter = timeFormatter
         LibraryInitializer.playbackUiFactories = playbackUiFactories

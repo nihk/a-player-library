@@ -45,7 +45,7 @@ class SvePlaybackUi(
     private val imageLoader: ImageLoader
 ) : PlaybackUi {
     @SuppressLint("InflateParams")
-    override val view: View = LayoutInflater.from(deps.context)
+    override val view: View = LayoutInflater.from(deps.activity)
         .inflate(R.layout.sve_playback_ui, null)
     private val binding = SvePlaybackUiBinding.bind(view)
     private val seekBarListener = deps.seekBarListenerFactory.create(
@@ -55,7 +55,7 @@ class SvePlaybackUi(
         seekTo = playerController::seekTo
     )
     private var didRestoreViewPagerState = false
-    private val playerViewWrapper = playerViewWrapperFactory.create(deps.context)
+    private val playerViewWrapper = playerViewWrapperFactory.create(deps.activity)
     private val adapter = SveAdapter(playerViewWrapper, imageLoader)
 
     init {
@@ -185,7 +185,7 @@ class SvePlaybackUi(
             binding.share.apply {
                 isVisible = true
                 setOnClickListener {
-                    share(deps.context, adapter.currentList[binding.viewPager.currentItem].uri)
+                    share(deps.activity, adapter.currentList[binding.viewPager.currentItem].uri)
                 }
             }
         }
@@ -247,7 +247,7 @@ class SvePlaybackUi(
             playerArguments: PlayerArguments,
             registryOwner: SavedStateRegistryOwner
         ): PlaybackUi {
-            val imageLoader = deps.context.applicationContext.imageLoader
+            val imageLoader = deps.activity.applicationContext.imageLoader
             return SvePlaybackUi(deps, playerViewWrapperFactory, pipController, playerController, playerArguments, registryOwner, imageLoader)
         }
     }

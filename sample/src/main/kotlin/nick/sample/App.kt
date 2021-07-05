@@ -3,6 +3,7 @@ package nick.sample
 import android.app.Application
 import nick.sample.data.AndroidShareDelegate
 import nick.sample.data.LoggingPlayerTelemetry
+import nick.sample.data.SampleCloseDelegate
 import nick.sample.data.SlowPlaybackInfoResolver
 import player.core.LibraryInitializer
 import player.exoplayer.ExoPlayerModule
@@ -19,6 +20,7 @@ class App : Application() {
             playbackUiFactories = listOf(DefaultPlaybackUi.Factory(), SvePlaybackUi.Factory()),
             telemetry = LoggingPlayerTelemetry(),
             shareDelegate = AndroidShareDelegate(),
+            closeDelegate = SampleCloseDelegate(),
             playbackInfoResolver = SlowPlaybackInfoResolver()
         )
     }

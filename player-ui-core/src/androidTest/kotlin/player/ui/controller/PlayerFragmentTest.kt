@@ -123,7 +123,7 @@ class PlayerFragmentTest {
                     errorRenderer = errorRenderer,
                     deps = SharedDependencies(
                         shareDelegate = shareDelegate,
-                        context = ApplicationProvider.getApplicationContext(),
+                        activity = ApplicationProvider.getApplicationContext(),
                         seekBarListenerFactory = seekBarListenerFactory,
                         timeFormatter = timeFormatter,
                         navigator = navigator

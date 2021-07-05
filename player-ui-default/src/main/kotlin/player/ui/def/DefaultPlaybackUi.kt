@@ -35,7 +35,7 @@ class DefaultPlaybackUi(
     private val registryOwner: SavedStateRegistryOwner
 ) : PlaybackUi {
     @SuppressLint("InflateParams")
-    override val view: View = LayoutInflater.from(deps.context)
+    override val view: View = LayoutInflater.from(deps.activity)
         .inflate(R.layout.default_playback_ui, null)
 
     private val binding = DefaultPlaybackUiBinding.bind(view)
@@ -45,7 +45,7 @@ class DefaultPlaybackUi(
         },
         seekTo = playerController::seekTo
     )
-    private val playerViewWrapper = playerViewWrapperFactory.create(deps.context)
+    private val playerViewWrapper = playerViewWrapperFactory.create(deps.activity)
 
     init {
         binding.playerContainer.addView(playerViewWrapper.view)
@@ -130,7 +130,7 @@ class DefaultPlaybackUi(
             binding.share.apply {
                 isVisible = true
                 setOnClickListener {
-                    share(deps.context, playerArguments.uri)
+                    share(deps.activity, playerArguments.uri)
                 }
             }
         }
@@ -153,6 +153,10 @@ class DefaultPlaybackUi(
         binding.seekForward.setOnClickListener {
             val amount = playerArguments.seekConfiguration.forwardAmount.toDuration(DurationUnit.MILLISECONDS)
             playerController.seekRelative(amount)
+        }
+
+        binding.close.setOnClickListener {
+            deps.closeDelegate?.onClose(deps.activity)
         }
     }
 
