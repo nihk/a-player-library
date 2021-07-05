@@ -8,6 +8,7 @@ import player.common.PlayerModule
 import player.common.PlayerTelemetry
 import player.common.ShareDelegate
 import player.common.TimeFormatter
+import player.ui.common.DefaultCloseDelegate
 import player.ui.common.PlaybackUi
 import java.util.*
 
@@ -25,7 +26,7 @@ object LibraryInitializer {
     internal fun playerModule(): PlayerModule = playerModule.requireInitialized()
     internal fun telemetry(): PlayerTelemetry? = telemetry
     internal fun shareDelegate(): ShareDelegate? = shareDelegate
-    internal fun closeDelegate(): CloseDelegate? = closeDelegate
+    internal fun closeDelegate(): CloseDelegate = closeDelegate.requireInitialized()
     internal fun playbackInfoResolver(): PlaybackInfoResolver = playbackInfoResolver.requireInitialized()
     internal fun timeFormatter(): TimeFormatter = timeFormatter.requireInitialized()
     internal fun playbackUiFactories(): List<PlaybackUi.Factory> = playbackUiFactories.requireInitialized()
@@ -45,7 +46,7 @@ object LibraryInitializer {
         LibraryInitializer.playerModule = playerModule
         LibraryInitializer.telemetry = telemetry
         LibraryInitializer.shareDelegate = shareDelegate
-        LibraryInitializer.closeDelegate = closeDelegate
+        LibraryInitializer.closeDelegate = closeDelegate ?: DefaultCloseDelegate()
         LibraryInitializer.playbackInfoResolver = playbackInfoResolver
         LibraryInitializer.timeFormatter = timeFormatter
         LibraryInitializer.playbackUiFactories = playbackUiFactories

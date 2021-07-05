@@ -156,7 +156,7 @@ class DefaultPlaybackUi(
         }
 
         binding.close.setOnClickListener {
-            deps.closeDelegate?.onClose(deps.activity)
+            deps.closeDelegate.onClose(deps.activity)
         }
     }
 
