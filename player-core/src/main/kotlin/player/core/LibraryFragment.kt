@@ -9,7 +9,6 @@ import player.ui.common.PlayerArguments
 import player.ui.common.toBundle
 import player.ui.common.toPlayerArguments
 
-// todo: add README.md to each module
 class LibraryFragment : Fragment(R.layout.library_fragment) {
     private val playerArguments get() = requireArguments().toPlayerArguments()
     private lateinit var fm: FragmentManager
