@@ -1,0 +1,16 @@
+name: tests
+on: [push]
+jobs:
+  all-tests:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Unit tests
+        run: ./gradlew test
+
+      - name: UI tests
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 30
+          script: ./gradlew connectedCheck
