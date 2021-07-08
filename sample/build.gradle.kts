@@ -27,6 +27,7 @@ dependencies {
     implementation(Dependencies.constraintLayout)
     implementation(Dependencies.material)
     implementation(Dependencies.multidex)
+    implementation(Dependencies.coil)
 
     debugImplementation(Dependencies.leakCanary)
 

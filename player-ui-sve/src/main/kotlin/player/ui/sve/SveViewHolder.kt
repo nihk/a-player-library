@@ -2,20 +2,18 @@ package player.ui.sve
 
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.view.get
 import androidx.recyclerview.widget.RecyclerView
-import coil.ImageLoader
-import coil.load
+import player.common.ImageLoader
 import player.common.PlayerViewWrapper
 import player.ui.sve.databinding.SveItemBinding
 
 internal class SveViewHolder(
     private val binding: SveItemBinding,
-    private val imageLoader: ImageLoader
+    private val imageLoader: ImageLoader?
 ) : RecyclerView.ViewHolder(binding.root) {
 
     fun bind(sveItem: SveItem) {
-        binding.preview.load(sveItem.imageUri, imageLoader)
+        imageLoader?.load(binding.preview, sveItem.imageUri)
     }
 
     fun attach(playerViewWrapper: PlayerViewWrapper) {

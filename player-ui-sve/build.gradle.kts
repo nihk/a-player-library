@@ -23,7 +23,6 @@ dependencies {
     implementation(Dependencies.Kotlin.coroutines)
     implementation(Dependencies.savedState)
     implementation(Dependencies.Lifecycle.runtime)
-    implementation(Dependencies.coil)
 
     testImplementation(project(Modules.Player.test))
     testImplementation(Dependencies.junit)

@@ -43,6 +43,7 @@ internal class LibraryModule(
                     seekBarListenerFactory = DefaultSeekBarListener.Factory(),
                     timeFormatter = LibraryInitializer.timeFormatter(),
                     navigator = navigator,
+                    imageLoader = LibraryInitializer.imageLoader()
                 ),
                 pipControllerFactory = pipControllerFactory,
                 playbackUiFactories = LibraryInitializer.playbackUiFactories()

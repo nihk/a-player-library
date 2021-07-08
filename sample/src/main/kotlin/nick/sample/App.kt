@@ -2,6 +2,7 @@ package nick.sample
 
 import android.app.Application
 import nick.sample.data.AndroidShareDelegate
+import nick.sample.data.CoilImageLoader
 import nick.sample.data.LoggingPlayerTelemetry
 import nick.sample.data.SampleCloseDelegate
 import nick.sample.data.SlowPlaybackInfoResolver
@@ -21,7 +22,8 @@ class App : Application() {
             telemetry = LoggingPlayerTelemetry(),
             shareDelegate = AndroidShareDelegate(),
             closeDelegate = SampleCloseDelegate(),
-            playbackInfoResolver = SlowPlaybackInfoResolver()
+            playbackInfoResolver = SlowPlaybackInfoResolver(),
+            imageLoader = CoilImageLoader()
         )
     }
 }

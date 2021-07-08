@@ -12,9 +12,6 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.savedstate.SavedStateRegistryOwner
 import androidx.viewpager2.widget.ViewPager2
-import coil.ImageLoader
-import coil.imageLoader
-import coil.load
 import com.google.android.material.tabs.TabLayoutMediator
 import player.common.AppPlayer
 import player.common.PlaybackInfo
@@ -43,8 +40,7 @@ class SvePlaybackUi(
     private val pipController: PipController,
     private val playerController: PlayerController,
     private val playerArguments: PlayerArguments,
-    private val registryOwner: SavedStateRegistryOwner,
-    private val imageLoader: ImageLoader
+    private val registryOwner: SavedStateRegistryOwner
 ) : PlaybackUi {
     @SuppressLint("InflateParams")
     override val view: View = LayoutInflater.from(activity)
@@ -58,7 +54,7 @@ class SvePlaybackUi(
     )
     private var didRestoreViewPagerState = false
     private val playerViewWrapper = playerViewWrapperFactory.create(activity)
-    private val adapter = SveAdapter(playerViewWrapper, imageLoader)
+    private val adapter = SveAdapter(playerViewWrapper, deps.imageLoader)
 
     init {
         registryOwner.lifecycle.addObserver(LifecycleEventObserver { _, event ->
@@ -161,7 +157,7 @@ class SvePlaybackUi(
             val binding = SveTabItemBinding.bind(tab.customView.requireNotNull())
             binding.duration.text = deps.timeFormatter.playerTime(item.duration)
             binding.duration.isVisible = item.duration != Duration.ZERO
-            binding.image.load(item.imageUri, imageLoader)
+            deps.imageLoader?.load(binding.image, item.imageUri)
         }.attach()
 
         binding.viewPager.registerOnPageChangeCallback(binding.tabLayout.pageChangeCallback)
@@ -245,7 +241,6 @@ class SvePlaybackUi(
             playerArguments: PlayerArguments,
             registryOwner: SavedStateRegistryOwner
         ): PlaybackUi {
-            val imageLoader = activity.applicationContext.imageLoader
             return SvePlaybackUi(
                 activity = activity,
                 deps = deps,
@@ -253,8 +248,7 @@ class SvePlaybackUi(
                 pipController = pipController,
                 playerController = playerController,
                 playerArguments = playerArguments,
-                registryOwner = registryOwner,
-                imageLoader = imageLoader
+                registryOwner = registryOwner
             )
         }
     }

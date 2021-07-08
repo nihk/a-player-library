@@ -4,7 +4,7 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import coil.ImageLoader
+import player.common.ImageLoader
 import player.common.PlayerViewWrapper
 import player.ui.sve.databinding.SveItemBinding
 
@@ -12,7 +12,7 @@ import player.ui.sve.databinding.SveItemBinding
 //  need to hide/show PlayerView with the first frame of the video showing in the interim
 internal class SveAdapter(
     private val playerViewWrapper: PlayerViewWrapper,
-    private val imageLoader: ImageLoader
+    private val imageLoader: ImageLoader?
 ) : ListAdapter<SveItem, SveViewHolder>(SveItemDiffCallback()) {
     private var recyclerView: RecyclerView? = null
 
