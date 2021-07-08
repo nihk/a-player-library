@@ -7,6 +7,7 @@ import android.view.View
 import android.widget.SeekBar
 import androidx.core.os.bundleOf
 import androidx.core.view.isVisible
+import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.savedstate.SavedStateRegistryOwner
@@ -36,6 +37,7 @@ import kotlin.time.toDuration
 
 // todo: move title TextView to ViewHolder?
 class SvePlaybackUi(
+    private val activity: FragmentActivity,
     private val deps: SharedDependencies,
     private val playerViewWrapperFactory: PlayerViewWrapper.Factory,
     private val pipController: PipController,
@@ -45,7 +47,7 @@ class SvePlaybackUi(
     private val imageLoader: ImageLoader
 ) : PlaybackUi {
     @SuppressLint("InflateParams")
-    override val view: View = LayoutInflater.from(deps.activity)
+    override val view: View = LayoutInflater.from(activity)
         .inflate(R.layout.sve_playback_ui, null)
     private val binding = SvePlaybackUiBinding.bind(view)
     private val seekBarListener = deps.seekBarListenerFactory.create(
@@ -55,7 +57,7 @@ class SvePlaybackUi(
         seekTo = playerController::seekTo
     )
     private var didRestoreViewPagerState = false
-    private val playerViewWrapper = playerViewWrapperFactory.create(deps.activity)
+    private val playerViewWrapper = playerViewWrapperFactory.create(activity)
     private val adapter = SveAdapter(playerViewWrapper, imageLoader)
 
     init {
@@ -185,7 +187,7 @@ class SvePlaybackUi(
             binding.share.apply {
                 isVisible = true
                 setOnClickListener {
-                    share(deps.activity, adapter.currentList[binding.viewPager.currentItem].uri)
+                    share(activity, adapter.currentList[binding.viewPager.currentItem].uri)
                 }
             }
         }
@@ -193,13 +195,8 @@ class SvePlaybackUi(
         binding.seekBar.setOnSeekBarChangeListener(seekBarListener)
 
         setPlayPause(playerController.isPlaying())
-        binding.playPause.setOnClickListener {
-            if (playerController.isPlaying()) {
-                playerController.pause()
-            } else {
-                playerController.play()
-            }
-        }
+        binding.play.setOnClickListener { playerController.play() }
+        binding.pause.setOnClickListener { playerController.pause() }
 
         binding.seekBackward.setOnClickListener {
             val amount = -playerArguments.seekConfiguration.backwardAmount.toDuration(DurationUnit.MILLISECONDS)
@@ -211,7 +208,7 @@ class SvePlaybackUi(
         }
 
         binding.close.setOnClickListener {
-            deps.closeDelegate.onClose(deps.activity)
+            deps.closeDelegate.onClose(activity)
         }
     }
 
@@ -225,12 +222,8 @@ class SvePlaybackUi(
     }
 
     private fun setPlayPause(isPlaying: Boolean) {
-        val resource = if (isPlaying) {
-            R.drawable.pause
-        } else {
-            R.drawable.play
-        }
-        binding.playPause.setImageResource(resource)
+        binding.play.isVisible = !isPlaying
+        binding.pause.isVisible = isPlaying
     }
 
     override fun saveState(): Bundle {
@@ -244,6 +237,7 @@ class SvePlaybackUi(
 
     class Factory : PlaybackUi.Factory {
         override fun create(
+            activity: FragmentActivity,
             deps: SharedDependencies,
             playerViewWrapperFactory: PlayerViewWrapper.Factory,
             pipController: PipController,
@@ -251,8 +245,17 @@ class SvePlaybackUi(
             playerArguments: PlayerArguments,
             registryOwner: SavedStateRegistryOwner
         ): PlaybackUi {
-            val imageLoader = deps.activity.applicationContext.imageLoader
-            return SvePlaybackUi(deps, playerViewWrapperFactory, pipController, playerController, playerArguments, registryOwner, imageLoader)
+            val imageLoader = activity.applicationContext.imageLoader
+            return SvePlaybackUi(
+                activity = activity,
+                deps = deps,
+                playerViewWrapperFactory = playerViewWrapperFactory,
+                pipController = pipController,
+                playerController = playerController,
+                playerArguments = playerArguments,
+                registryOwner = registryOwner,
+                imageLoader = imageLoader
+            )
         }
     }
 }

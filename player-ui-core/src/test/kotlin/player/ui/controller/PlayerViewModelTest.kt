@@ -15,6 +15,11 @@ import org.junit.Test
 import player.common.DefaultPlaybackInfoResolver
 import player.common.PlayerEvent
 import player.common.PlayerState
+import player.test.FakeAppPlayer
+import player.test.FakeAppPlayerFactory
+import player.test.FakePlayerEventStream
+import player.test.FakePlayerTelemetry
+import player.test.FakeSeekDataUpdater
 import player.ui.common.TracksState
 
 class PlayerViewModelTest {

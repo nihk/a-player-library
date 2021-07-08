@@ -8,6 +8,7 @@ include(
     ":player-ui-sve",
     ":player-ui-core",
     ":player-ui-common",
-    ":player-test"
+    ":player-test",
+    ":player-ui-test"
 )
 rootProject.name = "a-player-library"

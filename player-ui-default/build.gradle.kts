@@ -23,11 +23,13 @@ dependencies {
     implementation(Dependencies.Lifecycle.runtime)
 
     testImplementation(project(Modules.Player.test))
+    testImplementation(project(Modules.Player.Ui.test))
     testImplementation(Dependencies.junit)
     testImplementation(Dependencies.ArchCore.testing)
     testImplementation(Dependencies.Kotlin.coroutinesTest)
 
     androidTestImplementation(project(Modules.Player.test))
+    androidTestImplementation(project(Modules.Player.Ui.test))
     defaultAndroidTestDependencies()
     androidTestImplementation(Dependencies.Kotlin.coroutinesTest)
 }

@@ -73,6 +73,7 @@ class PlayerFragment(
             playerArguments.playbackUiFactory.isAssignableFrom(factory::class.java)
         }
         playbackUi = playbackUiFactory.create(
+            activity = requireActivity(),
             deps = deps,
             playerViewWrapperFactory = playerViewWrapperFactory,
             pipController = pipController,

@@ -1,7 +1,7 @@
 package player.common
 
-import android.content.Context
+import androidx.fragment.app.FragmentActivity
 
 interface ShareDelegate {
-    fun share(context: Context, uri: String)
+    fun share(activity: FragmentActivity, uri: String)
 }

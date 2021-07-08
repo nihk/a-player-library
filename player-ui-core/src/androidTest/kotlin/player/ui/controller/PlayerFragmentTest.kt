@@ -1,40 +1,37 @@
 package player.ui.controller
 
-import android.content.Context
-import android.os.Bundle
 import android.view.View
-import android.view.ViewGroup
-import android.widget.FrameLayout
 import androidx.fragment.app.testing.FragmentScenario
 import androidx.fragment.app.testing.launchFragmentInContainer
 import androidx.lifecycle.Lifecycle
-import androidx.savedstate.SavedStateRegistryOwner
 import androidx.test.core.app.ApplicationProvider
-import kotlinx.coroutines.flow.Flow
+import androidx.test.espresso.Espresso
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.filterNotNull
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
-import player.common.AppPlayer
+import player.common.CloseDelegate
 import player.common.DefaultPlaybackInfoResolver
-import player.common.PlaybackInfo
 import player.common.PlayerEvent
 import player.common.PlayerException
-import player.common.PlayerViewWrapper
 import player.common.ShareDelegate
-import player.common.TrackInfo
-import player.test.NoOpPlayerViewWrapper
-import player.ui.common.Navigator
+import player.test.FakeAppPlayer
+import player.test.FakeAppPlayerFactory
+import player.test.FakePlayerEventStream
+import player.test.FakePlayerTelemetry
+import player.test.FakePlayerViewWrapper
+import player.test.FakeSeekDataUpdater
+import player.test.FakeTimeFormatter
 import player.ui.common.PictureInPictureConfig
-import player.ui.common.PipController
-import player.ui.common.PlaybackUi
 import player.ui.common.PlayerArguments
-import player.ui.common.PlayerController
 import player.ui.common.SharedDependencies
 import player.ui.common.toBundle
+import player.ui.test.FakePipController
+import player.ui.test.FakePlaybackUi
+import player.ui.test.FakePlaybackUiFactory
+import player.ui.test.NoOpNavigator
 
 class PlayerFragmentTest {
     @get:Rule
@@ -76,11 +73,27 @@ class PlayerFragmentTest {
         assertErrorMessageRendered("Message")
     }
 
-    private fun playerFragment(block: PlayerFragmentRobot.() -> Unit) {
-        PlayerFragmentRobot().block()
+    @Test
+    fun pipEnabledStartsPipOnBackPress() = playerFragment(pipOnBackPress = true) {
+        Espresso.pressBack()
+
+        assertPipOnBackPress(didEnter = true)
     }
 
-    private class PlayerFragmentRobot {
+    private fun playerFragment(
+        pipOnBackPress: Boolean = false,
+        block: PlayerFragmentRobot.() -> Unit
+    ) {
+        val pipConfig = PictureInPictureConfig(
+            enabled = pipOnBackPress,
+            onBackPresses = pipOnBackPress
+        )
+        PlayerFragmentRobot(pipConfig).block()
+    }
+
+    private class PlayerFragmentRobot(
+        val pipConfig: PictureInPictureConfig
+    ) {
         private val appPlayer = FakeAppPlayer()
         private val appPlayerFactory = FakeAppPlayerFactory(appPlayer)
         private val playerViewWrapper = FakePlayerViewWrapper(ApplicationProvider.getApplicationContext())
@@ -88,8 +101,8 @@ class PlayerFragmentTest {
         private val playerEventStream = FakePlayerEventStream(eventFlow.filterNotNull())
         private val telemetry = FakePlayerTelemetry()
         private val shareDelegate: ShareDelegate? = null
-        private val pipConfig = PictureInPictureConfig(enabled = false, onBackPresses = false)
-        private val pipControllerFactory = FakePipController.Factory()
+        private val pipController = FakePipController()
+        private val pipControllerFactory = FakePipController.Factory(pipController)
         private val errorRenderer = FakeErrorRenderer()
         private val playbackInfoResolver = DefaultPlaybackInfoResolver()
         private val seekDataUpdater = FakeSeekDataUpdater()
@@ -99,6 +112,7 @@ class PlayerFragmentTest {
         private val scenario: FragmentScenario<PlayerFragment>
         private val playbackUi = FakePlaybackUi()
         private val playbackUiFactory = FakePlaybackUiFactory(playbackUi)
+        private val closeDelegate = CloseDelegate()
 
         init {
             val vmFactory = PlayerViewModel.Factory(
@@ -109,7 +123,7 @@ class PlayerFragmentTest {
                 seekDataUpdater = seekDataUpdater
             )
 
-            val playerViewWrapperFactory = FakePlayerViewWrapperFactory(playerViewWrapper)
+            val playerViewWrapperFactory = FakePlayerViewWrapper.Factory(playerViewWrapper)
 
             val args = PlayerArguments(
                 uri = "",
@@ -123,7 +137,7 @@ class PlayerFragmentTest {
                     errorRenderer = errorRenderer,
                     deps = SharedDependencies(
                         shareDelegate = shareDelegate,
-                        activity = ApplicationProvider.getApplicationContext(),
+                        closeDelegate = closeDelegate,
                         seekBarListenerFactory = seekBarListenerFactory,
                         timeFormatter = timeFormatter,
                         navigator = navigator
@@ -166,34 +180,9 @@ class PlayerFragmentTest {
             assertEquals(string, errorRenderer.collectedMessage)
             assertTrue(errorRenderer.didRender)
         }
-    }
-}
 
-class FakePlayerViewWrapper(context: Context) : NoOpPlayerViewWrapper() {
-    override val view: View = FrameLayout(context)
-
-    override fun detachPlayer() {
-        super.detachPlayer()
-        // Support reusing the same test View across Fragment recreation.
-        (view.parent as? ViewGroup)?.removeView(view)
-    }
-}
-
-class FakePlayerViewWrapperFactory(
-    private val playerViewWrapper: PlayerViewWrapper
-) : PlayerViewWrapper.Factory {
-    override fun create(context: Context) = playerViewWrapper
-}
-
-class FakePipController : PipController {
-    override fun events(): Flow<PipController.Event> = emptyFlow()
-    override fun enterPip() = PipController.Result.EnteredPip
-    override fun isInPip(): Boolean = false
-    override fun onEvent(playerEvent: PlayerEvent) = Unit
-
-    class Factory : PipController.Factory {
-        override fun create(playerController: PlayerController): PipController {
-            return FakePipController()
+        fun assertPipOnBackPress(didEnter: Boolean) {
+            assertEquals(didEnter, pipController.didEnterPip)
         }
     }
 }
@@ -205,40 +194,5 @@ class FakeErrorRenderer : ErrorRenderer {
     override fun render(view: View, message: String) {
         didRender = true
         collectedMessage = message
-    }
-}
-
-class NoOpNavigator : Navigator {
-    override fun toTracksPicker(trackInfos: List<TrackInfo>) = Unit
-}
-
-class FakePlaybackUi : PlaybackUi {
-    var attachCount: Int = 0
-    var detachCount: Int = 0
-    override val view: View get() = FrameLayout(ApplicationProvider.getApplicationContext())
-
-    override fun onPlayerEvent(playerEvent: PlayerEvent) = Unit
-    override fun onUiState(uiState: player.ui.common.UiState) = Unit
-    override fun onTracksState(tracksState: player.ui.common.TracksState) = Unit
-    override fun onPlaybackInfos(playbackInfos: List<PlaybackInfo>) = Unit
-    override fun saveState(): Bundle = Bundle()
-    override fun attach(appPlayer: AppPlayer) {
-        ++attachCount
-    }
-    override fun detachPlayer() {
-        ++detachCount
-    }
-}
-
-class FakePlaybackUiFactory(private val playbackUi: PlaybackUi) : PlaybackUi.Factory {
-    override fun create(
-        deps: SharedDependencies,
-        playerViewWrapperFactory: PlayerViewWrapper.Factory,
-        pipController: PipController,
-        playerController: PlayerController,
-        playerArguments: PlayerArguments,
-        registryOwner: SavedStateRegistryOwner
-    ): PlaybackUi {
-        return playbackUi
     }
 }

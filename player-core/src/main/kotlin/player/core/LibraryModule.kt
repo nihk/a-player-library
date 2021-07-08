@@ -38,7 +38,6 @@ internal class LibraryModule(
                 playerViewWrapperFactory = module.playerViewWrapperFactory,
                 errorRenderer = SnackbarErrorRenderer(),
                 deps = SharedDependencies(
-                    activity = activity,
                     shareDelegate = LibraryInitializer.shareDelegate(),
                     closeDelegate = LibraryInitializer.closeDelegate(),
                     seekBarListenerFactory = DefaultSeekBarListener.Factory(),

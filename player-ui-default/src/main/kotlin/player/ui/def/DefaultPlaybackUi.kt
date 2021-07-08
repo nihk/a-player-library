@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.widget.SeekBar
 import androidx.core.view.isVisible
+import androidx.fragment.app.FragmentActivity
 import androidx.savedstate.SavedStateRegistryOwner
 import player.common.AppPlayer
 import player.common.PlaybackInfo
@@ -14,19 +15,20 @@ import player.common.SeekData
 import player.common.TrackInfo
 import player.common.requireNotNull
 import player.ui.common.PipController
-import player.ui.def.databinding.DefaultPlaybackUiBinding
 import player.ui.common.PlaybackUi
 import player.ui.common.PlayerArguments
 import player.ui.common.PlayerController
 import player.ui.common.SharedDependencies
 import player.ui.common.TracksState
 import player.ui.common.UiState
+import player.ui.def.databinding.DefaultPlaybackUiBinding
 import kotlin.time.Duration
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 
 // todo: this should be more composable for shared components across PlaybackUis, e.g. the seekbar
 class DefaultPlaybackUi(
+    private val activity: FragmentActivity,
     private val deps: SharedDependencies,
     private val playerViewWrapperFactory: PlayerViewWrapper.Factory,
     private val pipController: PipController,
@@ -35,7 +37,7 @@ class DefaultPlaybackUi(
     private val registryOwner: SavedStateRegistryOwner
 ) : PlaybackUi {
     @SuppressLint("InflateParams")
-    override val view: View = LayoutInflater.from(deps.activity)
+    override val view: View = LayoutInflater.from(activity)
         .inflate(R.layout.default_playback_ui, null)
 
     private val binding = DefaultPlaybackUiBinding.bind(view)
@@ -45,7 +47,7 @@ class DefaultPlaybackUi(
         },
         seekTo = playerController::seekTo
     )
-    private val playerViewWrapper = playerViewWrapperFactory.create(deps.activity)
+    private val playerViewWrapper = playerViewWrapperFactory.create(activity)
 
     init {
         binding.playerContainer.addView(playerViewWrapper.view)
@@ -130,7 +132,7 @@ class DefaultPlaybackUi(
             binding.share.apply {
                 isVisible = true
                 setOnClickListener {
-                    share(deps.activity, playerArguments.uri)
+                    share(activity, playerArguments.uri)
                 }
             }
         }
@@ -138,13 +140,8 @@ class DefaultPlaybackUi(
         binding.seekBar.setOnSeekBarChangeListener(seekBarListener)
 
         setPlayPause(playerController.isPlaying())
-        binding.playPause.setOnClickListener {
-            if (playerController.isPlaying()) {
-                playerController.pause()
-            } else {
-                playerController.play()
-            }
-        }
+        binding.play.setOnClickListener { playerController.play() }
+        binding.pause.setOnClickListener { playerController.pause() }
 
         binding.seekBackward.setOnClickListener {
             val amount = -playerArguments.seekConfiguration.backwardAmount.toDuration(DurationUnit.MILLISECONDS)
@@ -156,7 +153,7 @@ class DefaultPlaybackUi(
         }
 
         binding.close.setOnClickListener {
-            deps.closeDelegate.onClose(deps.activity)
+            deps.closeDelegate.onClose(activity)
         }
     }
 
@@ -170,16 +167,13 @@ class DefaultPlaybackUi(
     }
 
     private fun setPlayPause(isPlaying: Boolean) {
-        val resource = if (isPlaying) {
-            R.drawable.pause
-        } else {
-            R.drawable.play
-        }
-        binding.playPause.setImageResource(resource)
+        binding.play.isVisible = !isPlaying
+        binding.pause.isVisible = isPlaying
     }
 
     class Factory : PlaybackUi.Factory {
         override fun create(
+            activity: FragmentActivity,
             deps: SharedDependencies,
             playerViewWrapperFactory: PlayerViewWrapper.Factory,
             pipController: PipController,
@@ -187,7 +181,15 @@ class DefaultPlaybackUi(
             playerArguments: PlayerArguments,
             registryOwner: SavedStateRegistryOwner
         ): PlaybackUi {
-            return DefaultPlaybackUi(deps, playerViewWrapperFactory, pipController, playerController, playerArguments, registryOwner)
+            return DefaultPlaybackUi(
+                activity = activity,
+                deps = deps,
+                playerViewWrapperFactory = playerViewWrapperFactory,
+                pipController = pipController,
+                playerController = playerController,
+                playerArguments = playerArguments,
+                registryOwner = registryOwner
+            )
         }
     }
 }

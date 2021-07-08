@@ -12,6 +12,7 @@ object Modules {
             const val sve = "$prefix-sve"
             const val core = "$prefix-core"
             const val common = "$prefix-common"
+            const val test = "$prefix-test"
         }
     }
 }
