@@ -28,4 +28,4 @@ jobs:
           api-level: 29
           disable-animations: true
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -no-snapshot-save
-          script: ./gradlew connectedAndroidTest -i
+          script: ./gradlew connectedAndroidTest
