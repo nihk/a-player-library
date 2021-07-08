@@ -17,6 +17,7 @@ import player.common.PlaybackInfo
 import player.common.PlayerEvent
 import player.common.SeekData
 import player.test.FakeCloseDelegate
+import player.test.FakeImageLoader
 import player.test.FakePlayerViewWrapper
 import player.test.FakeShareDelegate
 import player.test.FakeTimeFormatter
@@ -95,12 +96,14 @@ class DefaultPlaybackUiTest {
         private val seekBarListenerFactory = FakeSeekBarListener.Factory(seekBarListener)
         private val timeFormatter = FakeTimeFormatter()
         private val navigator = FakeNavigator()
+        private val imageLoader = FakeImageLoader()
         private val deps = SharedDependencies(
             shareDelegate = shareDelegate,
             closeDelegate = closeDelegate,
             seekBarListenerFactory = seekBarListenerFactory,
             timeFormatter = timeFormatter,
-            navigator = navigator
+            navigator = navigator,
+            imageLoader = imageLoader
         )
         private val playerViewWrapper = FakePlayerViewWrapper(ApplicationProvider.getApplicationContext())
         private val playerViewWrapperFactory = FakePlayerViewWrapper.Factory(playerViewWrapper)

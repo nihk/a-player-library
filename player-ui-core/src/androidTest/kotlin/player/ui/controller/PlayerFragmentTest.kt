@@ -19,6 +19,7 @@ import player.common.PlayerException
 import player.common.ShareDelegate
 import player.test.FakeAppPlayer
 import player.test.FakeAppPlayerFactory
+import player.test.FakeImageLoader
 import player.test.FakePlayerEventStream
 import player.test.FakePlayerTelemetry
 import player.test.FakePlayerViewWrapper
@@ -113,6 +114,7 @@ class PlayerFragmentTest {
         private val playbackUi = FakePlaybackUi()
         private val playbackUiFactory = FakePlaybackUiFactory(playbackUi)
         private val closeDelegate = CloseDelegate()
+        private val imageLoader = FakeImageLoader()
 
         init {
             val vmFactory = PlayerViewModel.Factory(
@@ -140,7 +142,8 @@ class PlayerFragmentTest {
                         closeDelegate = closeDelegate,
                         seekBarListenerFactory = seekBarListenerFactory,
                         timeFormatter = timeFormatter,
-                        navigator = navigator
+                        navigator = navigator,
+                        imageLoader = imageLoader
                     ),
                     pipControllerFactory = pipControllerFactory,
                     playbackUiFactories = listOf(playbackUiFactory)
