@@ -23,7 +23,6 @@ import player.test.FakePlayerViewWrapper
 import player.test.FakeSeekDataUpdater
 import player.ui.common.PictureInPictureConfig
 import player.ui.common.PlayerArguments
-import player.ui.common.SharedDependencies
 import player.ui.common.toBundle
 import player.ui.test.FakePipController
 import player.ui.test.FakePlaybackUi
@@ -128,9 +127,7 @@ class PlayerFragmentTest {
                     vmFactory = vmFactory,
                     playerViewWrapperFactory = playerViewWrapperFactory,
                     errorRenderer = errorRenderer,
-                    deps = SharedDependencies(
-                        navigator = navigator,
-                    ),
+                    navigator = navigator,
                     pipControllerFactory = pipControllerFactory,
                     playbackUiFactories = listOf(playbackUiFactory)
                 )

@@ -17,12 +17,12 @@ import player.ui.common.ShareDelegate
 import player.common.TrackInfo
 import player.common.requireNotNull
 import player.ui.common.DefaultSeekBarListener
+import player.ui.common.Navigator
 import player.ui.common.PipController
 import player.ui.common.PlaybackUi
 import player.ui.common.PlayerArguments
 import player.ui.common.PlayerController
 import player.ui.common.SeekBarListener
-import player.ui.common.SharedDependencies
 import player.ui.common.TimeFormatter
 import player.ui.common.TracksState
 import player.ui.common.UiState
@@ -34,7 +34,7 @@ import kotlin.time.toDuration
 // todo: this should be more composable for shared components across PlaybackUis, e.g. the seekbar
 class DefaultPlaybackUi(
     private val activity: FragmentActivity,
-    private val deps: SharedDependencies,
+    private val navigator: Navigator,
     private val seekBarListenerFactory: SeekBarListener.Factory,
     private val playerViewWrapperFactory: PlayerViewWrapper.Factory,
     private val pipController: PipController,
@@ -127,7 +127,7 @@ class DefaultPlaybackUi(
     }
 
     private fun navigateToTracksPicker(trackInfos: List<TrackInfo>) {
-        deps.navigator.toTracksPicker(trackInfos)
+        navigator.toTracksPicker(trackInfos)
     }
 
     private fun SeekBar.update(seekData: SeekData) {
@@ -187,7 +187,7 @@ class DefaultPlaybackUi(
     ) : PlaybackUi.Factory {
         override fun create(
             activity: FragmentActivity,
-            deps: SharedDependencies,
+            navigator: Navigator,
             playerViewWrapperFactory: PlayerViewWrapper.Factory,
             pipController: PipController,
             playerController: PlayerController,
@@ -197,7 +197,7 @@ class DefaultPlaybackUi(
             return DefaultPlaybackUi(
                 activity = activity,
                 seekBarListenerFactory = DefaultSeekBarListener.Factory(),
-                deps = deps,
+                navigator = navigator,
                 playerViewWrapperFactory = playerViewWrapperFactory,
                 pipController = pipController,
                 playerController = playerController,

@@ -25,7 +25,7 @@ interface PlaybackUi : SavedStateRegistry.SavedStateProvider {
     interface Factory {
         fun create(
             activity: FragmentActivity,
-            deps: SharedDependencies,
+            navigator: Navigator,
             playerViewWrapperFactory: PlayerViewWrapper.Factory,
             pipController: PipController,
             playerController: PlayerController,

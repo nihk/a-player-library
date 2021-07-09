@@ -21,7 +21,6 @@ import player.test.FakePlayerViewWrapper
 import player.ui.test.FakeShareDelegate
 import player.ui.test.FakeTimeFormatter
 import player.ui.common.PlayerArguments
-import player.ui.common.SharedDependencies
 import player.ui.common.UiState
 import player.ui.test.FakeNavigator
 import player.ui.test.FakePipController
@@ -96,9 +95,6 @@ class DefaultPlaybackUiTest {
         private val seekBarListenerFactory = FakeSeekBarListener.Factory(seekBarListener)
         private val timeFormatter = FakeTimeFormatter()
         private val navigator = FakeNavigator()
-        private val deps = SharedDependencies(
-            navigator = navigator,
-        )
         private val playerViewWrapper = FakePlayerViewWrapper(ApplicationProvider.getApplicationContext())
         private val playerViewWrapperFactory = FakePlayerViewWrapper.Factory(playerViewWrapper)
         private val pipController = FakePipController()
@@ -114,7 +110,7 @@ class DefaultPlaybackUiTest {
             scenario.onActivity { testActivity ->
                 defaultPlaybackUi = DefaultPlaybackUi(
                     activity = testActivity,
-                    deps = deps,
+                    navigator = navigator,
                     seekBarListenerFactory = seekBarListenerFactory,
                     playerViewWrapperFactory = playerViewWrapperFactory,
                     pipController = pipController,

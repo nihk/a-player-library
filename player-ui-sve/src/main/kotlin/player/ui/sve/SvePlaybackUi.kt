@@ -22,12 +22,12 @@ import player.common.SeekData
 import player.ui.common.ShareDelegate
 import player.common.requireNotNull
 import player.ui.common.DefaultSeekBarListener
+import player.ui.common.Navigator
 import player.ui.common.PipController
 import player.ui.common.PlaybackUi
 import player.ui.common.PlayerArguments
 import player.ui.common.PlayerController
 import player.ui.common.SeekBarListener
-import player.ui.common.SharedDependencies
 import player.ui.common.TimeFormatter
 import player.ui.common.TracksState
 import player.ui.common.UiState
@@ -248,7 +248,7 @@ class SvePlaybackUi(
     ) : PlaybackUi.Factory {
         override fun create(
             activity: FragmentActivity,
-            deps: SharedDependencies,
+            navigator: Navigator,
             playerViewWrapperFactory: PlayerViewWrapper.Factory,
             pipController: PipController,
             playerController: PlayerController,

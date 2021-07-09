@@ -11,11 +11,11 @@ import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import player.common.PlayerViewWrapper
+import player.ui.common.Navigator
 import player.ui.common.OnUserLeaveHintViewModel
 import player.ui.common.PipController
 import player.ui.common.PlaybackUi
 import player.ui.common.PlayerArguments
-import player.ui.common.SharedDependencies
 import player.ui.common.toPlayerArguments
 import player.ui.core.R
 import player.ui.core.databinding.PlayerFragmentBinding
@@ -23,7 +23,7 @@ import player.ui.core.databinding.PlayerFragmentBinding
 class PlayerFragment(
     private val vmFactory: PlayerViewModel.Factory,
     private val playerViewWrapperFactory: PlayerViewWrapper.Factory,
-    private val deps: SharedDependencies,
+    private val navigator: Navigator,
     private val errorRenderer: ErrorRenderer,
     private val pipControllerFactory: PipController.Factory,
     private val playbackUiFactories: List<PlaybackUi.Factory>
@@ -74,7 +74,7 @@ class PlayerFragment(
         }
         playbackUi = playbackUiFactory.create(
             activity = requireActivity(),
-            deps = deps,
+            navigator = navigator,
             playerViewWrapperFactory = playerViewWrapperFactory,
             pipController = pipController,
             playerController = playerViewModel,

@@ -7,7 +7,6 @@ import androidx.fragment.app.FragmentManager
 import player.common.PlayerModule
 import player.ui.common.Navigator
 import player.ui.common.PipController
-import player.ui.common.SharedDependencies
 import player.ui.common.isMinOsForPip
 import player.ui.controller.AndroidPipController
 import player.ui.controller.NoOpPipController
@@ -36,9 +35,7 @@ internal class LibraryModule(
                 vmFactory = playerViewModelFactory,
                 playerViewWrapperFactory = module.playerViewWrapperFactory,
                 errorRenderer = SnackbarErrorRenderer(),
-                deps = SharedDependencies(
-                    navigator = navigator,
-                ),
+                navigator = navigator,
                 pipControllerFactory = pipControllerFactory,
                 playbackUiFactories = LibraryInitializer.playbackUiFactories()
             )
