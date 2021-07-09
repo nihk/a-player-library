@@ -27,6 +27,7 @@ import player.ui.test.FakeNavigator
 import player.ui.test.FakePipController
 import player.ui.test.FakePlayerController
 import player.ui.test.FakeSeekBarListener
+import player.ui.test.TestActivity
 
 class DefaultPlaybackUiTest {
     @Test

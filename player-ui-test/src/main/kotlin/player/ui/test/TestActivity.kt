@@ -1,4 +1,4 @@
-package player.ui.def
+package player.ui.test
 
 import android.os.Bundle
 import android.view.View
