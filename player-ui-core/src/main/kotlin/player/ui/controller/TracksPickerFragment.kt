@@ -18,7 +18,6 @@ import player.ui.core.databinding.TracksFragmentBinding
 //  do not use an activity scoped PlayerViewModel for this (VM/player instance should always
 //  be scoped to PlayerFragment). use [TracksBroadcaster].
 class TracksPickerFragment : BottomSheetDialogFragment() {
-
     private val trackInfos: List<TrackInfo>
         get() = requireArguments().getParcelableArrayList<TrackInfo>(KEY_ARG_TRACK_INFOS)?.toList().requireNotNull()
 
@@ -37,15 +36,12 @@ class TracksPickerFragment : BottomSheetDialogFragment() {
         )
 
         val adapter = TracksAdapter(listOf(auto) + trackOptions) { trackOption ->
-            when (trackOption) {
-                is TrackOption.Auto -> setFragmentResult(
-                    KEY_PICK_RESULT, bundleOf(
-                        KEY_RENDERER_INDEX to trackOption.rendererIndex))
-                is TrackOption.SingleTrack -> setFragmentResult(
-                    KEY_PICK_RESULT, bundleOf(
-                        KEY_TRACK_INFO to trackOption.trackInfo))
+            val bundle = when (trackOption) {
+                is TrackOption.Auto -> bundleOf(KEY_RENDERER_INDEX to trackOption.rendererIndex)
+                is TrackOption.SingleTrack -> bundleOf(KEY_TRACK_INFO to trackOption.trackInfo)
             }
 
+            setFragmentResult(KEY_PICK_RESULT, bundle)
             dismiss()
         }
         binding.recyclerView.adapter = adapter
