@@ -38,12 +38,8 @@ internal class LibraryModule(
                 playerViewWrapperFactory = module.playerViewWrapperFactory,
                 errorRenderer = SnackbarErrorRenderer(),
                 deps = SharedDependencies(
-                    shareDelegate = LibraryInitializer.shareDelegate(),
-                    closeDelegate = LibraryInitializer.closeDelegate(),
                     seekBarListenerFactory = DefaultSeekBarListener.Factory(),
-                    timeFormatter = LibraryInitializer.timeFormatter(),
                     navigator = navigator,
-                    imageLoader = LibraryInitializer.imageLoader()
                 ),
                 pipControllerFactory = pipControllerFactory,
                 playbackUiFactories = LibraryInitializer.playbackUiFactories()

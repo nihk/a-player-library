@@ -1,7 +1,7 @@
-package player.test
+package player.ui.test
 
 import androidx.fragment.app.FragmentActivity
-import player.common.ShareDelegate
+import player.ui.common.ShareDelegate
 
 class FakeShareDelegate : ShareDelegate {
     var didShare: Boolean = false

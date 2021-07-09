@@ -1,7 +1,6 @@
-package player.test
+package player.ui.sve
 
 import android.widget.ImageView
-import player.common.ImageLoader
 
 class FakeImageLoader : ImageLoader {
     private val loadedUris = mutableListOf<String>()

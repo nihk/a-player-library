@@ -1,7 +1,7 @@
 package nick.sample.data
 
 import androidx.fragment.app.FragmentActivity
-import player.common.CloseDelegate
+import player.ui.common.CloseDelegate
 import player.core.LibraryActivity
 
 class SampleCloseDelegate : CloseDelegate {

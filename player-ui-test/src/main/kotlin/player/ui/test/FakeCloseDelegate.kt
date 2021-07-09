@@ -1,7 +1,7 @@
-package player.test
+package player.ui.test
 
 import androidx.fragment.app.FragmentActivity
-import player.common.CloseDelegate
+import player.ui.common.CloseDelegate
 
 class FakeCloseDelegate : CloseDelegate {
     var didClose: Boolean = false

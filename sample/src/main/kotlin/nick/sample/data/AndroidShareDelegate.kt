@@ -2,7 +2,7 @@ package nick.sample.data
 
 import android.content.Intent
 import androidx.fragment.app.FragmentActivity
-import player.common.ShareDelegate
+import player.ui.common.ShareDelegate
 
 class AndroidShareDelegate : ShareDelegate {
     override fun share(activity: FragmentActivity, uri: String) {

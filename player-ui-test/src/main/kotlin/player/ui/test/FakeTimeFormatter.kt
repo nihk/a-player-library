@@ -1,6 +1,6 @@
-package player.test
+package player.ui.test
 
-import player.common.TimeFormatter
+import player.ui.common.TimeFormatter
 import kotlin.time.Duration
 
 class FakeTimeFormatter : TimeFormatter {

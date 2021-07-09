@@ -1,4 +1,4 @@
-package player.common
+package player.ui.common
 
 import androidx.fragment.app.FragmentActivity
 

@@ -8,17 +8,21 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.FragmentActivity
 import androidx.savedstate.SavedStateRegistryOwner
 import player.common.AppPlayer
+import player.ui.common.CloseDelegate
 import player.common.PlaybackInfo
 import player.common.PlayerEvent
 import player.common.PlayerViewWrapper
 import player.common.SeekData
+import player.ui.common.ShareDelegate
 import player.common.TrackInfo
 import player.common.requireNotNull
+import player.ui.common.Navigator
 import player.ui.common.PipController
 import player.ui.common.PlaybackUi
 import player.ui.common.PlayerArguments
 import player.ui.common.PlayerController
 import player.ui.common.SharedDependencies
+import player.ui.common.TimeFormatter
 import player.ui.common.TracksState
 import player.ui.common.UiState
 import player.ui.def.databinding.DefaultPlaybackUiBinding
@@ -34,7 +38,10 @@ class DefaultPlaybackUi(
     private val pipController: PipController,
     private val playerController: PlayerController,
     private val playerArguments: PlayerArguments,
-    private val registryOwner: SavedStateRegistryOwner
+    private val registryOwner: SavedStateRegistryOwner,
+    private val closeDelegate: CloseDelegate,
+    private val shareDelegate: ShareDelegate?,
+    private val timeFormatter: TimeFormatter
 ) : PlaybackUi {
     @SuppressLint("InflateParams")
     override val view: View = LayoutInflater.from(activity)
@@ -128,7 +135,7 @@ class DefaultPlaybackUi(
     }
 
     private fun bindControls() {
-        deps.shareDelegate?.run {
+        shareDelegate?.run {
             binding.share.apply {
                 isVisible = true
                 setOnClickListener {
@@ -153,7 +160,7 @@ class DefaultPlaybackUi(
         }
 
         binding.close.setOnClickListener {
-            deps.closeDelegate.onClose(activity)
+            closeDelegate.onClose(activity)
         }
     }
 
@@ -161,8 +168,8 @@ class DefaultPlaybackUi(
         position: Duration,
         duration: Duration
     ) {
-        binding.position.text = deps.timeFormatter.playerTime(position)
-        binding.remaining.text = deps.timeFormatter.playerTime(duration - position)
+        binding.position.text = timeFormatter.playerTime(position)
+        binding.remaining.text = timeFormatter.playerTime(duration - position)
         // todo: content descriptions
     }
 
@@ -171,7 +178,11 @@ class DefaultPlaybackUi(
         binding.pause.isVisible = isPlaying
     }
 
-    class Factory : PlaybackUi.Factory {
+    class Factory(
+        private val closeDelegate: CloseDelegate,
+        private val timeFormatter: TimeFormatter,
+        private val shareDelegate: ShareDelegate? = null,
+    ) : PlaybackUi.Factory {
         override fun create(
             activity: FragmentActivity,
             deps: SharedDependencies,
@@ -188,7 +199,10 @@ class DefaultPlaybackUi(
                 pipController = pipController,
                 playerController = playerController,
                 playerArguments = playerArguments,
-                registryOwner = registryOwner
+                registryOwner = registryOwner,
+                closeDelegate = closeDelegate,
+                shareDelegate = shareDelegate,
+                timeFormatter = timeFormatter
             )
         }
     }

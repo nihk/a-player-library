@@ -1,4 +1,4 @@
-package player.common
+package player.ui.sve
 
 import android.widget.ImageView
 

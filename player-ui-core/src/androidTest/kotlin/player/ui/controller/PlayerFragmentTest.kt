@@ -12,19 +12,15 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
-import player.common.CloseDelegate
 import player.common.DefaultPlaybackInfoResolver
 import player.common.PlayerEvent
 import player.common.PlayerException
-import player.common.ShareDelegate
 import player.test.FakeAppPlayer
 import player.test.FakeAppPlayerFactory
-import player.test.FakeImageLoader
 import player.test.FakePlayerEventStream
 import player.test.FakePlayerTelemetry
 import player.test.FakePlayerViewWrapper
 import player.test.FakeSeekDataUpdater
-import player.test.FakeTimeFormatter
 import player.ui.common.PictureInPictureConfig
 import player.ui.common.PlayerArguments
 import player.ui.common.SharedDependencies
@@ -101,20 +97,16 @@ class PlayerFragmentTest {
         private val eventFlow = MutableStateFlow<PlayerEvent?>(null)
         private val playerEventStream = FakePlayerEventStream(eventFlow.filterNotNull())
         private val telemetry = FakePlayerTelemetry()
-        private val shareDelegate: ShareDelegate? = null
         private val pipController = FakePipController()
         private val pipControllerFactory = FakePipController.Factory(pipController)
         private val errorRenderer = FakeErrorRenderer()
         private val playbackInfoResolver = DefaultPlaybackInfoResolver()
         private val seekDataUpdater = FakeSeekDataUpdater()
-        private val timeFormatter = FakeTimeFormatter()
         private val navigator = NoOpNavigator()
         private val seekBarListenerFactory = DefaultSeekBarListener.Factory()
         private val scenario: FragmentScenario<PlayerFragment>
         private val playbackUi = FakePlaybackUi()
         private val playbackUiFactory = FakePlaybackUiFactory(playbackUi)
-        private val closeDelegate = CloseDelegate()
-        private val imageLoader = FakeImageLoader()
 
         init {
             val vmFactory = PlayerViewModel.Factory(
@@ -138,12 +130,8 @@ class PlayerFragmentTest {
                     playerViewWrapperFactory = playerViewWrapperFactory,
                     errorRenderer = errorRenderer,
                     deps = SharedDependencies(
-                        shareDelegate = shareDelegate,
-                        closeDelegate = closeDelegate,
                         seekBarListenerFactory = seekBarListenerFactory,
-                        timeFormatter = timeFormatter,
                         navigator = navigator,
-                        imageLoader = imageLoader
                     ),
                     pipControllerFactory = pipControllerFactory,
                     playbackUiFactories = listOf(playbackUiFactory)

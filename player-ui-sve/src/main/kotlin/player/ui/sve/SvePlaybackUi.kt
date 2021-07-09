@@ -14,16 +14,19 @@ import androidx.savedstate.SavedStateRegistryOwner
 import androidx.viewpager2.widget.ViewPager2
 import com.google.android.material.tabs.TabLayoutMediator
 import player.common.AppPlayer
+import player.ui.common.CloseDelegate
 import player.common.PlaybackInfo
 import player.common.PlayerEvent
 import player.common.PlayerViewWrapper
 import player.common.SeekData
+import player.ui.common.ShareDelegate
 import player.common.requireNotNull
 import player.ui.common.PipController
 import player.ui.common.PlaybackUi
 import player.ui.common.PlayerArguments
 import player.ui.common.PlayerController
 import player.ui.common.SharedDependencies
+import player.ui.common.TimeFormatter
 import player.ui.common.TracksState
 import player.ui.common.UiState
 import player.ui.sve.databinding.SvePlaybackUiBinding
@@ -40,7 +43,11 @@ class SvePlaybackUi(
     private val pipController: PipController,
     private val playerController: PlayerController,
     private val playerArguments: PlayerArguments,
-    private val registryOwner: SavedStateRegistryOwner
+    private val registryOwner: SavedStateRegistryOwner,
+    private val closeDelegate: CloseDelegate,
+    private val shareDelegate: ShareDelegate?,
+    private val imageLoader: ImageLoader,
+    private val timeFormatter: TimeFormatter
 ) : PlaybackUi {
     @SuppressLint("InflateParams")
     override val view: View = LayoutInflater.from(activity)
@@ -54,7 +61,7 @@ class SvePlaybackUi(
     )
     private var didRestoreViewPagerState = false
     private val playerViewWrapper = playerViewWrapperFactory.create(activity)
-    private val adapter = SveAdapter(playerViewWrapper, deps.imageLoader)
+    private val adapter = SveAdapter(playerViewWrapper, imageLoader)
 
     init {
         registryOwner.lifecycle.addObserver(LifecycleEventObserver { _, event ->
@@ -155,9 +162,9 @@ class SvePlaybackUi(
             val item = adapter.currentList[position]
             tab.setCustomView(R.layout.sve_tab_item)
             val binding = SveTabItemBinding.bind(tab.customView.requireNotNull())
-            binding.duration.text = deps.timeFormatter.playerTime(item.duration)
+            binding.duration.text = timeFormatter.playerTime(item.duration)
             binding.duration.isVisible = item.duration != Duration.ZERO
-            deps.imageLoader?.load(binding.image, item.imageUri)
+            imageLoader.load(binding.image, item.imageUri)
         }.attach()
 
         binding.viewPager.registerOnPageChangeCallback(binding.tabLayout.pageChangeCallback)
@@ -179,7 +186,7 @@ class SvePlaybackUi(
             }
         })
 
-        deps.shareDelegate?.run {
+        shareDelegate?.run {
             binding.share.apply {
                 isVisible = true
                 setOnClickListener {
@@ -204,7 +211,7 @@ class SvePlaybackUi(
         }
 
         binding.close.setOnClickListener {
-            deps.closeDelegate.onClose(activity)
+            closeDelegate.onClose(activity)
         }
     }
 
@@ -212,8 +219,8 @@ class SvePlaybackUi(
         position: Duration,
         duration: Duration
     ) {
-        binding.position.text = deps.timeFormatter.playerTime(position)
-        binding.remaining.text = deps.timeFormatter.playerTime(duration - position)
+        binding.position.text = timeFormatter.playerTime(position)
+        binding.remaining.text = timeFormatter.playerTime(duration - position)
         // todo: content descriptions
     }
 
@@ -231,7 +238,12 @@ class SvePlaybackUi(
         private const val TAB_POSITION = "tab_position"
     }
 
-    class Factory : PlaybackUi.Factory {
+    class Factory(
+        private val closeDelegate: CloseDelegate,
+        private val imageLoader: ImageLoader,
+        private val timeFormatter: TimeFormatter,
+        private val shareDelegate: ShareDelegate? = null
+    ) : PlaybackUi.Factory {
         override fun create(
             activity: FragmentActivity,
             deps: SharedDependencies,
@@ -248,7 +260,11 @@ class SvePlaybackUi(
                 pipController = pipController,
                 playerController = playerController,
                 playerArguments = playerArguments,
-                registryOwner = registryOwner
+                registryOwner = registryOwner,
+                closeDelegate = closeDelegate,
+                shareDelegate = shareDelegate,
+                imageLoader = imageLoader,
+                timeFormatter = timeFormatter
             )
         }
     }
