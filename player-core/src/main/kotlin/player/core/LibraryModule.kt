@@ -3,9 +3,7 @@ package player.core
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentFactory
-import androidx.fragment.app.FragmentManager
 import player.common.PlayerModule
-import player.ui.common.Navigator
 import player.ui.common.PipController
 import player.ui.common.isMinOsForPip
 import player.ui.controller.AndroidPipController
@@ -13,12 +11,8 @@ import player.ui.controller.NoOpPipController
 import player.ui.controller.PlayerFragment
 import player.ui.controller.PlayerViewModel
 import player.ui.controller.SnackbarErrorRenderer
-import player.ui.controller.TracksPickerFragment
 
-internal class LibraryModule(
-    private val activity: FragmentActivity,
-    private val fragmentManager: FragmentManager
-) {
+internal class LibraryModule(activity: FragmentActivity) {
     val fragmentFactory: FragmentFactory get() = LibraryFragmentFactory(fragmentMap)
 
     private val module: PlayerModule = LibraryInitializer.playerModule()
@@ -35,13 +29,13 @@ internal class LibraryModule(
                 vmFactory = playerViewModelFactory,
                 playerViewWrapperFactory = module.playerViewWrapperFactory,
                 errorRenderer = SnackbarErrorRenderer(),
-                navigator = navigator,
                 pipControllerFactory = pipControllerFactory,
                 playbackUiFactories = LibraryInitializer.playbackUiFactories()
             )
         },
-        TracksPickerFragment::class.java to { TracksPickerFragment() }
-    )
+    ) + LibraryInitializer.playbackUiFactories().fold(emptyMap<Class<out Fragment>, () -> Fragment>()) { accumulator, factory ->
+        accumulator + factory.fragmentMap
+    }
 
     private val playerViewModelFactory: PlayerViewModel.Factory get() = PlayerViewModel.Factory(
         appPlayerFactory = module.appPlayerFactory,
@@ -50,7 +44,4 @@ internal class LibraryModule(
         playbackInfoResolver = LibraryInitializer.playbackInfoResolver(),
         seekDataUpdater = module.seekDataUpdater
     )
-
-    private val navigator: Navigator
-        get() = LibraryNavigator(fragmentManager, R.id.container)
 }

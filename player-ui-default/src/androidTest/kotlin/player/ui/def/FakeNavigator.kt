@@ -1,7 +1,6 @@
-package player.ui.test
+package player.ui.def
 
 import player.common.TrackInfo
-import player.ui.common.Navigator
 
 class FakeNavigator : Navigator {
     override fun toTracksPicker(trackInfos: List<TrackInfo>) {

@@ -5,28 +5,29 @@ import android.view.LayoutInflater
 import android.view.View
 import android.widget.SeekBar
 import androidx.core.view.isVisible
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.savedstate.SavedStateRegistryOwner
 import player.common.AppPlayer
-import player.ui.common.CloseDelegate
 import player.common.PlaybackInfo
 import player.common.PlayerEvent
 import player.common.PlayerViewWrapper
 import player.common.SeekData
-import player.ui.common.ShareDelegate
 import player.common.TrackInfo
 import player.common.requireNotNull
+import player.ui.common.CloseDelegate
 import player.ui.common.DefaultSeekBarListener
-import player.ui.common.Navigator
 import player.ui.common.PipController
 import player.ui.common.PlaybackUi
 import player.ui.common.PlayerArguments
 import player.ui.common.PlayerController
 import player.ui.common.SeekBarListener
+import player.ui.common.ShareDelegate
 import player.ui.common.TimeFormatter
 import player.ui.common.TracksState
 import player.ui.common.UiState
 import player.ui.def.databinding.DefaultPlaybackUiBinding
+import player.ui.trackspicker.TracksPickerFragment
 import kotlin.time.Duration
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
@@ -185,9 +186,12 @@ class DefaultPlaybackUi(
         private val timeFormatter: TimeFormatter,
         private val shareDelegate: ShareDelegate? = null,
     ) : PlaybackUi.Factory {
+        override val fragmentMap: Map<Class<out Fragment>, () -> Fragment> = mapOf(
+            TracksPickerFragment::class.java to { TracksPickerFragment() }
+        )
+
         override fun create(
-            activity: FragmentActivity,
-            navigator: Navigator,
+            host: Fragment,
             playerViewWrapperFactory: PlayerViewWrapper.Factory,
             pipController: PipController,
             playerController: PlayerController,
@@ -195,9 +199,9 @@ class DefaultPlaybackUi(
             registryOwner: SavedStateRegistryOwner
         ): PlaybackUi {
             return DefaultPlaybackUi(
-                activity = activity,
+                activity = host.requireActivity(),
                 seekBarListenerFactory = DefaultSeekBarListener.Factory(),
-                navigator = navigator,
+                navigator = Navigator(host.childFragmentManager),
                 playerViewWrapperFactory = playerViewWrapperFactory,
                 pipController = pipController,
                 playerController = playerController,

@@ -22,7 +22,6 @@ import player.ui.test.FakeShareDelegate
 import player.ui.test.FakeTimeFormatter
 import player.ui.common.PlayerArguments
 import player.ui.common.UiState
-import player.ui.test.FakeNavigator
 import player.ui.test.FakePipController
 import player.ui.test.FakePlayerController
 import player.ui.test.FakeSeekBarListener

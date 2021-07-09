@@ -5,13 +5,11 @@ import android.view.View
 import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.fragment.app.setFragmentResultListener
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import player.common.PlayerViewWrapper
-import player.ui.common.Navigator
 import player.ui.common.OnUserLeaveHintViewModel
 import player.ui.common.PipController
 import player.ui.common.PlaybackUi
@@ -23,7 +21,6 @@ import player.ui.core.databinding.PlayerFragmentBinding
 class PlayerFragment(
     private val vmFactory: PlayerViewModel.Factory,
     private val playerViewWrapperFactory: PlayerViewWrapper.Factory,
-    private val navigator: Navigator,
     private val errorRenderer: ErrorRenderer,
     private val pipControllerFactory: PipController.Factory,
     private val playbackUiFactories: List<PlaybackUi.Factory>
@@ -37,11 +34,6 @@ class PlayerFragment(
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setFragmentResultListener(TracksPickerFragment.KEY_PICK_RESULT) { _, bundle ->
-            val action = TracksPickerFragment.getTrackInfoAction(bundle)
-            playerViewModel.handleTrackInfoAction(action)
-        }
-
         setUpBackPressHandling()
     }
 
@@ -73,8 +65,7 @@ class PlayerFragment(
             playerArguments.playbackUiFactory.isAssignableFrom(factory::class.java)
         }
         playbackUi = playbackUiFactory.create(
-            activity = requireActivity(),
-            navigator = navigator,
+            host = this,
             playerViewWrapperFactory = playerViewWrapperFactory,
             pipController = pipController,
             playerController = playerViewModel,

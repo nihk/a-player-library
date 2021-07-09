@@ -14,13 +14,13 @@ class LibraryFragment : Fragment(R.layout.library_fragment) {
     private lateinit var fm: FragmentManager
 
     override fun onAttach(context: Context) {
-        if (context is LibraryActivity) {
-            fm = requireActivity().supportFragmentManager
+        fm = if (context is LibraryActivity) {
+            requireActivity().supportFragmentManager
         } else {
-            val libraryModule = LibraryModule(requireActivity(), childFragmentManager)
-            childFragmentManager.fragmentFactory = libraryModule.fragmentFactory
-            fm = childFragmentManager
+            childFragmentManager
         }
+        val libraryModule = LibraryModule(requireActivity())
+        fm.fragmentFactory = libraryModule.fragmentFactory
         super.onAttach(context)
     }
 

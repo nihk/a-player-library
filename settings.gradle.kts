@@ -8,6 +8,7 @@ include(
     ":player-ui-sve",
     ":player-ui-core",
     ":player-ui-common",
+    ":player-ui-trackspicker",
     ":player-test",
     ":player-ui-test"
 )

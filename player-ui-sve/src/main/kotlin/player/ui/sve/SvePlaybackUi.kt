@@ -7,6 +7,7 @@ import android.view.View
 import android.widget.SeekBar
 import androidx.core.os.bundleOf
 import androidx.core.view.isVisible
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
@@ -14,20 +15,19 @@ import androidx.savedstate.SavedStateRegistryOwner
 import androidx.viewpager2.widget.ViewPager2
 import com.google.android.material.tabs.TabLayoutMediator
 import player.common.AppPlayer
-import player.ui.common.CloseDelegate
 import player.common.PlaybackInfo
 import player.common.PlayerEvent
 import player.common.PlayerViewWrapper
 import player.common.SeekData
-import player.ui.common.ShareDelegate
 import player.common.requireNotNull
+import player.ui.common.CloseDelegate
 import player.ui.common.DefaultSeekBarListener
-import player.ui.common.Navigator
 import player.ui.common.PipController
 import player.ui.common.PlaybackUi
 import player.ui.common.PlayerArguments
 import player.ui.common.PlayerController
 import player.ui.common.SeekBarListener
+import player.ui.common.ShareDelegate
 import player.ui.common.TimeFormatter
 import player.ui.common.TracksState
 import player.ui.common.UiState
@@ -247,8 +247,7 @@ class SvePlaybackUi(
         private val shareDelegate: ShareDelegate? = null
     ) : PlaybackUi.Factory {
         override fun create(
-            activity: FragmentActivity,
-            navigator: Navigator,
+            host: Fragment,
             playerViewWrapperFactory: PlayerViewWrapper.Factory,
             pipController: PipController,
             playerController: PlayerController,
@@ -256,7 +255,7 @@ class SvePlaybackUi(
             registryOwner: SavedStateRegistryOwner
         ): PlaybackUi {
             return SvePlaybackUi(
-                activity = activity,
+                activity = host.requireActivity(),
                 seekBarListenerFactory = DefaultSeekBarListener.Factory(),
                 playerViewWrapperFactory = playerViewWrapperFactory,
                 pipController = pipController,

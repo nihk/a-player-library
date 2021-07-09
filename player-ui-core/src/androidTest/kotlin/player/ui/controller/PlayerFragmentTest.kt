@@ -27,7 +27,6 @@ import player.ui.common.toBundle
 import player.ui.test.FakePipController
 import player.ui.test.FakePlaybackUi
 import player.ui.test.FakePlaybackUiFactory
-import player.ui.test.NoOpNavigator
 
 class PlayerFragmentTest {
     @get:Rule
@@ -101,7 +100,6 @@ class PlayerFragmentTest {
         private val errorRenderer = FakeErrorRenderer()
         private val playbackInfoResolver = DefaultPlaybackInfoResolver()
         private val seekDataUpdater = FakeSeekDataUpdater()
-        private val navigator = NoOpNavigator()
         private val scenario: FragmentScenario<PlayerFragment>
         private val playbackUi = FakePlaybackUi()
         private val playbackUiFactory = FakePlaybackUiFactory(playbackUi)
@@ -127,7 +125,6 @@ class PlayerFragmentTest {
                     vmFactory = vmFactory,
                     playerViewWrapperFactory = playerViewWrapperFactory,
                     errorRenderer = errorRenderer,
-                    navigator = navigator,
                     pipControllerFactory = pipControllerFactory,
                     playbackUiFactories = listOf(playbackUiFactory)
                 )
