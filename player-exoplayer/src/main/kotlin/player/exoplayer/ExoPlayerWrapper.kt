@@ -109,11 +109,12 @@ internal class ExoPlayerWrapper(
         }
     }
 
-    override fun handleTrackInfoAction(action: TrackInfo.Action) {
-        when (action) {
-            is TrackInfo.Action.Clear -> player.clearTrackOverrides(action.rendererIndex)
-            is TrackInfo.Action.Set -> action.trackInfos.forEach(player::setTrackInfo)
-        }
+    override fun setTrackInfos(trackInfos: List<TrackInfo>) {
+        player.setTrackInfos(trackInfos)
+    }
+
+    override fun clearTrackInfos(rendererIndex: Int) {
+        player.clearTrackOverrides(rendererIndex)
     }
 
     override fun play() {

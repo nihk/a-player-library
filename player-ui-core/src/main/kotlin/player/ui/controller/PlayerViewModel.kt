@@ -122,10 +122,10 @@ class PlayerViewModel(
                     is PlayerEvent.OnTracksChanged -> {
                         if (playerEvent.trackInfos.isEmpty()) return@onEach
                         val trackIndices = playerEvent.trackInfos.map(TrackInfo::indices)
+                        // fixme: state is getting stale w.r.t. isManuallySet, across process recreation.
                         val settableTracks = playerSavedState.manuallySetTracks
                             .filter { trackInfo -> trackInfo.indices in trackIndices }
-                        val action = TrackInfo.Action.Set(settableTracks)
-                        appPlayer.handleTrackInfoAction(action)
+                        appPlayer.setTrackInfos(settableTracks)
                         val trackTypes = playerEvent.trackInfos.map(TrackInfo::type)
                         tracksStates.value = TracksState.Available(trackTypes)
                     }
@@ -160,11 +160,15 @@ class PlayerViewModel(
     }
 
     override fun tracks(): List<TrackInfo> {
-        return requireNotNull(appPlayer).tracks
+        return appPlayer?.tracks.orEmpty()
     }
 
-    fun handleTrackInfoAction(action: TrackInfo.Action) {
-        requireNotNull(appPlayer).handleTrackInfoAction(action)
+    fun clearTrackInfos(rendererIndex: Int) {
+        requireNotNull(appPlayer).clearTrackInfos(rendererIndex)
+    }
+
+    fun setTrackInfos(trackInfos: List<TrackInfo>) {
+        requireNotNull(appPlayer).setTrackInfos(trackInfos)
     }
 
     fun onPipModeChanged(isInPipMode: Boolean) {

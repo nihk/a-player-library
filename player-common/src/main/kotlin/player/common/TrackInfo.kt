@@ -21,11 +21,6 @@ data class TrackInfo(
         val rendererIndex: Int
     ) : Parcelable
 
-    sealed class Action {
-        data class Clear(val rendererIndex: Int) : Action()
-        data class Set(val trackInfos: List<TrackInfo>) : Action()
-    }
-
     enum class Type {
         VIDEO,
         AUDIO,

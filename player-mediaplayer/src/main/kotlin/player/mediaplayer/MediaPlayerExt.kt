@@ -3,7 +3,7 @@ package player.mediaplayer
 import android.media.MediaPlayer
 import player.common.TrackInfo
 
-internal fun MediaPlayer.setTrackInfo(trackInfo: TrackInfo) {
+internal fun MediaPlayer.setTrackInfos(trackInfos: List<TrackInfo>) {
     // todo
 }
 

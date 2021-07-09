@@ -8,7 +8,8 @@ interface AppPlayer {
     val aspectRatio: AspectRatio
 
     fun handlePlaybackInfos(playbackInfos: List<PlaybackInfo>)
-    fun handleTrackInfoAction(action: TrackInfo.Action)
+    fun setTrackInfos(trackInfos: List<TrackInfo>)
+    fun clearTrackInfos(rendererIndex: Int)
     fun play()
     fun pause()
     fun seekRelative(duration: Duration)

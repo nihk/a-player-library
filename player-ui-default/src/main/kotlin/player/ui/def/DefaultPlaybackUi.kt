@@ -120,15 +120,15 @@ class DefaultPlaybackUi(
                 entry.key.apply {
                     isVisible = true
                     setOnClickListener {
-                        navigateToTracksPicker(playerController.tracks().filter { it.type == entry.value })
+                        navigateToTracksPicker(entry.value)
                     }
                 }
             }
         }
     }
 
-    private fun navigateToTracksPicker(trackInfos: List<TrackInfo>) {
-        navigator.toTracksPicker(trackInfos)
+    private fun navigateToTracksPicker(type: TrackInfo.Type) {
+        navigator.toTracksPicker(type)
     }
 
     private fun SeekBar.update(seekData: SeekData) {

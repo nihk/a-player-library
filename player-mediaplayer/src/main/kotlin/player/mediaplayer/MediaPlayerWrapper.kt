@@ -50,11 +50,12 @@ class MediaPlayerWrapper(
         }
     }
 
-    override fun handleTrackInfoAction(action: TrackInfo.Action) {
-        when (action) {
-            is TrackInfo.Action.Clear -> mediaPlayer.clearTrackInfos(action.rendererIndex)
-            is TrackInfo.Action.Set -> action.trackInfos.forEach(mediaPlayer::setTrackInfo)
-        }
+    override fun setTrackInfos(trackInfos: List<TrackInfo>) {
+        mediaPlayer.setTrackInfos(trackInfos)
+    }
+
+    override fun clearTrackInfos(rendererIndex: Int) {
+        mediaPlayer.clearTrackInfos(rendererIndex)
     }
 
     override fun onEvent(playerEvent: PlayerEvent) {

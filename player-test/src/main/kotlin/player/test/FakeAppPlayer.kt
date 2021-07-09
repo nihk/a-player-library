@@ -50,6 +50,7 @@ class FakeAppPlayer(
         ++releaseCount
     }
 
-    override fun handleTrackInfoAction(action: TrackInfo.Action) = Unit
     override fun handlePlaybackInfos(playbackInfos: List<PlaybackInfo>) = Unit
+    override fun clearTrackInfos(rendererIndex: Int) = Unit
+    override fun setTrackInfos(trackInfos: List<TrackInfo>) = Unit
 }

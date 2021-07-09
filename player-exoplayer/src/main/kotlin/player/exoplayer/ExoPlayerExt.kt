@@ -11,21 +11,24 @@ internal val KNOWN_TRACK_TYPES = listOf(C.TRACK_TYPE_TEXT, C.TRACK_TYPE_AUDIO, C
 internal val ExoPlayer.defaultTrackSelector: DefaultTrackSelector
     get() = trackSelector as DefaultTrackSelector
 
-internal fun ExoPlayer.setTrackInfo(trackInfo: TrackInfo) {
-    val indices = trackInfo.indices
-    val trackGroupArray = defaultTrackSelector.currentMappedTrackInfo
-        ?.getTrackGroups(indices.rendererIndex)
-        ?: error("Can't find track group array for renderer index ${indices.rendererIndex}")
-
-    defaultTrackSelector.parameters = defaultTrackSelector.parameters.buildUpon()
-        .clearSelectionOverrides(indices.rendererIndex)
-        .setRendererDisabled(indices.rendererIndex, !trackInfo.isSelected)
-        .setSelectionOverride(
-            indices.rendererIndex,
-            trackGroupArray,
-            DefaultTrackSelector.SelectionOverride(indices.groupIndex, indices.index)
-        )
-        .build()
+internal fun ExoPlayer.setTrackInfos(trackInfos: List<TrackInfo>) {
+    defaultTrackSelector.parameters = defaultTrackSelector.parameters.buildUpon().apply {
+        trackInfos.forEach { trackInfo ->
+            clearSelectionOverrides(trackInfo.indices.rendererIndex)
+        }
+        trackInfos.forEach { trackInfo ->
+            val indices = trackInfo.indices
+            val trackGroupArray = defaultTrackSelector.currentMappedTrackInfo
+                ?.getTrackGroups(indices.rendererIndex)
+                ?: error("Can't find track group array for renderer index ${indices.rendererIndex}")
+            setRendererDisabled(indices.rendererIndex, !trackInfo.isSelected)
+            setSelectionOverride(
+                indices.rendererIndex,
+                trackGroupArray,
+                DefaultTrackSelector.SelectionOverride(indices.groupIndex, indices.index)
+            )
+        }
+    }.build()
 }
 
 internal fun ExoPlayer.clearTrackOverrides(rendererIndex: Int) {

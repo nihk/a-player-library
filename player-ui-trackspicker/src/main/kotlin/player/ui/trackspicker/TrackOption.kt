@@ -2,12 +2,14 @@ package player.ui.trackspicker
 
 import player.common.TrackInfo
 
-internal sealed class TrackOption {
-    data class Auto(
-        val name: String,
-        val isSelected: Boolean,
-        val rendererIndex: Int
-    ) : TrackOption()
-
-    data class SingleTrack(val trackInfo: TrackInfo) : TrackOption()
+data class TrackOption(
+    val id: Int,
+    val name: String,
+    val isSelected: Boolean,
+    val action: Action
+) {
+    sealed class Action {
+        data class Clear(val rendererIndex: Int) : Action()
+        data class Set(val trackInfo: TrackInfo) : Action()
+    }
 }

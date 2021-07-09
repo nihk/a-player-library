@@ -6,50 +6,107 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.os.bundleOf
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
+import player.common.PlayerEvent
 import player.common.TrackInfo
 import player.common.requireNotNull
 import player.ui.controller.PlayerViewModel
 import player.ui.trackspicker.databinding.TracksFragmentBinding
 
-// todo: query tracks from VM directly and listen for changes
+// fixme: setting a video quality track should also (hidden to user) set every video quality
+//  below that one, too (?)
 class TracksPickerFragment : BottomSheetDialogFragment() {
-    private val trackInfos: List<TrackInfo>
-        get() = requireArguments().getParcelableArrayList<TrackInfo>(KEY_ARG_TRACK_INFOS)?.toList().requireNotNull()
+    private val trackType: TrackInfo.Type
+        get() = requireArguments().getSerializable(KEY_ARG_TRACK_TYPE).requireNotNull() as TrackInfo.Type
     private val viewModel: PlayerViewModel by viewModels({ requireParentFragment() })
+    private var binding: TracksFragmentBinding? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        val binding = TracksFragmentBinding.inflate(inflater, container, false)
-        val trackOptions = trackInfos.map { trackInfo -> TrackOption.SingleTrack(trackInfo) }
-        val hasManuallySetOption = trackInfos.any(TrackInfo::isManuallySet)
-        val auto = TrackOption.Auto(
-            name = "Auto",
-            isSelected = !hasManuallySetOption,
-            rendererIndex = trackInfos.first().indices.rendererIndex // They should all be the same
-        )
-
-        val adapter = TracksAdapter(listOf(auto) + trackOptions) { trackOption ->
-            val action = when (trackOption) {
-                is TrackOption.Auto -> TrackInfo.Action.Clear(trackOption.rendererIndex)
-                is TrackOption.SingleTrack -> TrackInfo.Action.Set(listOf(trackOption.trackInfo))
-            }
-            viewModel.handleTrackInfoAction(action)
-            dismiss()
-        }
-        binding.recyclerView.adapter = adapter
-
-        return binding.root
+        binding = TracksFragmentBinding.inflate(inflater, container, false)
+        return requireBinding().root
     }
 
-    companion object {
-        private const val KEY_ARG_TRACK_INFOS = "track_infos"
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        val adapter = TracksAdapter { action ->
+            when (action) {
+                is TrackOption.Action.Clear -> viewModel.clearTrackInfos(action.rendererIndex)
+                is TrackOption.Action.Set -> {
+                    val selected = action.trackInfo.copy(isSelected = true)
+                    viewModel.setTrackInfos(listOf(selected))
+                }
+            }
+            dismiss()
+        }
+        requireBinding().recyclerView.adapter = adapter
 
-        fun args(trackInfos: List<TrackInfo>): Bundle {
-            return bundleOf(KEY_ARG_TRACK_INFOS to trackInfos)
+        submitTrackOptions(adapter)
+
+        viewModel.playerEvents()
+            .onEach { playerEvent ->
+                when (playerEvent) {
+                    is PlayerEvent.OnTracksChanged -> {
+                        submitTrackOptions(adapter)
+                    }
+                }
+            }
+            .launchIn(viewLifecycleOwner.lifecycleScope)
+    }
+
+    private fun trackInfosBy(type: TrackInfo.Type): List<TrackInfo> {
+        return viewModel.tracks().filter { it.type == type }
+    }
+
+    private fun List<TrackInfo>.toTrackOptions(): List<TrackOption> {
+        return map { trackInfo ->
+            TrackOption(
+                id = trackInfo.indices.groupIndex, // fixme: this might not be consistent for other player impl's, e.g. MediaPlayer
+                name = trackInfo.name ?: "Unknown",
+                isSelected = trackInfo.isManuallySet,
+                action = TrackOption.Action.Set(trackInfo)
+            )
+        }
+    }
+
+    private fun submitTrackOptions(adapter: TracksAdapter) {
+        val trackInfos = trackInfosBy(trackType)
+        val trackOptions = if (trackInfos.isEmpty()) {
+            // todo: this is a bit jarring when tracks update/change, which puts the player in a
+            //  temporary state where there are no tracks, but I also don't want tracks to be
+            //  selectable when none exist.
+            emptyList()
+        } else {
+            val hasManuallySetOption = trackInfos.any(TrackInfo::isManuallySet)
+            val auto = TrackOption(
+                id = -1,
+                name = "Auto",
+                isSelected = !hasManuallySetOption,
+                action = TrackOption.Action.Clear(trackInfos.first().indices.rendererIndex) // These will all be the same
+            )
+            listOf(auto) + trackInfosBy(trackType).toTrackOptions()
+        }
+        adapter.submitList(trackOptions)
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        binding = null
+    }
+
+    private fun requireBinding() = requireNotNull(binding)
+
+    companion object {
+        private const val KEY_ARG_TRACK_TYPE = "track_type"
+
+        fun args(type: TrackInfo.Type): Bundle {
+            return bundleOf(KEY_ARG_TRACK_TYPE to type)
         }
     }
 }

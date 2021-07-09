@@ -6,16 +6,16 @@ import player.common.TrackInfo
 import player.ui.trackspicker.TracksPickerFragment
 
 interface Navigator {
-    fun toTracksPicker(trackInfos: List<TrackInfo>)
+    fun toTracksPicker(type: TrackInfo.Type)
 
     companion object {
         operator fun invoke(fragmentManager: FragmentManager): Navigator = Default(fragmentManager)
     }
 
     class Default(private val fragmentManager: FragmentManager) : Navigator {
-        override fun toTracksPicker(trackInfos: List<TrackInfo>) {
+        override fun toTracksPicker(type: TrackInfo.Type) {
             fragmentManager.commit {
-                add(TracksPickerFragment::class.java, TracksPickerFragment.args(trackInfos), null)
+                add(TracksPickerFragment::class.java, TracksPickerFragment.args(type), null)
             }
         }
     }
