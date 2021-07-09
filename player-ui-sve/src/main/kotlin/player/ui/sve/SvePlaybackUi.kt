@@ -21,10 +21,12 @@ import player.common.PlayerViewWrapper
 import player.common.SeekData
 import player.ui.common.ShareDelegate
 import player.common.requireNotNull
+import player.ui.common.DefaultSeekBarListener
 import player.ui.common.PipController
 import player.ui.common.PlaybackUi
 import player.ui.common.PlayerArguments
 import player.ui.common.PlayerController
+import player.ui.common.SeekBarListener
 import player.ui.common.SharedDependencies
 import player.ui.common.TimeFormatter
 import player.ui.common.TracksState
@@ -38,7 +40,7 @@ import kotlin.time.toDuration
 // todo: move title TextView to ViewHolder?
 class SvePlaybackUi(
     private val activity: FragmentActivity,
-    private val deps: SharedDependencies,
+    private val seekBarListenerFactory: SeekBarListener.Factory,
     private val playerViewWrapperFactory: PlayerViewWrapper.Factory,
     private val pipController: PipController,
     private val playerController: PlayerController,
@@ -53,7 +55,7 @@ class SvePlaybackUi(
     override val view: View = LayoutInflater.from(activity)
         .inflate(R.layout.sve_playback_ui, null)
     private val binding = SvePlaybackUiBinding.bind(view)
-    private val seekBarListener = deps.seekBarListenerFactory.create(
+    private val seekBarListener = seekBarListenerFactory.create(
         updateProgress = { position ->
             updateTimestamps(position, playerController.latestSeekData().duration)
         },
@@ -255,7 +257,7 @@ class SvePlaybackUi(
         ): PlaybackUi {
             return SvePlaybackUi(
                 activity = activity,
-                deps = deps,
+                seekBarListenerFactory = DefaultSeekBarListener.Factory(),
                 playerViewWrapperFactory = playerViewWrapperFactory,
                 pipController = pipController,
                 playerController = playerController,

@@ -16,10 +16,12 @@ import player.common.SeekData
 import player.ui.common.ShareDelegate
 import player.common.TrackInfo
 import player.common.requireNotNull
+import player.ui.common.DefaultSeekBarListener
 import player.ui.common.PipController
 import player.ui.common.PlaybackUi
 import player.ui.common.PlayerArguments
 import player.ui.common.PlayerController
+import player.ui.common.SeekBarListener
 import player.ui.common.SharedDependencies
 import player.ui.common.TimeFormatter
 import player.ui.common.TracksState
@@ -33,6 +35,7 @@ import kotlin.time.toDuration
 class DefaultPlaybackUi(
     private val activity: FragmentActivity,
     private val deps: SharedDependencies,
+    private val seekBarListenerFactory: SeekBarListener.Factory,
     private val playerViewWrapperFactory: PlayerViewWrapper.Factory,
     private val pipController: PipController,
     private val playerController: PlayerController,
@@ -47,7 +50,7 @@ class DefaultPlaybackUi(
         .inflate(R.layout.default_playback_ui, null)
 
     private val binding = DefaultPlaybackUiBinding.bind(view)
-    private val seekBarListener = deps.seekBarListenerFactory.create(
+    private val seekBarListener = seekBarListenerFactory.create(
         updateProgress = { position ->
             updateTimestamps(position, playerController.latestSeekData().duration)
         },
@@ -193,6 +196,7 @@ class DefaultPlaybackUi(
         ): PlaybackUi {
             return DefaultPlaybackUi(
                 activity = activity,
+                seekBarListenerFactory = DefaultSeekBarListener.Factory(),
                 deps = deps,
                 playerViewWrapperFactory = playerViewWrapperFactory,
                 pipController = pipController,

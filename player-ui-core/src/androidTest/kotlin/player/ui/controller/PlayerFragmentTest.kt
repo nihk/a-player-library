@@ -103,7 +103,6 @@ class PlayerFragmentTest {
         private val playbackInfoResolver = DefaultPlaybackInfoResolver()
         private val seekDataUpdater = FakeSeekDataUpdater()
         private val navigator = NoOpNavigator()
-        private val seekBarListenerFactory = DefaultSeekBarListener.Factory()
         private val scenario: FragmentScenario<PlayerFragment>
         private val playbackUi = FakePlaybackUi()
         private val playbackUiFactory = FakePlaybackUiFactory(playbackUi)
@@ -130,7 +129,6 @@ class PlayerFragmentTest {
                     playerViewWrapperFactory = playerViewWrapperFactory,
                     errorRenderer = errorRenderer,
                     deps = SharedDependencies(
-                        seekBarListenerFactory = seekBarListenerFactory,
                         navigator = navigator,
                     ),
                     pipControllerFactory = pipControllerFactory,

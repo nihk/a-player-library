@@ -97,7 +97,6 @@ class DefaultPlaybackUiTest {
         private val timeFormatter = FakeTimeFormatter()
         private val navigator = FakeNavigator()
         private val deps = SharedDependencies(
-            seekBarListenerFactory = seekBarListenerFactory,
             navigator = navigator,
         )
         private val playerViewWrapper = FakePlayerViewWrapper(ApplicationProvider.getApplicationContext())
@@ -116,6 +115,7 @@ class DefaultPlaybackUiTest {
                 defaultPlaybackUi = DefaultPlaybackUi(
                     activity = testActivity,
                     deps = deps,
+                    seekBarListenerFactory = seekBarListenerFactory,
                     playerViewWrapperFactory = playerViewWrapperFactory,
                     pipController = pipController,
                     playerController = playerController,

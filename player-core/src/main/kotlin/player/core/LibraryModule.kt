@@ -10,7 +10,6 @@ import player.ui.common.PipController
 import player.ui.common.SharedDependencies
 import player.ui.common.isMinOsForPip
 import player.ui.controller.AndroidPipController
-import player.ui.controller.DefaultSeekBarListener
 import player.ui.controller.NoOpPipController
 import player.ui.controller.PlayerFragment
 import player.ui.controller.PlayerViewModel
@@ -38,7 +37,6 @@ internal class LibraryModule(
                 playerViewWrapperFactory = module.playerViewWrapperFactory,
                 errorRenderer = SnackbarErrorRenderer(),
                 deps = SharedDependencies(
-                    seekBarListenerFactory = DefaultSeekBarListener.Factory(),
                     navigator = navigator,
                 ),
                 pipControllerFactory = pipControllerFactory,

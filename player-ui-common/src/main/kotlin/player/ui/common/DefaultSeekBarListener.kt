@@ -1,7 +1,6 @@
-package player.ui.controller
+package player.ui.common
 
 import android.widget.SeekBar
-import player.ui.common.SeekBarListener
 import kotlin.time.Duration
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
