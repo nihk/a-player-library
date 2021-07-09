@@ -16,7 +16,6 @@ import player.common.SeekData
 import player.ui.common.ShareDelegate
 import player.common.TrackInfo
 import player.common.requireNotNull
-import player.ui.common.Navigator
 import player.ui.common.PipController
 import player.ui.common.PlaybackUi
 import player.ui.common.PlayerArguments
