@@ -31,6 +31,7 @@ import player.ui.common.ShareDelegate
 import player.ui.common.TimeFormatter
 import player.ui.common.TracksState
 import player.ui.common.UiState
+import player.ui.common.setOnSingleClickListener
 import player.ui.sve.databinding.SvePlaybackUiBinding
 import player.ui.sve.databinding.SveTabItemBinding
 import kotlin.time.Duration
@@ -191,7 +192,7 @@ class SvePlaybackUi(
         shareDelegate?.run {
             binding.share.apply {
                 isVisible = true
-                setOnClickListener {
+                setOnSingleClickListener {
                     share(activity, adapter.currentList[binding.viewPager.currentItem].uri)
                 }
             }

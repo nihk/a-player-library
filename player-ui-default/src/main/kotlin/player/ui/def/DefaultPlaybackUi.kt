@@ -26,6 +26,7 @@ import player.ui.common.ShareDelegate
 import player.ui.common.TimeFormatter
 import player.ui.common.TracksState
 import player.ui.common.UiState
+import player.ui.common.setOnSingleClickListener
 import player.ui.def.databinding.DefaultPlaybackUiBinding
 import player.ui.trackspicker.TracksPickerFragment
 import kotlin.time.Duration
@@ -141,7 +142,7 @@ class DefaultPlaybackUi(
         shareDelegate?.run {
             binding.share.apply {
                 isVisible = true
-                setOnClickListener {
+                setOnSingleClickListener {
                     share(activity, playerArguments.uri)
                 }
             }
