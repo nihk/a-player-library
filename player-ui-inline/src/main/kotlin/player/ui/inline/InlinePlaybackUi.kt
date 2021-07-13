@@ -5,7 +5,6 @@ import android.view.LayoutInflater
 import android.view.View
 import androidx.activity.OnBackPressedCallback
 import androidx.core.view.isVisible
-import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.savedstate.SavedStateRegistryOwner
 import player.common.AppPlayer
@@ -120,7 +119,7 @@ class InlinePlaybackUi(
         private val onFullscreenChangedCallback: OnFullscreenChangedCallback
     ) : PlaybackUi.Factory {
         override fun create(
-            host: Fragment,
+            host: FragmentActivity,
             playerViewWrapperFactory: PlayerViewWrapper.Factory,
             pipController: PipController,
             playerController: PlayerController,
@@ -128,7 +127,7 @@ class InlinePlaybackUi(
             registryOwner: SavedStateRegistryOwner
         ): PlaybackUi {
             return InlinePlaybackUi(
-                activity = host.requireActivity(),
+                activity = host,
                 playerViewWrapperFactory = playerViewWrapperFactory,
                 pipController = pipController,
                 playerController = playerController,

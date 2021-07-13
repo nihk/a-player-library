@@ -192,7 +192,7 @@ class DefaultPlaybackUi(
         )
 
         override fun create(
-            host: Fragment,
+            host: FragmentActivity,
             playerViewWrapperFactory: PlayerViewWrapper.Factory,
             pipController: PipController,
             playerController: PlayerController,
@@ -200,9 +200,9 @@ class DefaultPlaybackUi(
             registryOwner: SavedStateRegistryOwner
         ): PlaybackUi {
             return DefaultPlaybackUi(
-                activity = host.requireActivity(),
+                activity = host,
                 seekBarListenerFactory = DefaultSeekBarListener.Factory(),
-                navigator = Navigator(host.childFragmentManager),
+                navigator = Navigator(host.supportFragmentManager),
                 playerViewWrapperFactory = playerViewWrapperFactory,
                 pipController = pipController,
                 playerController = playerController,

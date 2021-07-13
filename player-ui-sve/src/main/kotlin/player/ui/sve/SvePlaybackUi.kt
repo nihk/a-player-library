@@ -7,7 +7,6 @@ import android.view.View
 import android.widget.SeekBar
 import androidx.core.os.bundleOf
 import androidx.core.view.isVisible
-import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
@@ -248,7 +247,7 @@ class SvePlaybackUi(
         private val shareDelegate: ShareDelegate? = null
     ) : PlaybackUi.Factory {
         override fun create(
-            host: Fragment,
+            host: FragmentActivity,
             playerViewWrapperFactory: PlayerViewWrapper.Factory,
             pipController: PipController,
             playerController: PlayerController,
@@ -256,7 +255,7 @@ class SvePlaybackUi(
             registryOwner: SavedStateRegistryOwner
         ): PlaybackUi {
             return SvePlaybackUi(
-                activity = host.requireActivity(),
+                activity = host,
                 seekBarListenerFactory = DefaultSeekBarListener.Factory(),
                 playerViewWrapperFactory = playerViewWrapperFactory,
                 pipController = pipController,

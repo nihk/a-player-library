@@ -3,6 +3,7 @@ package player.ui.common
 import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentActivity
 import androidx.savedstate.SavedStateRegistry
 import androidx.savedstate.SavedStateRegistryOwner
 import player.common.AppPlayer
@@ -26,7 +27,7 @@ interface PlaybackUi : SavedStateRegistry.SavedStateProvider {
         val fragmentMap: Map<Class<out Fragment>, () -> Fragment> get() = emptyMap()
 
         fun create(
-            host: Fragment,
+            host: FragmentActivity,
             playerViewWrapperFactory: PlayerViewWrapper.Factory,
             pipController: PipController,
             playerController: PlayerController,

@@ -1,6 +1,6 @@
 package player.ui.test
 
-import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentActivity
 import androidx.savedstate.SavedStateRegistryOwner
 import player.common.PlayerViewWrapper
 import player.ui.common.PipController
@@ -10,7 +10,7 @@ import player.ui.common.PlayerController
 
 class FakePlaybackUiFactory(private val playbackUi: PlaybackUi) : PlaybackUi.Factory {
     override fun create(
-        host: Fragment,
+        host: FragmentActivity,
         playerViewWrapperFactory: PlayerViewWrapper.Factory,
         pipController: PipController,
         playerController: PlayerController,

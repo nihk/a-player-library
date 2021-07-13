@@ -9,11 +9,19 @@ import player.ui.common.isMinOsForPip
 import player.ui.controller.AndroidPipController
 import player.ui.controller.NoOpPipController
 import player.ui.controller.PlayerFragment
+import player.ui.controller.PlayerView
 import player.ui.controller.PlayerViewModel
 import player.ui.controller.SnackbarErrorRenderer
 
 internal class LibraryModule(activity: FragmentActivity) {
     val fragmentFactory: FragmentFactory get() = LibraryFragmentFactory(fragmentMap)
+    val playerViewFactory: PlayerView.Factory get() = PlayerView.Factory(
+        vmFactory = playerViewModelFactory,
+        playerViewWrapperFactory = module.playerViewWrapperFactory,
+        errorRenderer = SnackbarErrorRenderer(),
+        pipControllerFactory = pipControllerFactory,
+        playbackUiFactories = LibraryInitializer.playbackUiFactories()
+    )
 
     private val module: PlayerModule = LibraryInitializer.playerModule()
 

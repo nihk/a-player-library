@@ -52,6 +52,14 @@
             tools:ignore="HardcodedText" />
 
         <Button
+            android:id="@+id/to_player_view"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="view"
+            tools:ignore="HardcodedText" />
+
+        <Button
             android:id="@+id/to_player_fragment"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
