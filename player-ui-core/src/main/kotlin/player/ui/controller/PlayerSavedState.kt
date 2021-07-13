@@ -3,21 +3,23 @@ package player.ui.controller
 import androidx.lifecycle.SavedStateHandle
 import player.common.PlayerState
 import player.common.TrackInfo
+import java.util.*
 
-class PlayerSavedState(private val handle: SavedStateHandle) {
+class PlayerSavedState(
+    uuid: UUID,
+    private val handle: SavedStateHandle
+) {
     val manuallySetTracks: List<TrackInfo>
-        get() = handle[KEY_MANUALLY_SET_TRACK_INFOS] ?: emptyList()
+        get() = handle[keyManuallySetTrackInfos] ?: emptyList()
 
     val state: PlayerState
-        get() = handle[KEY_PLAYER_STATE] ?: PlayerState.INITIAL
+        get() = handle[keyPlayerState] ?: PlayerState.INITIAL
 
     fun save(playerState: PlayerState?, tracks: List<TrackInfo>) {
-        handle[KEY_PLAYER_STATE] = playerState
-        handle[KEY_MANUALLY_SET_TRACK_INFOS] = tracks.filter(TrackInfo::isManuallySet)
+        handle[keyPlayerState] = playerState
+        handle[keyManuallySetTrackInfos] = tracks.filter(TrackInfo::isManuallySet)
     }
 
-    companion object {
-        private const val KEY_PLAYER_STATE = "player_state"
-        private const val KEY_MANUALLY_SET_TRACK_INFOS = "manually_set_track_infos"
-    }
+    private val keyManuallySetTrackInfos = "$uuid-manually_set_track_infos"
+    private val keyPlayerState = "$uuid-player_state"
 }

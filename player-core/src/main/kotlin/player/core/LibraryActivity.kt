@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.os.Process
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.commit
 import player.common.requireNotNull
 import player.ui.common.OnUserLeaveHintViewModel
 import player.ui.common.PlayerArguments
@@ -19,17 +20,12 @@ abstract class LibraryActivity : AppCompatActivity(R.layout.library_activity) {
     private val playerArguments get() = intent.extras?.toPlayerArguments().requireNotNull()
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        val module = LibraryModule(this)
-        supportFragmentManager.fragmentFactory = module.fragmentFactory
         super.onCreate(savedInstanceState)
 
         if (savedInstanceState == null) {
-            supportFragmentManager.beginTransaction()
-                .replace(
-                    R.id.container,
-                    LibraryFragment.create(playerArguments)
-                )
-                .commit()
+            supportFragmentManager.commit {
+                replace(R.id.container, LibraryFragment.create(playerArguments))
+            }
         }
     }
 

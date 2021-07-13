@@ -6,8 +6,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.widget.SeekBar
 import androidx.core.os.bundleOf
+import androidx.core.view.doOnAttach
+import androidx.core.view.doOnDetach
 import androidx.core.view.isVisible
-import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
@@ -65,14 +66,27 @@ class SvePlaybackUi(
     private var didRestoreViewPagerState = false
     private val playerViewWrapper = playerViewWrapperFactory.create(activity)
     private val adapter = SveAdapter(playerViewWrapper, imageLoader)
+    private val observer = LifecycleEventObserver { _, event ->
+        when (event) {
+            Lifecycle.Event.ON_CREATE -> {
+                registryOwner.savedStateRegistry.registerSavedStateProvider(PROVIDER, this)
+            }
+        }
+    }
 
     init {
-        registryOwner.lifecycle.addObserver(LifecycleEventObserver { _, event ->
-            if (event == Lifecycle.Event.ON_CREATE) {
-                val registry = registryOwner.savedStateRegistry
-                registry.registerSavedStateProvider(PROVIDER, this)
+        registryOwner.lifecycle.addObserver(observer)
+        view.doOnAttach {
+            // Nested because otherwise it will be called immediately, before View is attached.
+            view.doOnDetach {
+                val isPlayerClosed = !activity.isChangingConfigurations
+                if (isPlayerClosed) {
+                    registryOwner.lifecycle.removeObserver(observer)
+                    registryOwner.savedStateRegistry.unregisterSavedStateProvider(PROVIDER)
+                }
             }
-        })
+        }
+
         bindControls()
     }
 
@@ -248,7 +262,7 @@ class SvePlaybackUi(
         private val shareDelegate: ShareDelegate? = null
     ) : PlaybackUi.Factory {
         override fun create(
-            host: Fragment,
+            host: FragmentActivity,
             playerViewWrapperFactory: PlayerViewWrapper.Factory,
             pipController: PipController,
             playerController: PlayerController,
@@ -256,7 +270,7 @@ class SvePlaybackUi(
             registryOwner: SavedStateRegistryOwner
         ): PlaybackUi {
             return SvePlaybackUi(
-                activity = host.requireActivity(),
+                activity = host,
                 seekBarListenerFactory = DefaultSeekBarListener.Factory(),
                 playerViewWrapperFactory = playerViewWrapperFactory,
                 pipController = pipController,

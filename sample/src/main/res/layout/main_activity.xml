@@ -52,6 +52,14 @@
             tools:ignore="HardcodedText" />
 
         <Button
+            android:id="@+id/to_player_view"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="view"
+            tools:ignore="HardcodedText" />
+
+        <Button
             android:id="@+id/to_player_fragment"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -74,7 +82,6 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent">
 
         <Button
@@ -85,26 +92,18 @@
 
     </FrameLayout>
 
-    <nick.sample.ui.DraggableFrameLayout
-        android:id="@+id/smallscreen_container"
+    <include
+        android:id="@+id/inline_container"
+        layout="@layout/smallscreen"
         android:layout_width="0dp"
-        android:layout_height="150dp"
-        android:layout_margin="16dp"
-        app:layout_constraintBottom_toTopOf="@id/inline_button_container"
-        app:layout_constraintDimensionRatio="16:9"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="1.0"
-        app:layout_constraintStart_toStartOf="parent">
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
-        <FrameLayout
-            android:id="@+id/movable_container"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent" />
-
-    </nick.sample.ui.DraggableFrameLayout>
-
-    <FrameLayout
-        android:id="@+id/fullscreen_container"
+    <player.core.LibraryView
+        android:id="@+id/library_view"
         android:layout_width="0dp"
         android:layout_height="0dp"
         app:layout_constraintBottom_toBottomOf="parent"

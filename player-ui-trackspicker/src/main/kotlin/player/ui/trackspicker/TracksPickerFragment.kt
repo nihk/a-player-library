@@ -5,7 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.os.bundleOf
-import androidx.fragment.app.viewModels
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import kotlinx.coroutines.flow.launchIn
@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.onEach
 import player.common.PlayerEvent
 import player.common.TrackInfo
 import player.common.requireNotNull
+import player.ui.controller.PlayerNonConfig
 import player.ui.controller.PlayerViewModel
 import player.ui.trackspicker.databinding.TracksFragmentBinding
 
@@ -21,7 +22,10 @@ import player.ui.trackspicker.databinding.TracksFragmentBinding
 class TracksPickerFragment : BottomSheetDialogFragment() {
     private val trackType: TrackInfo.Type
         get() = requireArguments().getSerializable(KEY_ARG_TRACK_TYPE).requireNotNull() as TrackInfo.Type
-    private val viewModel: PlayerViewModel by viewModels({ requireParentFragment() })
+    private val viewModel: PlayerViewModel by activityViewModels()
+    private val playerNonConfig: PlayerNonConfig by lazy {
+        viewModel.getLatest().requireNotNull()
+    }
     private var binding: TracksFragmentBinding? = null
 
     override fun onCreateView(
@@ -37,10 +41,10 @@ class TracksPickerFragment : BottomSheetDialogFragment() {
         super.onViewCreated(view, savedInstanceState)
         val adapter = TracksAdapter { action ->
             when (action) {
-                is TrackOption.Action.Clear -> viewModel.clearTrackInfos(action.rendererIndex)
+                is TrackOption.Action.Clear -> playerNonConfig.clearTrackInfos(action.rendererIndex)
                 is TrackOption.Action.Set -> {
                     val selected = action.trackInfo.copy(isSelected = true)
-                    viewModel.setTrackInfos(listOf(selected))
+                    playerNonConfig.setTrackInfos(listOf(selected))
                 }
             }
             dismiss()
@@ -49,7 +53,7 @@ class TracksPickerFragment : BottomSheetDialogFragment() {
 
         submitTrackOptions(adapter)
 
-        viewModel.playerEvents()
+        playerNonConfig.playerEvents()
             .onEach { playerEvent ->
                 when (playerEvent) {
                     is PlayerEvent.OnTracksChanged -> {
@@ -61,7 +65,7 @@ class TracksPickerFragment : BottomSheetDialogFragment() {
     }
 
     private fun trackInfosBy(type: TrackInfo.Type): List<TrackInfo> {
-        return viewModel.tracks().filter { it.type == type }
+        return playerNonConfig.tracks().filter { it.type == type }
     }
 
     private fun List<TrackInfo>.toTrackOptions(): List<TrackOption> {
@@ -105,8 +109,10 @@ class TracksPickerFragment : BottomSheetDialogFragment() {
     companion object {
         private const val KEY_ARG_TRACK_TYPE = "track_type"
 
-        fun args(type: TrackInfo.Type): Bundle {
-            return bundleOf(KEY_ARG_TRACK_TYPE to type)
+        fun create(type: TrackInfo.Type): TracksPickerFragment {
+            return TracksPickerFragment().apply {
+                arguments = bundleOf(KEY_ARG_TRACK_TYPE to type)
+            }
         }
     }
 }

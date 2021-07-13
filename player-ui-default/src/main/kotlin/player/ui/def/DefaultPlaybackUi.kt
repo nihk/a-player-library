@@ -28,7 +28,6 @@ import player.ui.common.TracksState
 import player.ui.common.UiState
 import player.ui.common.setOnSingleClickListener
 import player.ui.def.databinding.DefaultPlaybackUiBinding
-import player.ui.trackspicker.TracksPickerFragment
 import kotlin.time.Duration
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
@@ -187,12 +186,8 @@ class DefaultPlaybackUi(
         private val timeFormatter: TimeFormatter,
         private val shareDelegate: ShareDelegate? = null,
     ) : PlaybackUi.Factory {
-        override val fragmentMap: Map<Class<out Fragment>, () -> Fragment> = mapOf(
-            TracksPickerFragment::class.java to { TracksPickerFragment() }
-        )
-
         override fun create(
-            host: Fragment,
+            host: FragmentActivity,
             playerViewWrapperFactory: PlayerViewWrapper.Factory,
             pipController: PipController,
             playerController: PlayerController,
@@ -200,9 +195,9 @@ class DefaultPlaybackUi(
             registryOwner: SavedStateRegistryOwner
         ): PlaybackUi {
             return DefaultPlaybackUi(
-                activity = host.requireActivity(),
+                activity = host,
                 seekBarListenerFactory = DefaultSeekBarListener.Factory(),
-                navigator = Navigator(host.childFragmentManager),
+                navigator = Navigator(host.supportFragmentManager),
                 playerViewWrapperFactory = playerViewWrapperFactory,
                 pipController = pipController,
                 playerController = playerController,

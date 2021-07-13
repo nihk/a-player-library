@@ -3,7 +3,6 @@ package nick.sample
 import android.app.Application
 import nick.sample.data.AndroidShareDelegate
 import nick.sample.data.CoilImageLoader
-import nick.sample.data.InlineCloseDelegate
 import nick.sample.data.LoggingPlayerEventDelegate
 import nick.sample.data.SampleCloseDelegate
 import nick.sample.data.SampleOnFullscreenChangedCallback
@@ -41,7 +40,7 @@ class App : Application() {
                     timeFormatter = timeFormatter
                 ),
                 InlinePlaybackUi.Factory(
-                    closeDelegate = InlineCloseDelegate(),
+                    closeDelegate = closeDelegate,
                     onVideoSizeChangedCallback = SampleOnVideoSizeChangedCallback(),
                     onFullscreenChangedCallback = SampleOnFullscreenChangedCallback()
                 )

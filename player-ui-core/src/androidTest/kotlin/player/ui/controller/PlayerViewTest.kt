@@ -1,6 +1,10 @@
 package player.ui.controller
 
+import android.os.Bundle
+import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.testing.FragmentScenario
 import androidx.fragment.app.testing.launchFragmentInContainer
 import androidx.lifecycle.Lifecycle
@@ -17,23 +21,23 @@ import player.common.PlayerEvent
 import player.common.PlayerException
 import player.test.FakeAppPlayer
 import player.test.FakeAppPlayerFactory
-import player.test.FakePlayerEventStream
 import player.test.FakePlayerEventDelegate
+import player.test.FakePlayerEventStream
 import player.test.FakePlayerViewWrapper
 import player.test.FakeSeekDataUpdater
 import player.ui.common.PictureInPictureConfig
 import player.ui.common.PlayerArguments
-import player.ui.common.toBundle
 import player.ui.test.FakePipController
 import player.ui.test.FakePlaybackUi
 import player.ui.test.FakePlaybackUiFactory
+import java.util.*
 
-class PlayerFragmentTest {
+class PlayerViewTest {
     @get:Rule
     val coroutinesTestRule = CoroutinesTestRule()
 
     @Test
-    fun appPlayerWasTornDownWhenFragmentIsDestroyed() = playerFragment {
+    fun appPlayerWasTornDownWhenFragmentIsDestroyed() = playerView {
         assertPlayerCreated(times = 1)
         assertPlayerAttached(times = 1)
         assertPlayerDetached(times = 0)
@@ -48,7 +52,7 @@ class PlayerFragmentTest {
     }
 
     @Test
-    fun appPlayerWasNotReleasedAcrossFragmentRecreation() = playerFragment {
+    fun appPlayerWasNotReleasedAcrossFragmentRecreation() = playerView {
         assertPlayerCreated(times = 1)
         assertPlayerAttached(times = 1)
         assertPlayerDetached(times = 0)
@@ -63,30 +67,30 @@ class PlayerFragmentTest {
     }
 
     @Test
-    fun errorEmissionRendersMessage() = playerFragment {
+    fun errorEmissionRendersMessage() = playerView {
         emit(PlayerEvent.OnPlayerError(PlayerException("Message")))
         assertErrorMessageRendered("Message")
     }
 
     @Test
-    fun pipEnabledStartsPipOnBackPress() = playerFragment(pipOnBackPress = true) {
+    fun pipEnabledStartsPipOnBackPress() = playerView(pipOnBackPress = true) {
         Espresso.pressBack()
 
         assertPipOnBackPress(didEnter = true)
     }
 
-    private fun playerFragment(
+    private fun playerView(
         pipOnBackPress: Boolean = false,
-        block: PlayerFragmentRobot.() -> Unit
+        block: PlayerViewRobot.() -> Unit
     ) {
         val pipConfig = PictureInPictureConfig(
             enabled = pipOnBackPress,
             onBackPresses = pipOnBackPress
         )
-        PlayerFragmentRobot(pipConfig).block()
+        PlayerViewRobot(pipConfig).block()
     }
 
-    private class PlayerFragmentRobot(
+    private class PlayerViewRobot(
         val pipConfig: PictureInPictureConfig
     ) {
         private val appPlayer = FakeAppPlayer()
@@ -100,33 +104,40 @@ class PlayerFragmentTest {
         private val errorRenderer = FakeErrorRenderer()
         private val playbackInfoResolver = DefaultPlaybackInfoResolver()
         private val seekDataUpdater = FakeSeekDataUpdater()
-        private val scenario: FragmentScenario<PlayerFragment>
+        private val scenario: FragmentScenario<TestFragment>
         private val playbackUi = FakePlaybackUi()
         private val playbackUiFactory = FakePlaybackUiFactory(playbackUi)
+        private val playerNonConfigFactory = PlayerNonConfig.Factory(
+            appPlayerFactory = appPlayerFactory,
+            playerEventStream = playerEventStream,
+            playerEventDelegate = playerEventDelegate,
+            playbackInfoResolver = playbackInfoResolver,
+            seekDataUpdater = seekDataUpdater
+        )
+        private val vmFactory = PlayerViewModel.Factory(
+            playerNonConfigFactory = playerNonConfigFactory
+        )
+        private val playerViewWrapperFactory = FakePlayerViewWrapper.Factory(playerViewWrapper)
+        private val args = PlayerArguments(
+            uri = "",
+            pipConfig = pipConfig,
+            playbackUiFactory = FakePlaybackUiFactory::class.java
+        )
+        private val playerViewFactory = PlayerView.Factory(
+            vmFactory = vmFactory,
+            playerViewWrapperFactory = playerViewWrapperFactory,
+            errorRenderer = errorRenderer,
+            pipControllerFactory = pipControllerFactory,
+            playbackUiFactories = listOf(playbackUiFactory)
+        )
+        private val uuid = UUID.randomUUID()
 
         init {
-            val vmFactory = PlayerViewModel.Factory(
-                appPlayerFactory = appPlayerFactory,
-                playerEventStream = playerEventStream,
-                playerEventDelegate = playerEventDelegate,
-                playbackInfoResolver = playbackInfoResolver,
-                seekDataUpdater = seekDataUpdater
-            )
-
-            val playerViewWrapperFactory = FakePlayerViewWrapper.Factory(playerViewWrapper)
-
-            val args = PlayerArguments(
-                uri = "",
-                pipConfig = pipConfig,
-                playbackUiFactory = FakePlaybackUiFactory::class.java
-            )
-            scenario = launchFragmentInContainer(fragmentArgs = args.toBundle()) {
-                PlayerFragment(
-                    vmFactory = vmFactory,
-                    playerViewWrapperFactory = playerViewWrapperFactory,
-                    errorRenderer = errorRenderer,
-                    pipControllerFactory = pipControllerFactory,
-                    playbackUiFactories = listOf(playbackUiFactory)
+            scenario = launchFragmentInContainer {
+                TestFragment(
+                    playerViewFactory = playerViewFactory,
+                    playerArguments = args,
+                    uuid = uuid
                 )
             }
         }
@@ -177,5 +188,23 @@ class FakeErrorRenderer : ErrorRenderer {
     override fun render(view: View, message: String) {
         didRender = true
         collectedMessage = message
+    }
+}
+
+class TestFragment(
+    private val playerViewFactory: PlayerView.Factory,
+    private val playerArguments: PlayerArguments,
+    private val uuid: UUID
+) : Fragment() {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        return playerViewFactory.create(
+            requireContext(),
+            playerArguments,
+            uuid
+        )
     }
 }
