@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
+import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import androidx.activity.ComponentActivity
@@ -23,6 +24,8 @@ import player.ui.common.PipController
 import player.ui.common.PlaybackUi
 import player.ui.common.PlayerArguments
 
+// note: multiple PlayerViews will all retrieve the same ViewModel
+// todo: embed this in PlayerFragment?
 @SuppressLint("ViewConstructor")
 class PlayerView(
     context: Context,
@@ -59,6 +62,7 @@ class PlayerView(
     private val activity: ComponentActivity get() = context as ComponentActivity
 
     init {
+        id = View.generateViewId()
         keepScreenOn = true
         isClickable = true
         isFocusable = true
