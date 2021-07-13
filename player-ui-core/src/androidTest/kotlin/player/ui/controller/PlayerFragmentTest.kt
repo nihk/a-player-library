@@ -18,7 +18,7 @@ import player.common.PlayerException
 import player.test.FakeAppPlayer
 import player.test.FakeAppPlayerFactory
 import player.test.FakePlayerEventStream
-import player.test.FakePlayerTelemetry
+import player.test.FakePlayerEventDelegate
 import player.test.FakePlayerViewWrapper
 import player.test.FakeSeekDataUpdater
 import player.ui.common.PictureInPictureConfig
@@ -94,7 +94,7 @@ class PlayerFragmentTest {
         private val playerViewWrapper = FakePlayerViewWrapper(ApplicationProvider.getApplicationContext())
         private val eventFlow = MutableStateFlow<PlayerEvent?>(null)
         private val playerEventStream = FakePlayerEventStream(eventFlow.filterNotNull())
-        private val telemetry = FakePlayerTelemetry()
+        private val playerEventDelegate = FakePlayerEventDelegate()
         private val pipController = FakePipController()
         private val pipControllerFactory = FakePipController.Factory(pipController)
         private val errorRenderer = FakeErrorRenderer()
@@ -108,7 +108,7 @@ class PlayerFragmentTest {
             val vmFactory = PlayerViewModel.Factory(
                 appPlayerFactory = appPlayerFactory,
                 playerEventStream = playerEventStream,
-                telemetry = telemetry,
+                playerEventDelegate = playerEventDelegate,
                 playbackInfoResolver = playbackInfoResolver,
                 seekDataUpdater = seekDataUpdater
             )

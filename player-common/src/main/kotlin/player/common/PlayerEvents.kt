@@ -14,7 +14,6 @@ sealed class PlayerEvent {
     data class OnTracksChanged(val trackInfos: List<TrackInfo>) : PlayerEvent()
     data class OnPlayerError(val exception: PlayerException) : PlayerEvent()
     data class OnIsPlayingChanged(val isPlaying: Boolean) : PlayerEvent()
-    data class OnAspectRatioChanged(val aspectRatio: AspectRatio): PlayerEvent()
 }
 
 interface PlayerEventStream {

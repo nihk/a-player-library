@@ -14,6 +14,7 @@ object Modules {
             const val common = "$prefix-common"
             const val trackspicker = "$prefix-trackspicker"
             const val test = "$prefix-test"
+            const val inline = "$prefix-inline"
         }
     }
 }

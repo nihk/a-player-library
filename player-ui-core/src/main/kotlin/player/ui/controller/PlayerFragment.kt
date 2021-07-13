@@ -18,6 +18,7 @@ import player.ui.common.toPlayerArguments
 import player.ui.core.R
 import player.ui.core.databinding.PlayerFragmentBinding
 
+// todo: to what extent can i move PipController more into PlaybackUi
 class PlayerFragment(
     private val vmFactory: PlayerViewModel.Factory,
     private val playerViewWrapperFactory: PlayerViewWrapper.Factory,
@@ -46,7 +47,7 @@ class PlayerFragment(
             override fun handleOnBackPressed() {
                 val result = enterPip()
                 if (result == PipController.Result.DidNotEnterPip) {
-                    isEnabled = false
+                    remove()
                     requireActivity().onBackPressed()
                 }
             }

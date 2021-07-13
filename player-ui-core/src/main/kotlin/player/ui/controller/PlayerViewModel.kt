@@ -20,13 +20,13 @@ import player.common.AppPlayer
 import player.common.PlaybackInfo
 import player.common.PlaybackInfoResolver
 import player.common.PlayerEvent
+import player.common.PlayerEventDelegate
 import player.common.PlayerEventStream
-import player.common.PlayerTelemetry
 import player.common.SeekData
 import player.common.SeekDataUpdater
 import player.common.TrackInfo
+import player.common.VideoSize
 import player.common.requireNotNull
-import player.common.AspectRatio
 import player.ui.common.PlayerController
 import player.ui.common.TracksState
 import player.ui.common.UiState
@@ -36,7 +36,7 @@ class PlayerViewModel(
     private val playerSavedState: PlayerSavedState,
     private val appPlayerFactory: AppPlayer.Factory,
     private val playerEventStream: PlayerEventStream,
-    private val telemetry: PlayerTelemetry?,
+    private val playerEventDelegate: PlayerEventDelegate?,
     playbackInfoResolver: PlaybackInfoResolver,
     uri: String,
     private val seekDataUpdater: SeekDataUpdater
@@ -115,7 +115,7 @@ class PlayerViewModel(
             .onEach { playerEvent ->
                 appPlayer.onEvent(playerEvent)
                 playerEvents.emit(playerEvent)
-                telemetry?.onPlayerEvent(playerEvent)
+                playerEventDelegate?.onPlayerEvent(playerEvent)
 
                 when (playerEvent) {
                     is PlayerEvent.Initial -> uiStates.value = uiStates.value.copy(isControllerUsable = true)
@@ -139,8 +139,8 @@ class PlayerViewModel(
 
     override fun hasMedia(): Boolean = appPlayer?.hasMedia() == true
 
-    override fun aspectRatio(): AspectRatio? {
-        return appPlayer?.aspectRatio
+    override fun videoSize(): VideoSize? {
+        return appPlayer?.videoSize
     }
 
     override fun play() {
@@ -194,7 +194,7 @@ class PlayerViewModel(
     class Factory(
         private val appPlayerFactory: AppPlayer.Factory,
         private val playerEventStream: PlayerEventStream,
-        private val telemetry: PlayerTelemetry?,
+        private val playerEventDelegate: PlayerEventDelegate?,
         private val playbackInfoResolver: PlaybackInfoResolver,
         private val seekDataUpdater: SeekDataUpdater
     ) {
@@ -213,7 +213,7 @@ class PlayerViewModel(
                         PlayerSavedState(handle),
                         appPlayerFactory,
                         playerEventStream,
-                        telemetry,
+                        playerEventDelegate,
                         playbackInfoResolver,
                         uri,
                         seekDataUpdater

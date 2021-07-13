@@ -2,11 +2,11 @@ package player.mediaplayer
 
 import android.media.MediaPlayer
 import player.common.AppPlayer
-import player.common.AspectRatio
 import player.common.PlaybackInfo
 import player.common.PlayerEvent
 import player.common.PlayerState
 import player.common.TrackInfo
+import player.common.VideoSize
 import kotlin.time.Duration
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
@@ -29,8 +29,8 @@ class MediaPlayerWrapper(
     override val tracks: List<TrackInfo>
         get() = emptyList()
 
-    override val aspectRatio: AspectRatio
-        get() = AspectRatio(0, 0) // todo
+    override val videoSize: VideoSize
+        get() = VideoSize(0, 0) // todo
 
     override fun handlePlaybackInfos(playbackInfos: List<PlaybackInfo>) {
         playbackInfos.forEach { playbackInfo ->

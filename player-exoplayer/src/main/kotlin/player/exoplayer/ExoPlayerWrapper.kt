@@ -8,10 +8,10 @@ import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.SimpleExoPlayer
 import com.google.android.exoplayer2.ui.TrackNameProvider
 import player.common.AppPlayer
-import player.common.AspectRatio
 import player.common.PlaybackInfo
 import player.common.PlayerState
 import player.common.TrackInfo
+import player.common.VideoSize
 import kotlin.time.Duration
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
@@ -32,9 +32,9 @@ internal class ExoPlayerWrapper(
     override val tracks: List<TrackInfo>
         get() = player.getTrackInfos(KNOWN_TRACK_TYPES, trackNameProvider)
 
-    override val aspectRatio: AspectRatio
+    override val videoSize: VideoSize
         get() = player.videoSize.let { videoSize ->
-            AspectRatio(
+            VideoSize(
                 videoSize.width,
                 videoSize.height
             )

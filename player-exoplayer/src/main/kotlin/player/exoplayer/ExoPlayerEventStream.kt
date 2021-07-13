@@ -13,7 +13,6 @@ import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import player.common.AppPlayer
-import player.common.AspectRatio
 import player.common.PlaybackState
 import player.common.PlayerEvent
 import player.common.PlayerEventStream
@@ -77,8 +76,7 @@ internal class ExoPlayerEventStream(
             }
 
             override fun onVideoSizeChanged(videoSize: VideoSize) {
-                val aspectRatio = AspectRatio(videoSize.width, videoSize.height)
-                trySend(PlayerEvent.OnAspectRatioChanged(aspectRatio))
+                trySend(PlayerEvent.OnVideoSizeChanged(videoSize.width, videoSize.height))
             }
         }
 

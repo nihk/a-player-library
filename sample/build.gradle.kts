@@ -18,6 +18,7 @@ dependencies {
     implementation(project(Modules.Player.mediaplayer))
     implementation(project(Modules.Player.Ui.default))
     implementation(project(Modules.Player.Ui.sve))
+    implementation(project(Modules.Player.Ui.inline))
 
     implementation(Dependencies.activity)
     implementation(Dependencies.Fragment.runtime)

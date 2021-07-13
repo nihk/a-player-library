@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@android:color/holo_orange_dark">
+
+    <FrameLayout
+        android:id="@+id/player_container"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageView
+        android:id="@+id/close"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:contentDescription="close"
+        android:minWidth="@dimen/minimum_a11y_side"
+        android:minHeight="@dimen/minimum_a11y_side"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/close" />
+
+    <FrameLayout
+        android:id="@+id/play_pause_container"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <ImageView
+            android:id="@+id/play"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:contentDescription="play"
+            android:minWidth="@dimen/minimum_a11y_side"
+            android:minHeight="@dimen/minimum_a11y_side"
+            app:srcCompat="@drawable/play" />
+
+        <ImageView
+            android:id="@+id/pause"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:contentDescription="pause"
+            android:minWidth="@dimen/minimum_a11y_side"
+            android:minHeight="@dimen/minimum_a11y_side"
+            app:srcCompat="@drawable/pause"
+            tools:visibility="gone" />
+
+    </FrameLayout>
+
+    <FrameLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <ImageView
+            android:id="@+id/fullscreen"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:contentDescription="full screen"
+            android:minWidth="@dimen/minimum_a11y_side"
+            android:minHeight="@dimen/minimum_a11y_side"
+            app:srcCompat="@drawable/fullscreen" />
+
+        <ImageView
+            android:id="@+id/close_fullscreen"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:contentDescription="close full screen"
+            android:minWidth="@dimen/minimum_a11y_side"
+            android:minHeight="@dimen/minimum_a11y_side"
+            android:visibility="gone"
+            app:srcCompat="@drawable/close_fullscreen" />
+    </FrameLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

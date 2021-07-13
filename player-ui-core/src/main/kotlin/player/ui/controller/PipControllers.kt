@@ -17,8 +17,8 @@ import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.emptyFlow
-import player.common.AspectRatio
 import player.common.PlayerEvent
+import player.common.VideoSize
 import player.ui.common.PipController
 import player.ui.common.PlayerController
 import player.ui.core.R
@@ -84,7 +84,7 @@ class AndroidPipController(
         when (playerEvent) {
             is PlayerEvent.OnPlayerPrepared -> updateActions(isPlaying = playerEvent.playWhenReady)
             is PlayerEvent.OnIsPlayingChanged -> updateActions(isPlaying = playerEvent.isPlaying)
-            is PlayerEvent.OnAspectRatioChanged -> updateActions(isPlaying = playerController.isPlaying())
+            is PlayerEvent.OnVideoSizeChanged -> updateActions(isPlaying = playerController.isPlaying())
         }
     }
 
@@ -105,19 +105,19 @@ class AndroidPipController(
 
         return PictureInPictureParams.Builder()
             .setActions(actions)
-            .setAspectRatio(playerController.aspectRatio()?.asRational())
+            .setAspectRatio(playerController.videoSize()?.asRational())
             .build()
     }
 
-    private fun AspectRatio.asRational(): Rational {
+    private fun VideoSize.asRational(): Rational {
         return if (isUnknown) {
             return DefaultAspectRatio
         } else {
-            Rational(width, height)
+            Rational(widthPx, heightPx)
         }
     }
 
-    private val AspectRatio.isUnknown: Boolean get() = width == 0 && height == 0
+    private val VideoSize.isUnknown: Boolean get() = widthPx == 0 && heightPx == 0
 
     private fun updateActions(isPlaying: Boolean) {
         val pipParams = pipParams(isPlaying)

@@ -40,7 +40,7 @@ internal class LibraryModule(activity: FragmentActivity) {
     private val playerViewModelFactory: PlayerViewModel.Factory get() = PlayerViewModel.Factory(
         appPlayerFactory = module.appPlayerFactory,
         playerEventStream = module.playerEventStream,
-        telemetry = LibraryInitializer.telemetry(),
+        playerEventDelegate = LibraryInitializer.playerEventDelegate(),
         playbackInfoResolver = LibraryInitializer.playbackInfoResolver(),
         seekDataUpdater = module.seekDataUpdater
     )

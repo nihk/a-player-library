@@ -18,7 +18,7 @@ import player.common.PlayerState
 import player.test.FakeAppPlayer
 import player.test.FakeAppPlayerFactory
 import player.test.FakePlayerEventStream
-import player.test.FakePlayerTelemetry
+import player.test.FakePlayerEventDelegate
 import player.test.FakeSeekDataUpdater
 import player.ui.common.TracksState
 
@@ -78,10 +78,10 @@ class PlayerViewModelTest {
     }
 
     @Test
-    fun `telemetry receives player events`() = playerViewModel {
+    fun `delegate receives player events`() = playerViewModel {
         getPlayer()
         emit(PlayerEvent.Initial)
-        assertTelemetryEmission(PlayerEvent.Initial)
+        assertPlayerEventEmission(PlayerEvent.Initial)
     }
 
     @Test
@@ -112,14 +112,14 @@ class PlayerViewModelTest {
         private val appPlayerFactory = FakeAppPlayerFactory(appPlayer)
         private val events = MutableSharedFlow<PlayerEvent>()
         private val playerEventStream = FakePlayerEventStream(events)
-        private val telemetry = FakePlayerTelemetry()
+        private val playerEventDelegate = FakePlayerEventDelegate()
         private val playbackInfoResolver = DefaultPlaybackInfoResolver()
         private val seekDataUpdater = FakeSeekDataUpdater()
         private val viewModel = PlayerViewModel(
             playerSavedState = playerSavedState,
             appPlayerFactory = appPlayerFactory,
             playerEventStream = playerEventStream,
-            telemetry = telemetry,
+            playerEventDelegate = playerEventDelegate,
             playbackInfoResolver = playbackInfoResolver,
             uri = "https://www.example.com/video.mp4",
             seekDataUpdater = seekDataUpdater
@@ -170,8 +170,8 @@ class PlayerViewModelTest {
             assertTrue(playerEvent in emittedEvents)
         }
 
-        fun assertTelemetryEmission(playerEvent: PlayerEvent) {
-            assertTrue(playerEvent in telemetry.collectedEvents)
+        fun assertPlayerEventEmission(playerEvent: PlayerEvent) {
+            assertTrue(playerEvent in playerEventDelegate.collectedEvents)
         }
 
         fun assertAppPlayerEmission(playerEvent: PlayerEvent) {

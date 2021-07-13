@@ -3,13 +3,17 @@ package nick.sample
 import android.app.Application
 import nick.sample.data.AndroidShareDelegate
 import nick.sample.data.CoilImageLoader
-import nick.sample.data.LoggingPlayerTelemetry
+import nick.sample.data.InlineCloseDelegate
+import nick.sample.data.LoggingPlayerEventDelegate
 import nick.sample.data.SampleCloseDelegate
+import nick.sample.data.SampleOnFullscreenChangedCallback
+import nick.sample.data.SampleOnVideoSizeChangedCallback
 import nick.sample.data.SlowPlaybackInfoResolver
 import player.core.LibraryInitializer
 import player.exoplayer.ExoPlayerModule
 import player.ui.common.TimeFormatter
 import player.ui.def.DefaultPlaybackUi
+import player.ui.inline.InlinePlaybackUi
 import player.ui.sve.SvePlaybackUi
 import java.util.*
 
@@ -35,9 +39,14 @@ class App : Application() {
                     shareDelegate = shareDelegate,
                     imageLoader = CoilImageLoader(),
                     timeFormatter = timeFormatter
+                ),
+                InlinePlaybackUi.Factory(
+                    closeDelegate = InlineCloseDelegate(),
+                    onVideoSizeChangedCallback = SampleOnVideoSizeChangedCallback(),
+                    onFullscreenChangedCallback = SampleOnFullscreenChangedCallback()
                 )
             ),
-            telemetry = LoggingPlayerTelemetry(),
+            playerEventDelegate = LoggingPlayerEventDelegate(),
             playbackInfoResolver = SlowPlaybackInfoResolver()
         )
     }

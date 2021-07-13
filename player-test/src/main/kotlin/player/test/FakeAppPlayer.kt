@@ -1,11 +1,11 @@
 package player.test
 
 import player.common.AppPlayer
-import player.common.AspectRatio
 import player.common.PlaybackInfo
 import player.common.PlayerEvent
 import player.common.PlayerState
 import player.common.TrackInfo
+import player.common.VideoSize
 import kotlin.time.Duration
 
 class FakeAppPlayer(
@@ -16,7 +16,7 @@ class FakeAppPlayer(
 
     override val state: PlayerState get() = PlayerState.INITIAL
     override val tracks: List<TrackInfo> get() = fakeTracks
-    override val aspectRatio: AspectRatio = AspectRatio(0, 0)
+    override val videoSize: VideoSize = VideoSize(0, 0)
 
     override fun onEvent(playerEvent: PlayerEvent) {
         collectedEvents += playerEvent

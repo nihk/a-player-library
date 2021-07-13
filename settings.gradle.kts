@@ -10,6 +10,7 @@ include(
     ":player-ui-common",
     ":player-ui-trackspicker",
     ":player-test",
-    ":player-ui-test"
+    ":player-ui-test",
+    ":player-ui-inline"
 )
 rootProject.name = "a-player-library"
