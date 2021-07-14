@@ -1,21 +1,29 @@
 package nick.sample.data
 
-import android.view.View
-import android.view.ViewGroup
+import android.view.animation.AccelerateDecelerateInterpolator
+import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.constraintlayout.widget.ConstraintSet
 import androidx.fragment.app.FragmentActivity
+import androidx.transition.ChangeBounds
+import androidx.transition.TransitionManager
 import nick.sample.R
 import player.ui.inline.OnFullscreenChangedCallback
 
 class SampleOnFullscreenChangedCallback : OnFullscreenChangedCallback {
     override fun onFullscreenChanged(isFullscreen: Boolean, activity: FragmentActivity) {
-        val newParent: ViewGroup = if (isFullscreen) {
-            activity.findViewById(R.id.fullscreen_container)
+        val constraintLayout = activity.findViewById<ConstraintLayout>(R.id.inline_container)
+        val constraintSet = ConstraintSet()
+        val layout = if (isFullscreen) {
+            R.layout.fullscreen
         } else {
-            activity.findViewById(R.id.smallscreen_container)
+            R.layout.smallscreen
         }
-
-        val movable = activity.findViewById<View>(R.id.movable_container)
-        movable.detachFromParent()
-        newParent.addView(movable)
+        constraintSet.clone(activity, layout)
+        val transition = ChangeBounds().apply {
+            interpolator = AccelerateDecelerateInterpolator()
+            duration = 400L
+        }
+        TransitionManager.beginDelayedTransition(constraintLayout, transition)
+        constraintSet.applyTo(constraintLayout)
     }
 }
