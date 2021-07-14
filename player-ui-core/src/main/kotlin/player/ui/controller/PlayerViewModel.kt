@@ -14,11 +14,7 @@ class PlayerViewModel(
     private val playerNonConfigs: LinkedHashMap<UUID, PlayerNonConfig> = linkedMapOf()
 
     fun get(uuid: UUID, uri: String): PlayerNonConfig {
-        return playerNonConfigs[uuid] ?: run {
-            playerNonConfigFactory.create(uuid, handle, uri).also {
-                playerNonConfigs[uuid] = it
-            }
-        }
+        return playerNonConfigs.getOrPut(uuid) { playerNonConfigFactory.create(uuid, handle, uri) }
     }
 
     // fixme: hack to avoid passing parameters

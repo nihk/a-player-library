@@ -81,6 +81,7 @@ class PlayerView(
     // note: this assumes that this View being detached from the Window means a destructive action.
     // Reparenting this View won't behave as expected in this current state, because reparenting
     // detaches the View from the Window.
+    // Also, once a lifecycle state is DESTROYED, its lifecycleScope is cancelled and cannot be reused.
     override fun onDetachedFromWindow() {
         super.onDetachedFromWindow()
         lifecycleRegistry.currentState = Lifecycle.State.DESTROYED

@@ -1,6 +1,6 @@
 package nick.sample.data
 
-import android.view.animation.AccelerateDecelerateInterpolator
+import android.view.animation.DecelerateInterpolator
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
 import androidx.fragment.app.FragmentActivity
@@ -20,7 +20,7 @@ class SampleOnFullscreenChangedCallback : OnFullscreenChangedCallback {
         }
         constraintSet.clone(activity, layout)
         val transition = ChangeBounds().apply {
-            interpolator = AccelerateDecelerateInterpolator()
+            interpolator = DecelerateInterpolator()
             duration = 400L
         }
         TransitionManager.beginDelayedTransition(constraintLayout, transition)
