@@ -9,12 +9,11 @@ import nick.sample.R
 import nick.sample.databinding.MainActivityBinding
 import player.core.LibraryActivity
 import player.core.LibraryFragment
-import player.core.LibraryView
-import player.ui.def.DefaultPlaybackUi
 import player.ui.common.OnUserLeaveHintViewModel
 import player.ui.common.PictureInPictureConfig
 import player.ui.common.PlayerArguments
 import player.ui.common.toBundle
+import player.ui.def.DefaultPlaybackUi
 import player.ui.inline.InlinePlaybackUi
 import player.ui.sve.SvePlaybackUi
 
@@ -28,9 +27,7 @@ class MainActivity : AppCompatActivity() {
 
         binding.toPlayerView.setOnClickListener { view ->
             val playerArguments = createPlayerArguments(binding, view)
-            val libraryView = LibraryView(view.context)
-            binding.fullscreenContainer.addView(libraryView)
-            libraryView.initialize(playerArguments)
+            binding.libraryView.play(playerArguments)
         }
 
         binding.toPlayerFragment.setOnClickListener { view ->

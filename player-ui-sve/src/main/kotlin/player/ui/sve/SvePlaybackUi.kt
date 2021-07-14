@@ -6,6 +6,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.widget.SeekBar
 import androidx.core.os.bundleOf
+import androidx.core.view.doOnAttach
+import androidx.core.view.doOnDetach
 import androidx.core.view.isVisible
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.Lifecycle
@@ -67,11 +69,21 @@ class SvePlaybackUi(
 
     init {
         registryOwner.lifecycle.addObserver(LifecycleEventObserver { _, event ->
-            if (event == Lifecycle.Event.ON_CREATE) {
-                val registry = registryOwner.savedStateRegistry
-                registry.registerSavedStateProvider(PROVIDER, this)
+            when (event) {
+                Lifecycle.Event.ON_CREATE -> {
+                    registryOwner.savedStateRegistry.registerSavedStateProvider(PROVIDER, this)
+                }
             }
         })
+        view.doOnAttach {
+            // Nested because otherwise it will be called immediately, before View is attached.
+            view.doOnDetach {
+                if (!activity.isChangingConfigurations) {
+                    registryOwner.savedStateRegistry.unregisterSavedStateProvider(PROVIDER)
+                }
+            }
+        }
+
         bindControls()
     }
 

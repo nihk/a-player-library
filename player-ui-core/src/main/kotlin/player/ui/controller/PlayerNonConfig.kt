@@ -1,11 +1,13 @@
 package player.ui.controller
 
-import androidx.lifecycle.AbstractSavedStateViewModelFactory
 import androidx.lifecycle.SavedStateHandle
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.savedstate.SavedStateRegistryOwner
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -30,18 +32,20 @@ import player.common.requireNotNull
 import player.ui.common.PlayerController
 import player.ui.common.TracksState
 import player.ui.common.UiState
+import java.io.Closeable
 import java.util.*
 import kotlin.time.Duration
 
-class PlayerViewModel(
+class PlayerNonConfig(
     private val playerSavedState: PlayerSavedState,
     private val appPlayerFactory: AppPlayer.Factory,
     private val playerEventStream: PlayerEventStream,
     private val playerEventDelegate: PlayerEventDelegate?,
     playbackInfoResolver: PlaybackInfoResolver,
     uri: String,
-    private val seekDataUpdater: SeekDataUpdater
-) : ViewModel(), PlayerController {
+    private val seekDataUpdater: SeekDataUpdater,
+    private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
+) : Closeable, PlayerController {
 
     private var appPlayer: AppPlayer? = null
     private val playerJobs = mutableListOf<Job>()
@@ -70,7 +74,7 @@ class PlayerViewModel(
         .filterNot { playbackInfos -> playbackInfos.isEmpty() }
         .onEach { playbackInfos -> appPlayer?.handlePlaybackInfos(playbackInfos) }
         .stateIn(
-            scope = viewModelScope,
+            scope = scope,
             started = SharingStarted.Eagerly,
             initialValue = emptyList()
         )
@@ -86,7 +90,7 @@ class PlayerViewModel(
             playerJobs += listenToPlayerEvents(appPlayer)
             playerJobs += seekDataUpdater.seekData(appPlayer)
                 .onEach { seekData -> uiStates.value = uiStates.value.copy(seekData = seekData) }
-                .launchIn(viewModelScope)
+                .launchIn(scope)
         }
 
         return appPlayer.requireNotNull()
@@ -133,7 +137,7 @@ class PlayerViewModel(
                     is PlayerEvent.OnPlayerError -> errors.emit(playerEvent.exception.message.toString())
                 }
             }
-            .launchIn(viewModelScope)
+            .launchIn(scope)
     }
 
     override fun isPlaying(): Boolean = appPlayer?.state?.isPlaying == true
@@ -156,7 +160,7 @@ class PlayerViewModel(
         tracksStates.value = TracksState.NotAvailable
         playerJobs.forEach(Job::cancel)
         playerJobs.clear()
-        requireNotNull(appPlayer).release()
+        appPlayer?.release()
         appPlayer = null
     }
 
@@ -192,6 +196,11 @@ class PlayerViewModel(
         return uiStates.value.seekData
     }
 
+    override fun close() {
+        tearDown()
+        scope.cancel()
+    }
+
     class Factory(
         private val appPlayerFactory: AppPlayer.Factory,
         private val playerEventStream: PlayerEventStream,
@@ -200,27 +209,20 @@ class PlayerViewModel(
         private val seekDataUpdater: SeekDataUpdater
     ) {
         fun create(
-            owner: SavedStateRegistryOwner,
+            uuid: UUID,
+            handle: SavedStateHandle,
             uri: String
-        ): AbstractSavedStateViewModelFactory {
-            return object : AbstractSavedStateViewModelFactory(owner, null) {
-                override fun <T : ViewModel?> create(
-                    key: String,
-                    modelClass: Class<T>,
-                    handle: SavedStateHandle
-                ): T {
-                    @Suppress("UNCHECKED_CAST")
-                    return PlayerViewModel(
-                        PlayerSavedState(UUID.randomUUID(), handle),
-                        appPlayerFactory,
-                        playerEventStream,
-                        playerEventDelegate,
-                        playbackInfoResolver,
-                        uri,
-                        seekDataUpdater
-                    ) as T
-                }
-            }
+        ): PlayerNonConfig {
+            SavedStateHandle()
+            return PlayerNonConfig(
+                playerSavedState = PlayerSavedState(uuid, handle),
+                appPlayerFactory = appPlayerFactory,
+                playerEventStream = playerEventStream,
+                playerEventDelegate = playerEventDelegate,
+                playbackInfoResolver = playbackInfoResolver,
+                uri = uri,
+                seekDataUpdater = seekDataUpdater
+            )
         }
     }
 }

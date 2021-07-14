@@ -5,15 +5,16 @@ import android.content.Context
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.view.View
-import android.view.ViewGroup
 import android.widget.FrameLayout
 import androidx.activity.ComponentActivity
 import androidx.activity.OnBackPressedCallback
 import androidx.core.view.doOnAttach
+import androidx.core.view.doOnDetach
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.LifecycleRegistry
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.flow.launchIn
@@ -23,30 +24,33 @@ import player.ui.common.OnUserLeaveHintViewModel
 import player.ui.common.PipController
 import player.ui.common.PlaybackUi
 import player.ui.common.PlayerArguments
+import java.util.*
 
-// note: multiple PlayerViews will all retrieve the same ViewModel
-// todo: embed this in PlayerFragment?
+// todo: embed this in PlayerFragment (or LibraryView in LibraryFragment)?
 @SuppressLint("ViewConstructor")
 class PlayerView(
     context: Context,
     private val playerArguments: PlayerArguments,
-    private val vmFactory: PlayerViewModel.Factory,
+    private val uuid: UUID,
+    private val vmFactory: PlayerViewModel2.Factory,
     private val playerViewWrapperFactory: PlayerViewWrapper.Factory,
     private val errorRenderer: ErrorRenderer,
     private val pipControllerFactory: PipController.Factory,
     private val playbackUiFactories: List<PlaybackUi.Factory>
-) : FrameLayout(context), LifecycleEventObserver {
-    private val playerViewModel: PlayerViewModel by lazy {
+) : FrameLayout(context), LifecycleEventObserver, LifecycleOwner {
+    private val playerViewModel2: PlayerViewModel2 by lazy {
         ViewModelProvider(
             requireViewTreeViewModelStoreOwner(),
-            vmFactory.create(requireViewTreeSaveStateRegistryOwner(), playerArguments.uri)
-        ).get(PlayerViewModel::class.java)
+            vmFactory.create(requireViewTreeSaveStateRegistryOwner())
+        ).get(PlayerViewModel2::class.java)
+    }
+    private val playerNonConfig: PlayerNonConfig by lazy {
+        playerViewModel2.get(uuid, playerArguments.uri)
     }
     private val onUserLeaveHintViewModel: OnUserLeaveHintViewModel by lazy {
-        ViewModelProvider(activity)
-            .get(OnUserLeaveHintViewModel::class.java)
+        ViewModelProvider(activity).get(OnUserLeaveHintViewModel::class.java)
     }
-    private val pipController: PipController by lazy { pipControllerFactory.create(playerViewModel) }
+    private val pipController: PipController by lazy { pipControllerFactory.create(playerNonConfig) }
     private val playbackUi: PlaybackUi by lazy {
         playbackUiFactories.first { factory ->
             playerArguments.playbackUiFactory.isAssignableFrom(factory::class.java)
@@ -54,12 +58,13 @@ class PlayerView(
             host = context as FragmentActivity,
             playerViewWrapperFactory = playerViewWrapperFactory,
             pipController = pipController,
-            playerController = playerViewModel,
+            playerController = playerNonConfig,
             playerArguments = playerArguments,
             registryOwner = requireViewTreeSaveStateRegistryOwner()
         )
     }
     private val activity: ComponentActivity get() = context as ComponentActivity
+    private val lifecycleRegistry = LifecycleRegistry(this)
 
     init {
         id = View.generateViewId()
@@ -67,65 +72,73 @@ class PlayerView(
         isClickable = true
         isFocusable = true
         background = ColorDrawable(Color.BLACK)
-        layoutParams = ViewGroup.LayoutParams(
-            ViewGroup.LayoutParams.MATCH_PARENT,
-            ViewGroup.LayoutParams.MATCH_PARENT
-        )
 
         doOnAttach {
+            lifecycleRegistry.currentState = Lifecycle.State.STARTED // Created is too low for back pressed dispatcher
             addView(playbackUi.view)
             setUpBackPressHandling()
             listenToPlayer()
             activity.lifecycle.addObserver(this)
+
+            // Nested because otherwise it will be called immediately, before View is attached.
+            doOnDetach {
+                lifecycleRegistry.currentState = Lifecycle.State.DESTROYED
+                val isPlayerClosed = !activity.isChangingConfigurations
+                if (isPlayerClosed) {
+                    playerViewModel2.remove(uuid)
+                    activity.lifecycle.removeObserver(this)
+                }
+            }
         }
     }
 
     override fun onStateChanged(source: LifecycleOwner, event: Lifecycle.Event) {
         when (event) {
             Lifecycle.Event.ON_START -> {
-                val appPlayer = playerViewModel.getPlayer()
+                val appPlayer = playerNonConfig.getPlayer()
                 playbackUi.attach(appPlayer)
             }
             Lifecycle.Event.ON_STOP -> {
                 playbackUi.detachPlayer()
-                if (!activity.isChangingConfigurations) {
-                    playerViewModel.onAppBackgrounded()
+                val isAppBackgrounded = !activity.isChangingConfigurations
+                if (isAppBackgrounded) {
+                    playerNonConfig.onAppBackgrounded()
                 }
             }
         }
     }
 
     private fun listenToPlayer() {
-        playerViewModel.playerEvents()
+        playerNonConfig.playerEvents()
             .onEach { playerEvent ->
                 playbackUi.onPlayerEvent(playerEvent)
                 pipController.onEvent(playerEvent)
             }
-            .launchIn(requireViewTreeLifecycleOwner().lifecycleScope)
+            .launchIn(lifecycleScope)
 
-        playerViewModel.uiStates()
+        playerNonConfig.uiStates()
             .onEach { uiState -> playbackUi.onUiState(uiState) }
-            .launchIn(requireViewTreeLifecycleOwner().lifecycleScope)
+            .launchIn(lifecycleScope)
 
-        playerViewModel.tracksStates()
+        playerNonConfig.tracksStates()
             .onEach { tracksState -> playbackUi.onTracksState(tracksState) }
-            .launchIn(requireViewTreeLifecycleOwner().lifecycleScope)
+            .launchIn(lifecycleScope)
 
-        playerViewModel.errors()
+        playerNonConfig.errors()
             .onEach { message -> errorRenderer.render(this, message) }
-            .launchIn(requireViewTreeLifecycleOwner().lifecycleScope)
+            .launchIn(lifecycleScope)
 
-        playerViewModel.playbackInfos
+        playerNonConfig.playbackInfos
             .onEach { playbackInfos -> playbackUi.onPlaybackInfos(playbackInfos) }
-            .launchIn(requireViewTreeLifecycleOwner().lifecycleScope)
+            .launchIn(lifecycleScope)
 
         if (playerArguments.pipConfig?.enabled == true) {
             pipController.events()
-                .launchIn(requireViewTreeLifecycleOwner().lifecycleScope)
+                .launchIn(lifecycleScope)
 
             onUserLeaveHintViewModel.onUserLeaveHints()
                 .onEach { enterPip() }
-                .launchIn(requireViewTreeLifecycleOwner().lifecycleScope)
+                .launchIn(lifecycleScope)
         }
     }
 
@@ -148,11 +161,15 @@ class PlayerView(
                 }
             }
         }
-        activity.onBackPressedDispatcher.addCallback(requireViewTreeLifecycleOwner(), onBackPressed)
+        activity.onBackPressedDispatcher.addCallback(this, onBackPressed)
+    }
+
+    override fun getLifecycle(): Lifecycle {
+        return lifecycleRegistry
     }
 
     class Factory(
-        private val vmFactory: PlayerViewModel.Factory,
+        private val vmFactory: PlayerViewModel2.Factory,
         private val playerViewWrapperFactory: PlayerViewWrapper.Factory,
         private val errorRenderer: ErrorRenderer,
         private val pipControllerFactory: PipController.Factory,
@@ -160,11 +177,13 @@ class PlayerView(
     ) {
         fun create(
             context: Context,
-            playerArguments: PlayerArguments
+            playerArguments: PlayerArguments,
+            uuid: UUID
         ): PlayerView {
             return PlayerView(
                 context = context,
                 playerArguments = playerArguments,
+                uuid = uuid,
                 vmFactory = vmFactory,
                 playerViewWrapperFactory = playerViewWrapperFactory,
                 errorRenderer = errorRenderer,
