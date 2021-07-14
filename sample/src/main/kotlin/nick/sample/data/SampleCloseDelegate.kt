@@ -11,7 +11,7 @@ class SampleCloseDelegate : CloseDelegate {
         if (activity is LibraryActivity) {
             activity.finish()
         } else {
-            val libraryView: LibraryView? = activity.findViewById<LibraryView>(R.id.library_view)
+            val libraryView: LibraryView? = activity.findViewById(R.id.library_view)
             if (libraryView?.isPlaying == true) {
                 libraryView.stop()
             }

@@ -66,19 +66,22 @@ class SvePlaybackUi(
     private var didRestoreViewPagerState = false
     private val playerViewWrapper = playerViewWrapperFactory.create(activity)
     private val adapter = SveAdapter(playerViewWrapper, imageLoader)
+    private val observer = LifecycleEventObserver { _, event ->
+        when (event) {
+            Lifecycle.Event.ON_CREATE -> {
+                registryOwner.savedStateRegistry.registerSavedStateProvider(PROVIDER, this)
+            }
+        }
+    }
 
     init {
-        registryOwner.lifecycle.addObserver(LifecycleEventObserver { _, event ->
-            when (event) {
-                Lifecycle.Event.ON_CREATE -> {
-                    registryOwner.savedStateRegistry.registerSavedStateProvider(PROVIDER, this)
-                }
-            }
-        })
+        registryOwner.lifecycle.addObserver(observer)
         view.doOnAttach {
             // Nested because otherwise it will be called immediately, before View is attached.
             view.doOnDetach {
-                if (!activity.isChangingConfigurations) {
+                val isPlayerClosed = !activity.isChangingConfigurations
+                if (isPlayerClosed) {
+                    registryOwner.lifecycle.removeObserver(observer)
                     registryOwner.savedStateRegistry.unregisterSavedStateProvider(PROVIDER)
                 }
             }

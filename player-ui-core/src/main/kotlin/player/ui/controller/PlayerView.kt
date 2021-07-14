@@ -8,8 +8,6 @@ import android.view.View
 import android.widget.FrameLayout
 import androidx.activity.ComponentActivity
 import androidx.activity.OnBackPressedCallback
-import androidx.core.view.doOnAttach
-import androidx.core.view.doOnDetach
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
@@ -26,26 +24,23 @@ import player.ui.common.PlaybackUi
 import player.ui.common.PlayerArguments
 import java.util.*
 
-// todo: embed this in PlayerFragment (or LibraryView in LibraryFragment)?
+// todo: PiP UI states
 @SuppressLint("ViewConstructor")
 class PlayerView(
     context: Context,
     private val playerArguments: PlayerArguments,
     private val uuid: UUID,
-    private val vmFactory: PlayerViewModel2.Factory,
+    private val vmFactory: PlayerViewModel.Factory,
     private val playerViewWrapperFactory: PlayerViewWrapper.Factory,
     private val errorRenderer: ErrorRenderer,
     private val pipControllerFactory: PipController.Factory,
     private val playbackUiFactories: List<PlaybackUi.Factory>
 ) : FrameLayout(context), LifecycleEventObserver, LifecycleOwner {
-    private val playerViewModel2: PlayerViewModel2 by lazy {
-        ViewModelProvider(
-            requireViewTreeViewModelStoreOwner(),
-            vmFactory.create(requireViewTreeSaveStateRegistryOwner())
-        ).get(PlayerViewModel2::class.java)
+    private val playerViewModel: PlayerViewModel by lazy {
+        ViewModelProvider(activity, vmFactory.create(activity)).get(PlayerViewModel::class.java)
     }
     private val playerNonConfig: PlayerNonConfig by lazy {
-        playerViewModel2.get(uuid, playerArguments.uri)
+        playerViewModel.get(uuid, playerArguments.uri)
     }
     private val onUserLeaveHintViewModel: OnUserLeaveHintViewModel by lazy {
         ViewModelProvider(activity).get(OnUserLeaveHintViewModel::class.java)
@@ -60,7 +55,7 @@ class PlayerView(
             pipController = pipController,
             playerController = playerNonConfig,
             playerArguments = playerArguments,
-            registryOwner = requireViewTreeSaveStateRegistryOwner()
+            registryOwner = activity
         )
     }
     private val activity: ComponentActivity get() = context as ComponentActivity
@@ -72,24 +67,29 @@ class PlayerView(
         isClickable = true
         isFocusable = true
         background = ColorDrawable(Color.BLACK)
+    }
 
-        doOnAttach {
-            lifecycleRegistry.currentState = Lifecycle.State.STARTED // Created is too low for back pressed dispatcher
-            addView(playbackUi.view)
-            setUpBackPressHandling()
-            listenToPlayer()
-            activity.lifecycle.addObserver(this)
+    override fun onAttachedToWindow() {
+        super.onAttachedToWindow()
+        lifecycleRegistry.currentState = Lifecycle.State.STARTED // Created is too low for back pressed dispatcher registration
+        addView(playbackUi.view)
+        setUpBackPressHandling()
+        listenToPlayer()
+        activity.lifecycle.addObserver(this)
+    }
 
-            // Nested because otherwise it will be called immediately, before View is attached.
-            doOnDetach {
-                lifecycleRegistry.currentState = Lifecycle.State.DESTROYED
-                val isPlayerClosed = !activity.isChangingConfigurations
-                if (isPlayerClosed) {
-                    playerViewModel2.remove(uuid)
-                    activity.lifecycle.removeObserver(this)
-                }
-            }
-        }
+    // note: this assumes that this View being detached from the Window means a destructive action.
+    // Reparenting this View won't behave as expected in this current state, because reparenting
+    // detaches the View from the Window.
+    override fun onDetachedFromWindow() {
+        super.onDetachedFromWindow()
+        lifecycleRegistry.currentState = Lifecycle.State.DESTROYED
+        activity.lifecycle.removeObserver(this)
+
+        val isPlayerClosed = !activity.isChangingConfigurations
+        if (isPlayerClosed) {
+            playerViewModel.remove(uuid)
+        } // else keep PlayerNonConfig around to be used when state is restored after config change
     }
 
     override fun onStateChanged(source: LifecycleOwner, event: Lifecycle.Event) {
@@ -169,7 +169,7 @@ class PlayerView(
     }
 
     class Factory(
-        private val vmFactory: PlayerViewModel2.Factory,
+        private val vmFactory: PlayerViewModel.Factory,
         private val playerViewWrapperFactory: PlayerViewWrapper.Factory,
         private val errorRenderer: ErrorRenderer,
         private val pipControllerFactory: PipController.Factory,

@@ -13,9 +13,10 @@ import player.ui.common.PlayerArguments
 import java.util.*
 
 class LibraryView : FrameLayout {
+    val isPlaying: Boolean get() = childCount == 1
+
     private var playerArguments: PlayerArguments? = null
     private var uuid: UUID? = null
-    val isPlaying: Boolean get() = childCount == 1
 
     constructor(context: Context) : super(context)
     constructor(context: Context, attributeSet: AttributeSet?) : super(context, attributeSet)
@@ -30,8 +31,7 @@ class LibraryView : FrameLayout {
     }
 
     private fun play(playerArguments: PlayerArguments, uuid: UUID) {
-        removeAllViews()
-        // todo: how handle fragment manager? wrap FragmentFactory? what about state restoration?
+        stop()
         this.playerArguments = playerArguments
         this.uuid = uuid
         val module = LibraryModule(context as FragmentActivity)
