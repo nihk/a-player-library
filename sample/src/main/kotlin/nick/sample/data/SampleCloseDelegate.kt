@@ -1,6 +1,8 @@
 package nick.sample.data
 
 import androidx.fragment.app.FragmentActivity
+import androidx.fragment.app.FragmentManager
+import androidx.fragment.app.commit
 import nick.sample.R
 import player.ui.common.CloseDelegate
 import player.core.LibraryActivity
@@ -15,7 +17,12 @@ class SampleCloseDelegate : CloseDelegate {
             if (libraryView?.isPlaying == true) {
                 libraryView.stop()
             }
-            activity.supportFragmentManager.popBackStack()
+            activity.supportFragmentManager.commit {
+                activity.supportFragmentManager.fragments.forEach { fragment ->
+                    remove(fragment)
+                }
+            }
+            activity.supportFragmentManager.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE)
         }
     }
 }

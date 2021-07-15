@@ -15,14 +15,14 @@ class SlowPlaybackInfoResolver : PlaybackInfoResolver {
     override fun playbackInfos(uri: String): Flow<PlaybackInfo> = flow {
         val relatedMedias = listOf(
             PlaybackInfo.RelatedMedia(
-                uri = "file:///android_asset/waves.mp4",
-                imageUri = "https://i.imgur.com/MYmm7E1.jpg",
-                durationMillis = TimeUnit.SECONDS.toMillis(141L)
-            ),
-            PlaybackInfo.RelatedMedia(
                 uri = "https://devstreaming-cdn.apple.com/videos/streaming/examples/bipbop_16x9/bipbop_16x9_variant.m3u8",
                 imageUri = "https://i.imgur.com/9OPnZNk.png",
                 durationMillis = TimeUnit.SECONDS.toMillis(400L)
+            ),
+            PlaybackInfo.RelatedMedia(
+                uri = "file:///android_asset/waves.mp4",
+                imageUri = "https://i.imgur.com/MYmm7E1.jpg",
+                durationMillis = TimeUnit.SECONDS.toMillis(141L)
             ),
             PlaybackInfo.RelatedMedia(
                 uri = "https://bitmovin-a.akamaihd.net/content/MI201109210084_1/MI201109210084_mpeg-4_hd_high_1080p25_10mbits.mp4",

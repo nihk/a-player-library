@@ -30,7 +30,7 @@ class PlayerView(
     context: Context,
     private val playerArguments: PlayerArguments,
     // Used to identify a PlayerNonConfig in a singular PlayerViewModel across config changes.
-    // This was done so there can be > 1 PlayerView on a screen at any given time without bloating
+    // This was done so there can be > 1 PlayerViews on a screen at any given time without bloating
     // the ViewModelStore with 1 ViewModel per PlayerView.
     private val uuid: UUID,
     private val vmFactory: PlayerViewModel.Factory,
@@ -49,6 +49,7 @@ class PlayerView(
         playerViewModel.get(uuid, playerArguments.uri)
     }
     private val onUserLeaveHintViewModel: OnUserLeaveHintViewModel by lazy {
+        // Activity scoped because Activity.onUserLeaveHint is only available at the Activity level.
         ViewModelProvider(activity).get(OnUserLeaveHintViewModel::class.java)
     }
     private val pipController: PipController by lazy { pipControllerFactory.create(playerNonConfig) }
@@ -66,6 +67,8 @@ class PlayerView(
     }
     private val activity: ComponentActivity get() = context as ComponentActivity
     // Custom Lifecycle because a View can get attached/detach out of sync with its host Lifecycle.
+    // This is useful for automated unregistration/cancellation of resources like back press callbacks,
+    // coroutine scopes.
     private val lifecycleRegistry = LifecycleRegistry(this)
 
     init {
@@ -94,12 +97,13 @@ class PlayerView(
         val isPlayerClosed = !activity.isChangingConfigurations
         if (isPlayerClosed) {
             playerViewModel.remove(uuid)
-        } // else keep PlayerNonConfig around to be used when state is restored after config change
+        } // else keep PlayerNonConfig around in PlayerViewModel to be used when state is restored after config change
     }
 
     override fun onStateChanged(source: LifecycleOwner, event: Lifecycle.Event) {
         when (event) {
-            // Need to wait for host to be CREATED; things like the host's SavedStateRegistry won't be available below that.
+            // Need to wait for View tree to be CREATED; things like the View tree's
+            // SavedStateRegistry isn't available below that state.
             Lifecycle.Event.ON_CREATE -> {
                 addView(playbackUi.view)
                 setUpBackPressHandling()
@@ -161,7 +165,6 @@ class PlayerView(
         val pipConfig = playerArguments.pipConfig
         val pipOnBackPress = pipConfig?.enabled == true && pipConfig.onBackPresses
         if (!pipOnBackPress) return
-        val activity = context as ComponentActivity
 
         val onBackPressed = object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {

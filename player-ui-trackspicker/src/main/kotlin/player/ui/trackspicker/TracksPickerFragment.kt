@@ -22,6 +22,7 @@ import player.ui.trackspicker.databinding.TracksFragmentBinding
 class TracksPickerFragment : BottomSheetDialogFragment() {
     private val trackType: TrackInfo.Type
         get() = requireArguments().getSerializable(KEY_ARG_TRACK_TYPE).requireNotNull() as TrackInfo.Type
+    // fixme: need to pass in factory here, for process recreation handling
     private val viewModel: PlayerViewModel by activityViewModels()
     private val playerNonConfig: PlayerNonConfig by lazy {
         viewModel.getLatest().requireNotNull()
