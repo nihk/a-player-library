@@ -29,6 +29,9 @@ import java.util.*
 class PlayerView(
     context: Context,
     private val playerArguments: PlayerArguments,
+    // Used to identify a PlayerNonConfig in a singular PlayerViewModel across config changes.
+    // This was done so there can be > 1 PlayerView on a screen at any given time without bloating
+    // the ViewModelStore with 1 ViewModel per PlayerView.
     private val uuid: UUID,
     private val vmFactory: PlayerViewModel.Factory,
     private val playerViewWrapperFactory: PlayerViewWrapper.Factory,
@@ -37,7 +40,10 @@ class PlayerView(
     private val playbackUiFactories: List<PlaybackUi.Factory>
 ) : FrameLayout(context), LifecycleEventObserver, LifecycleOwner {
     private val playerViewModel: PlayerViewModel by lazy {
-        ViewModelProvider(activity, vmFactory.create(activity)).get(PlayerViewModel::class.java)
+        ViewModelProvider(
+            requireViewTreeViewModelStoreOwner(),
+            vmFactory.create(requireViewTreeSavedStateRegistryOwner())
+        ).get(PlayerViewModel::class.java)
     }
     private val playerNonConfig: PlayerNonConfig by lazy {
         playerViewModel.get(uuid, playerArguments.uri)
@@ -59,6 +65,7 @@ class PlayerView(
         )
     }
     private val activity: ComponentActivity get() = context as ComponentActivity
+    // Custom Lifecycle because a View can get attached/detach out of sync with its host Lifecycle.
     private val lifecycleRegistry = LifecycleRegistry(this)
 
     init {
@@ -71,11 +78,8 @@ class PlayerView(
 
     override fun onAttachedToWindow() {
         super.onAttachedToWindow()
-        lifecycleRegistry.currentState = Lifecycle.State.STARTED // Created is too low for back pressed dispatcher registration
-        addView(playbackUi.view)
-        setUpBackPressHandling()
-        listenToPlayer()
-        activity.lifecycle.addObserver(this)
+        lifecycleRegistry.currentState = Lifecycle.State.STARTED // CREATED is too low for back pressed dispatcher registration
+        requireViewTreeLifecycleOwner().lifecycle.addObserver(this)
     }
 
     // note: this assumes that this View being detached from the Window means a destructive action.
@@ -85,7 +89,7 @@ class PlayerView(
     override fun onDetachedFromWindow() {
         super.onDetachedFromWindow()
         lifecycleRegistry.currentState = Lifecycle.State.DESTROYED
-        activity.lifecycle.removeObserver(this)
+        requireViewTreeLifecycleOwner().lifecycle.removeObserver(this)
 
         val isPlayerClosed = !activity.isChangingConfigurations
         if (isPlayerClosed) {
@@ -95,6 +99,12 @@ class PlayerView(
 
     override fun onStateChanged(source: LifecycleOwner, event: Lifecycle.Event) {
         when (event) {
+            // Need to wait for host to be CREATED; things like the host's SavedStateRegistry won't be available below that.
+            Lifecycle.Event.ON_CREATE -> {
+                addView(playbackUi.view)
+                setUpBackPressHandling()
+                listenToPlayer()
+            }
             Lifecycle.Event.ON_START -> {
                 val appPlayer = playerNonConfig.getPlayer()
                 playbackUi.attach(appPlayer)

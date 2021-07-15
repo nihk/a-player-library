@@ -21,26 +21,27 @@ import player.test.FakePlayerEventStream
 import player.test.FakePlayerEventDelegate
 import player.test.FakeSeekDataUpdater
 import player.ui.common.TracksState
+import java.util.*
 
-class PlayerViewModelTest {
+class PlayerNonConfigTest {
     @get:Rule
     val coroutinesTestRule = CoroutinesTestRule()
 
     @Test
-    fun `getPlayer creates a new player when there is no active player`() = playerViewModel {
+    fun `getPlayer creates a new player when there is no active player`() = playerNonConfig {
         getPlayer()
         assertPlayerCreated(times = 1)
     }
 
     @Test
-    fun `multiple getPlayer calls only create player once`() = playerViewModel {
+    fun `multiple getPlayer calls only create player once`() = playerNonConfig {
         getPlayer()
         getPlayer()
         assertPlayerCreated(times = 1)
     }
 
     @Test
-    fun `player state is used when creating new player`() = playerViewModel {
+    fun `player state is used when creating new player`() = playerNonConfig {
         val playerState = PlayerState(itemIndex = 0, positionMillis = 5000L, isPlaying = false)
         setPlayerState(playerState)
         getPlayer()
@@ -48,20 +49,20 @@ class PlayerViewModelTest {
     }
 
     @Test
-    fun `player events can be received when player is created`() = playerViewModel {
+    fun `player events can be received when player is created`() = playerNonConfig {
         getPlayer()
         emit(PlayerEvent.Initial)
         assertEmission(PlayerEvent.Initial)
     }
 
     @Test
-    fun `player events are not received if player is not created`() = playerViewModel {
+    fun `player events are not received if player is not created`() = playerNonConfig {
         emit(PlayerEvent.Initial)
         assertNoEmission(PlayerEvent.Initial)
     }
 
     @Test
-    fun `player events stop being received after app is backgrounded`() = playerViewModel {
+    fun `player events stop being received after app is backgrounded`() = playerNonConfig {
         getPlayer()
         emit(PlayerEvent.Initial)
         onAppBackgrounded()
@@ -71,28 +72,28 @@ class PlayerViewModelTest {
     }
 
     @Test
-    fun `app player receives player events`() = playerViewModel {
+    fun `app player receives player events`() = playerNonConfig {
         getPlayer()
         emit(PlayerEvent.Initial)
         assertAppPlayerEmission(PlayerEvent.Initial)
     }
 
     @Test
-    fun `delegate receives player events`() = playerViewModel {
+    fun `delegate receives player events`() = playerNonConfig {
         getPlayer()
         emit(PlayerEvent.Initial)
         assertPlayerEventEmission(PlayerEvent.Initial)
     }
 
     @Test
-    fun `player did tear down when app is backgrounded`() = playerViewModel {
+    fun `player did tear down when app is backgrounded`() = playerNonConfig {
         getPlayer()
         onAppBackgrounded()
         assertReleased(times = 1)
     }
 
     @Test
-    fun `track state changes according to relevant player event emissions`() = playerViewModel {
+    fun `track state changes according to relevant player event emissions`() = playerNonConfig {
         getPlayer()
         assertEmission(TracksState.NotAvailable)
         val event = PlayerEvent.OnTracksChanged(emptyList())
@@ -100,14 +101,14 @@ class PlayerViewModelTest {
         assertEmission(event)
     }
 
-    private fun playerViewModel(block: suspend PlayerViewModelRobot.() -> Unit) = coroutinesTestRule.testDispatcher.runBlockingTest {
-        PlayerViewModelRobot(this)
+    private fun playerNonConfig(block: suspend PlayerNonConfigRobot.() -> Unit) = coroutinesTestRule.testDispatcher.runBlockingTest {
+        PlayerNonConfigRobot(this)
             .apply { block() }
             .release()
     }
 
-    private class PlayerViewModelRobot(scope: CoroutineScope) {
-        private val playerSavedState = PlayerSavedState(SavedStateHandle())
+    private class PlayerNonConfigRobot(scope: CoroutineScope) {
+        private val playerSavedState = PlayerSavedState(UUID.randomUUID(), SavedStateHandle())
         private val appPlayer = FakeAppPlayer()
         private val appPlayerFactory = FakeAppPlayerFactory(appPlayer)
         private val events = MutableSharedFlow<PlayerEvent>()
@@ -115,7 +116,7 @@ class PlayerViewModelTest {
         private val playerEventDelegate = FakePlayerEventDelegate()
         private val playbackInfoResolver = DefaultPlaybackInfoResolver()
         private val seekDataUpdater = FakeSeekDataUpdater()
-        private val viewModel = PlayerViewModel(
+        private val playerNonConfig = PlayerNonConfig(
             playerSavedState = playerSavedState,
             appPlayerFactory = appPlayerFactory,
             playerEventStream = playerEventStream,
@@ -129,17 +130,18 @@ class PlayerViewModelTest {
         private val jobs = mutableListOf<Job>()
 
         init {
-            jobs += viewModel.playerEvents()
+            jobs += playerNonConfig.playerEvents()
                 .onEach { emittedEvents += it }
                 .launchIn(scope)
 
-            jobs += viewModel.tracksStates()
+            jobs += playerNonConfig.tracksStates()
                 .onEach { emittedTrackStates += it }
                 .launchIn(scope)
         }
 
         fun release() {
             jobs.forEach(Job::cancel)
+            playerNonConfig.close()
         }
 
         suspend fun emit(playerEvent: PlayerEvent = PlayerEvent.Initial) {
@@ -151,11 +153,11 @@ class PlayerViewModelTest {
         }
 
         fun getPlayer() {
-            viewModel.getPlayer()
+            playerNonConfig.getPlayer()
         }
 
         fun onAppBackgrounded() {
-            viewModel.onAppBackgrounded()
+            playerNonConfig.onAppBackgrounded()
         }
 
         fun assertPlayerCreated(times: Int) {
