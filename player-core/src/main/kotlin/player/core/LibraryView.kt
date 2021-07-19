@@ -6,9 +6,11 @@ import android.os.Parcelable
 import android.util.AttributeSet
 import android.widget.FrameLayout
 import androidx.core.os.bundleOf
+import androidx.core.view.children
 import androidx.fragment.app.FragmentActivity
 import player.common.requireNotNull
 import player.ui.common.PlayerArguments
+import player.ui.controller.PlayerView
 
 class LibraryView : FrameLayout {
     val isPlaying: Boolean get() = childCount == 1
@@ -25,7 +27,7 @@ class LibraryView : FrameLayout {
     ) : super(context, attributeSet, defStyleAttr)
 
     fun play(playerArguments: PlayerArguments) {
-        stop()
+        tearDownUi()
         this.playerArguments = playerArguments
         val module = LibraryModule(context as FragmentActivity)
         val playerView = module.playerViewFactory.create(
@@ -35,10 +37,15 @@ class LibraryView : FrameLayout {
         addView(playerView)
     }
 
-    fun stop() {
+    private fun tearDownUi() {
         playerArguments = null
         keyPlayerNonConfig = null
         removeAllViews()
+    }
+
+    fun stop() {
+        children.filterIsInstance<PlayerView>().firstOrNull()?.release()
+        tearDownUi()
     }
 
     override fun onSaveInstanceState(): Parcelable {

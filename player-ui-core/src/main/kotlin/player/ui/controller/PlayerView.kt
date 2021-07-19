@@ -88,11 +88,10 @@ class PlayerView(
         super.onDetachedFromWindow()
         lifecycleRegistry.currentState = Lifecycle.State.DESTROYED
         requireViewTreeLifecycleOwner().lifecycle.removeObserver(this)
+    }
 
-        val isPlayerClosed = !activity.isChangingConfigurations
-        if (isPlayerClosed) {
-            playerViewModel.remove(playerArguments.id)
-        } // else keep PlayerNonConfig around in PlayerViewModel to be used when state is restored after config change
+    fun release() {
+        playerViewModel.remove(playerArguments.id)
     }
 
     override fun onStateChanged(source: LifecycleOwner, event: Lifecycle.Event) {
