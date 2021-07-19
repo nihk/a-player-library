@@ -14,7 +14,7 @@
         android:layout_height="48dp"
         android:layout_gravity="center"
         android:tint="@color/black"
-        app:srcCompat="@drawable/play" />
+        app:srcCompat="@drawable/play_preview" />
 
     <player.core.LibraryView
         android:id="@+id/library_view"
