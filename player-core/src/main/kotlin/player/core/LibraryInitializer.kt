@@ -7,17 +7,12 @@ import player.common.PlayerEventDelegate
 import player.ui.common.PlaybackUi
 
 // Required and optional dependencies to inject into the library.
-object LibraryInitializer {
+object LibraryInitializer : LibraryConfiguration.Provider {
     private var initialized: Boolean = false
     private var playerModule: PlayerModule? = null
     private var playerEventDelegate: PlayerEventDelegate? = null
     private var playbackInfoResolver: PlaybackInfoResolver? = null
     private var playbackUiFactories: List<PlaybackUi.Factory>? = null
-
-    internal fun playerModule(): PlayerModule = playerModule.requireInitialized()
-    internal fun playerEventDelegate(): PlayerEventDelegate? = playerEventDelegate
-    internal fun playbackInfoResolver(): PlaybackInfoResolver = playbackInfoResolver.requireInitialized()
-    internal fun playbackUiFactories(): List<PlaybackUi.Factory> = playbackUiFactories.requireInitialized()
 
     // Must be called from Application.onCreate().
     fun initialize(
@@ -32,6 +27,15 @@ object LibraryInitializer {
         LibraryInitializer.playerEventDelegate = playerEventDelegate
         LibraryInitializer.playbackInfoResolver = playbackInfoResolver
         LibraryInitializer.playbackUiFactories = playbackUiFactories
+    }
+
+    override val libraryConfiguration: LibraryConfiguration get() {
+        return LibraryConfiguration(
+            playerModule = playerModule.requireInitialized(),
+            playbackUiFactories = playbackUiFactories.requireInitialized(),
+            playerEventDelegate = playerEventDelegate,
+            playbackInfoResolver = playbackInfoResolver.requireInitialized(),
+        )
     }
 
     private fun <T> T?.requireInitialized(): T {

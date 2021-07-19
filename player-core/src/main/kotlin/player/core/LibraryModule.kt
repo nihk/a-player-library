@@ -12,15 +12,18 @@ import player.ui.controller.PlayerViewModel
 import player.ui.controller.SnackbarErrorRenderer
 
 internal class LibraryModule(activity: FragmentActivity) {
+    private val libraryConfiguration = (activity as? LibraryConfiguration.Provider
+        ?: LibraryInitializer).libraryConfiguration
+
     val playerViewFactory: PlayerView.Factory get() = PlayerView.Factory(
         vmFactory = playerViewModelFactory,
         playerViewWrapperFactory = module.playerViewWrapperFactory,
         errorRenderer = SnackbarErrorRenderer(),
         pipControllerFactory = pipControllerFactory,
-        playbackUiFactories = LibraryInitializer.playbackUiFactories()
+        playbackUiFactories = libraryConfiguration.playbackUiFactories
     )
 
-    private val module: PlayerModule = LibraryInitializer.playerModule()
+    private val module: PlayerModule = libraryConfiguration.playerModule
 
     private val pipControllerFactory: PipController.Factory = if (isMinOsForPip) {
         AndroidPipController.Factory(activity)
@@ -31,8 +34,8 @@ internal class LibraryModule(activity: FragmentActivity) {
     private val playerNonConfigFactory: PlayerNonConfig.Factory get() = PlayerNonConfig.Factory(
         appPlayerFactory = module.appPlayerFactory,
         playerEventStream = module.playerEventStream,
-        playerEventDelegate = LibraryInitializer.playerEventDelegate(),
-        playbackInfoResolver = LibraryInitializer.playbackInfoResolver(),
+        playerEventDelegate = libraryConfiguration.playerEventDelegate,
+        playbackInfoResolver = libraryConfiguration.playbackInfoResolver,
         seekDataUpdater = module.seekDataUpdater
     )
 
