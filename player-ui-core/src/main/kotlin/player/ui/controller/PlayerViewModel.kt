@@ -4,6 +4,7 @@ import androidx.lifecycle.AbstractSavedStateViewModelFactory
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.savedstate.SavedStateRegistryOwner
+import player.ui.common.PlayerArguments
 
 class PlayerViewModel(
     private val handle: SavedStateHandle,
@@ -11,8 +12,10 @@ class PlayerViewModel(
 ) : ViewModel() {
     private val playerNonConfigs: LinkedHashMap<String, PlayerNonConfig> = linkedMapOf()
 
-    fun get(id: String, uri: String): PlayerNonConfig {
-        return playerNonConfigs.getOrPut(id) { playerNonConfigFactory.create(id, handle, uri) }
+    fun get(playerArguments: PlayerArguments): PlayerNonConfig {
+        return playerNonConfigs.getOrPut(playerArguments.id) {
+            playerNonConfigFactory.create(playerArguments, handle)
+        }
     }
 
     // fixme: hack to avoid passing parameters

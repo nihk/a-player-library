@@ -9,7 +9,6 @@ import androidx.core.os.bundleOf
 import androidx.fragment.app.FragmentActivity
 import player.common.requireNotNull
 import player.ui.common.PlayerArguments
-import java.util.*
 
 class LibraryView : FrameLayout {
     val isPlaying: Boolean get() = childCount == 1
@@ -25,15 +24,13 @@ class LibraryView : FrameLayout {
         defStyleAttr: Int
     ) : super(context, attributeSet, defStyleAttr)
 
-    fun play(playerArguments: PlayerArguments, keyPlayerNonConfig: String = UUID.randomUUID().toString()) {
+    fun play(playerArguments: PlayerArguments) {
         stop()
         this.playerArguments = playerArguments
-        this.keyPlayerNonConfig = keyPlayerNonConfig
         val module = LibraryModule(context as FragmentActivity)
         val playerView = module.playerViewFactory.create(
             context = context,
             playerArguments = playerArguments,
-            id = keyPlayerNonConfig
         )
         addView(playerView)
     }
@@ -56,10 +53,9 @@ class LibraryView : FrameLayout {
         var viewState = state
         if (viewState is Bundle) {
             playerArguments = viewState.getParcelable(KEY_PLAYER_ARGUMENTS)
-            keyPlayerNonConfig = viewState.getString(KEY_PLAYER_NON_CONFIG)
             viewState = viewState.getParcelable(KEY_SUPER_STATE)
-            if (playerArguments != null && keyPlayerNonConfig != null) {
-                play(playerArguments.requireNotNull(), keyPlayerNonConfig.requireNotNull())
+            if (playerArguments != null) {
+                play(playerArguments.requireNotNull())
             }
         }
         super.onRestoreInstanceState(viewState)

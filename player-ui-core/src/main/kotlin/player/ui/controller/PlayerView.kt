@@ -28,7 +28,6 @@ import player.ui.common.PlayerArguments
 class PlayerView(
     context: Context,
     private val playerArguments: PlayerArguments,
-    private val keyPlayerNonConfig: String,
     private val vmFactory: PlayerViewModel.Factory,
     private val playerViewWrapperFactory: PlayerViewWrapper.Factory,
     private val errorRenderer: ErrorRenderer,
@@ -42,7 +41,7 @@ class PlayerView(
         ).get(PlayerViewModel::class.java)
     }
     private val playerNonConfig: PlayerNonConfig by lazy {
-        playerViewModel.get(keyPlayerNonConfig, playerArguments.uri)
+        playerViewModel.get(playerArguments)
     }
     private val onUserLeaveHintViewModel: OnUserLeaveHintViewModel by lazy {
         // Activity scoped because Activity.onUserLeaveHint is only available at the Activity level.
@@ -92,7 +91,7 @@ class PlayerView(
 
         val isPlayerClosed = !activity.isChangingConfigurations
         if (isPlayerClosed) {
-            playerViewModel.remove(keyPlayerNonConfig)
+            playerViewModel.remove(playerArguments.id)
         } // else keep PlayerNonConfig around in PlayerViewModel to be used when state is restored after config change
     }
 
@@ -188,12 +187,10 @@ class PlayerView(
         fun create(
             context: Context,
             playerArguments: PlayerArguments,
-            id: String
         ): PlayerView {
             return PlayerView(
                 context = context,
                 playerArguments = playerArguments,
-                keyPlayerNonConfig = id,
                 vmFactory = vmFactory,
                 playerViewWrapperFactory = playerViewWrapperFactory,
                 errorRenderer = errorRenderer,

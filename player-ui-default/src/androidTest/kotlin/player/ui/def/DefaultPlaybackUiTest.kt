@@ -99,6 +99,7 @@ class DefaultPlaybackUiTest {
         private val pipController = FakePipController()
         private val playerController = FakePlayerController()
         private val playerArguments = PlayerArguments(
+            id = "id",
             uri = "",
             playbackUiFactory = DefaultPlaybackUi.Factory::class.java
         )

@@ -107,11 +107,12 @@ class PlayerItemViewHolder(
 
     private fun playInternal() {
         val item = requireNotNull(item)
-        binding.libraryView.play(item.toPlayerArguments(), item.id)
+        binding.libraryView.play(item.toPlayerArguments())
     }
 
     private fun PlayerItem.toPlayerArguments(): PlayerArguments {
         return PlayerArguments(
+            id = id,
             uri = uri,
             playbackUiFactory = InlinePlaybackUi.Factory::class.java
         )

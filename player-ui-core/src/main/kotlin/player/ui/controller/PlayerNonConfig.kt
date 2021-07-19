@@ -27,6 +27,7 @@ import player.common.SeekDataUpdater
 import player.common.TrackInfo
 import player.common.VideoSize
 import player.common.requireNotNull
+import player.ui.common.PlayerArguments
 import player.ui.common.PlayerController
 import player.ui.common.TracksState
 import player.ui.common.UiState
@@ -208,18 +209,17 @@ class PlayerNonConfig(
         private val seekDataUpdater: SeekDataUpdater
     ) {
         fun create(
-            id: String,
+            playerArguments: PlayerArguments,
             handle: SavedStateHandle,
-            uri: String
         ): PlayerNonConfig {
             SavedStateHandle()
             return PlayerNonConfig(
-                playerSavedState = PlayerSavedState(id, handle),
+                playerSavedState = PlayerSavedState(playerArguments.id, handle),
                 appPlayerFactory = appPlayerFactory,
                 playerEventStream = playerEventStream,
                 playerEventDelegate = playerEventDelegate,
                 playbackInfoResolver = playbackInfoResolver,
-                uri = uri,
+                uri = playerArguments.uri,
                 seekDataUpdater = seekDataUpdater
             )
         }

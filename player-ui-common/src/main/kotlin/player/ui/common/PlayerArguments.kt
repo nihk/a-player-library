@@ -9,6 +9,7 @@ import java.util.concurrent.TimeUnit
 
 @Parcelize
 data class PlayerArguments(
+    val id: String,
     val uri: String,
     val playbackUiFactory: Class<out PlaybackUi.Factory>,
     val pipConfig: PictureInPictureConfig? = null,

@@ -118,6 +118,7 @@ class PlayerViewTest {
         )
         private val playerViewWrapperFactory = FakePlayerViewWrapper.Factory(playerViewWrapper)
         private val args = PlayerArguments(
+            id = "id",
             uri = "",
             pipConfig = pipConfig,
             playbackUiFactory = FakePlaybackUiFactory::class.java
@@ -135,8 +136,7 @@ class PlayerViewTest {
             scenario = launchFragmentInContainer {
                 TestFragment(
                     playerViewFactory = playerViewFactory,
-                    playerArguments = args,
-                    id = id
+                    playerArguments = args
                 )
             }
         }
@@ -192,8 +192,7 @@ class FakeErrorRenderer : ErrorRenderer {
 
 class TestFragment(
     private val playerViewFactory: PlayerView.Factory,
-    private val playerArguments: PlayerArguments,
-    private val id: String
+    private val playerArguments: PlayerArguments
 ) : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -202,8 +201,7 @@ class TestFragment(
     ): View {
         return playerViewFactory.create(
             requireContext(),
-            playerArguments,
-            id
+            playerArguments
         )
     }
 }
