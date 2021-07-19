@@ -2,7 +2,6 @@ package player.core
 
 import android.content.Context
 import android.os.Bundle
-import android.os.ParcelUuid
 import android.os.Parcelable
 import android.util.AttributeSet
 import android.widget.FrameLayout
@@ -16,7 +15,7 @@ class LibraryView : FrameLayout {
     val isPlaying: Boolean get() = childCount == 1
 
     private var playerArguments: PlayerArguments? = null
-    private var uuid: UUID? = null
+    private var keyPlayerNonConfig: String? = null
 
     constructor(context: Context) : super(context)
     constructor(context: Context, attributeSet: AttributeSet?) : super(context, attributeSet)
@@ -26,26 +25,22 @@ class LibraryView : FrameLayout {
         defStyleAttr: Int
     ) : super(context, attributeSet, defStyleAttr)
 
-    fun play(playerArguments: PlayerArguments) {
-        play(playerArguments, uuid ?: UUID.randomUUID())
-    }
-
-    private fun play(playerArguments: PlayerArguments, uuid: UUID) {
+    fun play(playerArguments: PlayerArguments, keyPlayerNonConfig: String = UUID.randomUUID().toString()) {
         stop()
         this.playerArguments = playerArguments
-        this.uuid = uuid
+        this.keyPlayerNonConfig = keyPlayerNonConfig
         val module = LibraryModule(context as FragmentActivity)
         val playerView = module.playerViewFactory.create(
             context = context,
             playerArguments = playerArguments,
-            uuid = uuid
+            id = keyPlayerNonConfig
         )
         addView(playerView)
     }
 
     fun stop() {
         playerArguments = null
-        uuid = null
+        keyPlayerNonConfig = null
         removeAllViews()
     }
 
@@ -53,7 +48,7 @@ class LibraryView : FrameLayout {
         return bundleOf(
             KEY_SUPER_STATE to super.onSaveInstanceState(),
             KEY_PLAYER_ARGUMENTS to playerArguments,
-            KEY_UUID to uuid?.let { ParcelUuid(uuid) }
+            KEY_PLAYER_NON_CONFIG to keyPlayerNonConfig
         )
     }
 
@@ -61,10 +56,10 @@ class LibraryView : FrameLayout {
         var viewState = state
         if (viewState is Bundle) {
             playerArguments = viewState.getParcelable(KEY_PLAYER_ARGUMENTS)
-            uuid = viewState.getParcelable<ParcelUuid>(KEY_UUID)?.uuid
+            keyPlayerNonConfig = viewState.getString(KEY_PLAYER_NON_CONFIG)
             viewState = viewState.getParcelable(KEY_SUPER_STATE)
-            if (playerArguments != null && uuid != null) {
-                play(playerArguments.requireNotNull(), uuid.requireNotNull())
+            if (playerArguments != null && keyPlayerNonConfig != null) {
+                play(playerArguments.requireNotNull(), keyPlayerNonConfig.requireNotNull())
             }
         }
         super.onRestoreInstanceState(viewState)
@@ -73,6 +68,6 @@ class LibraryView : FrameLayout {
     companion object {
         private const val KEY_SUPER_STATE = "library_view:super_state"
         private const val KEY_PLAYER_ARGUMENTS = "library_view:player_arguments"
-        private const val KEY_UUID = "library_view:uuid"
+        private const val KEY_PLAYER_NON_CONFIG = "library_view:player_non_config"
     }
 }

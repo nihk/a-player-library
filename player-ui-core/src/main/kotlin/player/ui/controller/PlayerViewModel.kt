@@ -4,17 +4,15 @@ import androidx.lifecycle.AbstractSavedStateViewModelFactory
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.savedstate.SavedStateRegistryOwner
-import java.util.*
-import kotlin.collections.LinkedHashMap
 
 class PlayerViewModel(
     private val handle: SavedStateHandle,
     private val playerNonConfigFactory: PlayerNonConfig.Factory
 ) : ViewModel() {
-    private val playerNonConfigs: LinkedHashMap<UUID, PlayerNonConfig> = linkedMapOf()
+    private val playerNonConfigs: LinkedHashMap<String, PlayerNonConfig> = linkedMapOf()
 
-    fun get(uuid: UUID, uri: String): PlayerNonConfig {
-        return playerNonConfigs.getOrPut(uuid) { playerNonConfigFactory.create(uuid, handle, uri) }
+    fun get(id: String, uri: String): PlayerNonConfig {
+        return playerNonConfigs.getOrPut(id) { playerNonConfigFactory.create(id, handle, uri) }
     }
 
     // fixme: hack to avoid passing parameters
@@ -22,9 +20,9 @@ class PlayerViewModel(
         return playerNonConfigs.values.lastOrNull()
     }
 
-    fun remove(uuid: UUID) {
-        val playerNonConfig = playerNonConfigs[uuid]
-        playerNonConfigs.remove(uuid)
+    fun remove(id: String) {
+        val playerNonConfig = playerNonConfigs[id]
+        playerNonConfigs.remove(id)
         playerNonConfig?.close()
     }
 

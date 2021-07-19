@@ -30,7 +30,6 @@ import player.ui.common.PlayerArguments
 import player.ui.test.FakePipController
 import player.ui.test.FakePlaybackUi
 import player.ui.test.FakePlaybackUiFactory
-import java.util.*
 
 class PlayerViewTest {
     @get:Rule
@@ -130,14 +129,14 @@ class PlayerViewTest {
             pipControllerFactory = pipControllerFactory,
             playbackUiFactories = listOf(playbackUiFactory)
         )
-        private val uuid = UUID.randomUUID()
+        private val id = "id"
 
         init {
             scenario = launchFragmentInContainer {
                 TestFragment(
                     playerViewFactory = playerViewFactory,
                     playerArguments = args,
-                    uuid = uuid
+                    id = id
                 )
             }
         }
@@ -194,7 +193,7 @@ class FakeErrorRenderer : ErrorRenderer {
 class TestFragment(
     private val playerViewFactory: PlayerView.Factory,
     private val playerArguments: PlayerArguments,
-    private val uuid: UUID
+    private val id: String
 ) : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -204,7 +203,7 @@ class TestFragment(
         return playerViewFactory.create(
             requireContext(),
             playerArguments,
-            uuid
+            id
         )
     }
 }

@@ -196,6 +196,7 @@ class PlayerNonConfig(
 
     override fun close() {
         tearDown()
+        playerSavedState.clear()
         scope.cancel()
     }
 
@@ -207,13 +208,13 @@ class PlayerNonConfig(
         private val seekDataUpdater: SeekDataUpdater
     ) {
         fun create(
-            uuid: UUID,
+            id: String,
             handle: SavedStateHandle,
             uri: String
         ): PlayerNonConfig {
             SavedStateHandle()
             return PlayerNonConfig(
-                playerSavedState = PlayerSavedState(uuid, handle),
+                playerSavedState = PlayerSavedState(id, handle),
                 appPlayerFactory = appPlayerFactory,
                 playerEventStream = playerEventStream,
                 playerEventDelegate = playerEventDelegate,

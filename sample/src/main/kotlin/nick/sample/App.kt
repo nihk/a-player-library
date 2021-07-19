@@ -8,6 +8,7 @@ import nick.sample.data.SampleCloseDelegate
 import nick.sample.data.SampleOnFullscreenChangedCallback
 import nick.sample.data.SampleOnVideoSizeChangedCallback
 import nick.sample.data.SlowPlaybackInfoResolver
+import player.common.DefaultPlaybackInfoResolver
 import player.core.LibraryInitializer
 import player.exoplayer.ExoPlayerModule
 import player.ui.common.TimeFormatter
@@ -46,7 +47,7 @@ class App : Application() {
                 )
             ),
             playerEventDelegate = LoggingPlayerEventDelegate(),
-            playbackInfoResolver = SlowPlaybackInfoResolver()
+            playbackInfoResolver = DefaultPlaybackInfoResolver() //SlowPlaybackInfoResolver()
         )
     }
 }

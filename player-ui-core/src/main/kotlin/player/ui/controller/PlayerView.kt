@@ -22,17 +22,13 @@ import player.ui.common.OnUserLeaveHintViewModel
 import player.ui.common.PipController
 import player.ui.common.PlaybackUi
 import player.ui.common.PlayerArguments
-import java.util.*
 
 // todo: PiP UI states
 @SuppressLint("ViewConstructor")
 class PlayerView(
     context: Context,
     private val playerArguments: PlayerArguments,
-    // Used to identify a PlayerNonConfig in a singular PlayerViewModel across config changes.
-    // This was done so there can be > 1 PlayerViews on a screen at any given time without bloating
-    // the ViewModelStore with 1 ViewModel per PlayerView.
-    private val uuid: UUID,
+    private val keyPlayerNonConfig: String,
     private val vmFactory: PlayerViewModel.Factory,
     private val playerViewWrapperFactory: PlayerViewWrapper.Factory,
     private val errorRenderer: ErrorRenderer,
@@ -46,7 +42,7 @@ class PlayerView(
         ).get(PlayerViewModel::class.java)
     }
     private val playerNonConfig: PlayerNonConfig by lazy {
-        playerViewModel.get(uuid, playerArguments.uri)
+        playerViewModel.get(keyPlayerNonConfig, playerArguments.uri)
     }
     private val onUserLeaveHintViewModel: OnUserLeaveHintViewModel by lazy {
         // Activity scoped because Activity.onUserLeaveHint is only available at the Activity level.
@@ -96,7 +92,7 @@ class PlayerView(
 
         val isPlayerClosed = !activity.isChangingConfigurations
         if (isPlayerClosed) {
-            playerViewModel.remove(uuid)
+            playerViewModel.remove(keyPlayerNonConfig)
         } // else keep PlayerNonConfig around in PlayerViewModel to be used when state is restored after config change
     }
 
@@ -192,12 +188,12 @@ class PlayerView(
         fun create(
             context: Context,
             playerArguments: PlayerArguments,
-            uuid: UUID
+            id: String
         ): PlayerView {
             return PlayerView(
                 context = context,
                 playerArguments = playerArguments,
-                uuid = uuid,
+                keyPlayerNonConfig = id,
                 vmFactory = vmFactory,
                 playerViewWrapperFactory = playerViewWrapperFactory,
                 errorRenderer = errorRenderer,

@@ -17,11 +17,10 @@ import player.common.PlayerEvent
 import player.common.PlayerState
 import player.test.FakeAppPlayer
 import player.test.FakeAppPlayerFactory
-import player.test.FakePlayerEventStream
 import player.test.FakePlayerEventDelegate
+import player.test.FakePlayerEventStream
 import player.test.FakeSeekDataUpdater
 import player.ui.common.TracksState
-import java.util.*
 
 class PlayerNonConfigTest {
     @get:Rule
@@ -108,7 +107,7 @@ class PlayerNonConfigTest {
     }
 
     private class PlayerNonConfigRobot(scope: CoroutineScope) {
-        private val playerSavedState = PlayerSavedState(UUID.randomUUID(), SavedStateHandle())
+        private val playerSavedState = PlayerSavedState("player_saved_state", SavedStateHandle())
         private val appPlayer = FakeAppPlayer()
         private val appPlayerFactory = FakeAppPlayerFactory(appPlayer)
         private val events = MutableSharedFlow<PlayerEvent>()
