@@ -16,7 +16,6 @@ class LibraryView : FrameLayout {
     val isPlaying: Boolean get() = childCount == 1
 
     private var playerArguments: PlayerArguments? = null
-    private var keyPlayerNonConfig: String? = null
 
     constructor(context: Context) : super(context)
     constructor(context: Context, attributeSet: AttributeSet?) : super(context, attributeSet)
@@ -39,7 +38,6 @@ class LibraryView : FrameLayout {
 
     private fun tearDownUi() {
         playerArguments = null
-        keyPlayerNonConfig = null
         removeAllViews()
     }
 
@@ -52,7 +50,6 @@ class LibraryView : FrameLayout {
         return bundleOf(
             KEY_SUPER_STATE to super.onSaveInstanceState(),
             KEY_PLAYER_ARGUMENTS to playerArguments,
-            KEY_PLAYER_NON_CONFIG to keyPlayerNonConfig
         )
     }
 
@@ -71,6 +68,5 @@ class LibraryView : FrameLayout {
     companion object {
         private const val KEY_SUPER_STATE = "library_view:super_state"
         private const val KEY_PLAYER_ARGUMENTS = "library_view:player_arguments"
-        private const val KEY_PLAYER_NON_CONFIG = "library_view:player_non_config"
     }
 }
