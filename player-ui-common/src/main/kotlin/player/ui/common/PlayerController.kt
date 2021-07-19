@@ -1,5 +1,7 @@
 package player.ui.common
 
+import kotlinx.coroutines.flow.Flow
+import player.common.PlayerEvent
 import player.common.SeekData
 import player.common.TrackInfo
 import player.common.VideoSize
@@ -17,4 +19,7 @@ interface PlayerController {
     fun toPlaylistItem(index: Int)
     fun latestSeekData(): SeekData
     fun tracks(): List<TrackInfo>
+    fun clearTrackInfos(rendererIndex: Int)
+    fun setTrackInfos(trackInfos: List<TrackInfo>)
+    fun playerEvents(): Flow<PlayerEvent>
 }

@@ -1,51 +1,40 @@
 package player.ui.trackspicker
 
+import android.content.Context
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
-import androidx.core.os.bundleOf
-import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.LifecycleRegistry
 import androidx.lifecycle.lifecycleScope
-import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import com.google.android.material.bottomsheet.BottomSheetDialog
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import player.common.PlayerEvent
 import player.common.TrackInfo
 import player.common.requireNotNull
-import player.ui.controller.PlayerNonConfig
-import player.ui.controller.PlayerViewModel
+import player.ui.common.PlayerController
 import player.ui.trackspicker.databinding.TracksFragmentBinding
 
-// fixme: setting a video quality track should also (hidden to user) set every video quality
-//  below that one, too (?)
-class TracksPickerFragment : BottomSheetDialogFragment() {
-    private val trackType: TrackInfo.Type
-        get() = requireArguments().getSerializable(KEY_ARG_TRACK_TYPE).requireNotNull() as TrackInfo.Type
-    // fixme: need to pass in factory here, for process recreation handling
-    private val viewModel: PlayerViewModel by activityViewModels()
-    private val playerNonConfig: PlayerNonConfig by lazy {
-        viewModel.getLatest().requireNotNull()
-    }
+class TracksPickerDialog(
+    context: Context,
+    private val playerController: PlayerController,
+    private val trackType: TrackInfo.Type,
+) : BottomSheetDialog(context), LifecycleOwner {
     private var binding: TracksFragmentBinding? = null
+    private val registry = LifecycleRegistry(this)
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
-        binding = TracksFragmentBinding.inflate(inflater, container, false)
-        return requireBinding().root
-    }
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        registry.currentState = Lifecycle.State.CREATED
+        binding = TracksFragmentBinding.inflate(layoutInflater)
+        setContentView(requireBinding().root)
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
         val adapter = TracksAdapter { action ->
             when (action) {
-                is TrackOption.Action.Clear -> playerNonConfig.clearTrackInfos(action.rendererIndex)
+                is TrackOption.Action.Clear -> playerController.clearTrackInfos(action.rendererIndex)
                 is TrackOption.Action.Set -> {
                     val selected = action.trackInfo.copy(isSelected = true)
-                    playerNonConfig.setTrackInfos(listOf(selected))
+                    playerController.setTrackInfos(listOf(selected))
                 }
             }
             dismiss()
@@ -54,7 +43,7 @@ class TracksPickerFragment : BottomSheetDialogFragment() {
 
         submitTrackOptions(adapter)
 
-        playerNonConfig.playerEvents()
+        playerController.playerEvents()
             .onEach { playerEvent ->
                 when (playerEvent) {
                     is PlayerEvent.OnTracksChanged -> {
@@ -62,11 +51,11 @@ class TracksPickerFragment : BottomSheetDialogFragment() {
                     }
                 }
             }
-            .launchIn(viewLifecycleOwner.lifecycleScope)
+            .launchIn(lifecycleScope)
     }
 
     private fun trackInfosBy(type: TrackInfo.Type): List<TrackInfo> {
-        return playerNonConfig.tracks().filter { it.type == type }
+        return playerController.tracks().filter { it.type == type }
     }
 
     private fun List<TrackInfo>.toTrackOptions(): List<TrackOption> {
@@ -100,20 +89,11 @@ class TracksPickerFragment : BottomSheetDialogFragment() {
         adapter.submitList(trackOptions)
     }
 
-    override fun onDestroyView() {
-        super.onDestroyView()
-        binding = null
+    override fun onDetachedFromWindow() {
+        registry.currentState = Lifecycle.State.DESTROYED
     }
 
-    private fun requireBinding() = requireNotNull(binding)
+    override fun getLifecycle(): Lifecycle = registry
 
-    companion object {
-        private const val KEY_ARG_TRACK_TYPE = "track_type"
-
-        fun create(type: TrackInfo.Type): TracksPickerFragment {
-            return TracksPickerFragment().apply {
-                arguments = bundleOf(KEY_ARG_TRACK_TYPE to type)
-            }
-        }
-    }
+    private fun requireBinding() = binding.requireNotNull()
 }

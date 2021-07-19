@@ -50,7 +50,7 @@ class PlayerNonConfig(
     private val playerJobs = mutableListOf<Job>()
 
     private val playerEvents = MutableSharedFlow<PlayerEvent>()
-    fun playerEvents(): Flow<PlayerEvent> = playerEvents
+    override fun playerEvents(): Flow<PlayerEvent> = playerEvents
 
     private val uiStates = MutableStateFlow(UiState.INITIAL)
     fun uiStates(): StateFlow<UiState> = uiStates
@@ -167,11 +167,11 @@ class PlayerNonConfig(
         return appPlayer?.tracks.orEmpty()
     }
 
-    fun clearTrackInfos(rendererIndex: Int) {
+    override fun clearTrackInfos(rendererIndex: Int) {
         requireNotNull(appPlayer).clearTrackInfos(rendererIndex)
     }
 
-    fun setTrackInfos(trackInfos: List<TrackInfo>) {
+    override fun setTrackInfos(trackInfos: List<TrackInfo>) {
         requireNotNull(appPlayer).setTrackInfos(trackInfos)
     }
 

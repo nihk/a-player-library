@@ -33,6 +33,7 @@ import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 
 // todo: this should be more composable for shared components across PlaybackUis, e.g. the seekbar
+// todo: save/restore track type state for keeping TracksPickerDialog open across config changes
 class DefaultPlaybackUi(
     private val activity: FragmentActivity,
     private val navigator: Navigator,
@@ -197,7 +198,7 @@ class DefaultPlaybackUi(
             return DefaultPlaybackUi(
                 activity = host,
                 seekBarListenerFactory = DefaultSeekBarListener.Factory(),
-                navigator = Navigator(host.supportFragmentManager),
+                navigator = Navigator(host, playerController),
                 playerViewWrapperFactory = playerViewWrapperFactory,
                 pipController = pipController,
                 playerController = playerController,

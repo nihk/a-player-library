@@ -1,5 +1,8 @@
 package player.ui.test
 
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emptyFlow
+import player.common.PlayerEvent
 import player.common.SeekData
 import player.common.TrackInfo
 import player.common.VideoSize
@@ -17,4 +20,7 @@ class FakePlayerController : PlayerController {
     override fun toPlaylistItem(index: Int) = Unit
     override fun latestSeekData(): SeekData = SeekData.INITIAL
     override fun tracks(): List<TrackInfo> = emptyList()
+    override fun clearTrackInfos(rendererIndex: Int) = Unit
+    override fun setTrackInfos(trackInfos: List<TrackInfo>) = Unit
+    override fun playerEvents(): Flow<PlayerEvent> = emptyFlow()
 }
