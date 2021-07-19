@@ -74,11 +74,11 @@ data class PlayerItem(
 )
 
 class PlayerItemViewHolder(
-    val binding: PlayerItemBinding,
-    val playingIds: MutableList<String>
+    private val binding: PlayerItemBinding,
+    private val playingIds: MutableList<String>
 ) : RecyclerView.ViewHolder(binding.root) {
-    var item: PlayerItem? = null
-        private set
+    private var item: PlayerItem? = null
+    val id: String? get() = item?.id
 
     init {
         binding.container.setOnClickListener {
@@ -87,7 +87,7 @@ class PlayerItemViewHolder(
     }
 
     fun bind(item: PlayerItem) {
-        unbind()
+        stop()
         this.item = item
         binding.container.background = ColorDrawable(item.color)
         if (item.id in playingIds) {
@@ -96,12 +96,12 @@ class PlayerItemViewHolder(
         }
     }
 
-    fun unbind() {
+    fun stop() {
         binding.libraryView.stop()
     }
 
     private fun play() {
-        playingIds += item!!.id
+        playingIds += id!!
         playInternal()
     }
 
@@ -134,8 +134,8 @@ class Adapter(
     }
 
     override fun onViewDetachedFromWindow(holder: PlayerItemViewHolder) {
-        playingIds -= holder.item!!.id
-        holder.unbind()
+        playingIds.remove(holder.id)
+        holder.stop()
     }
 }
 
