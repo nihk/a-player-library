@@ -20,6 +20,11 @@ class PlayerSavedState(
         handle[keyManuallySetTrackInfos] = tracks.filter(TrackInfo::isManuallySet)
     }
 
+    fun close() {
+        handle[keyPlayerState] = null
+        handle[keyManuallySetTrackInfos] = null
+    }
+
     private val keyManuallySetTrackInfos = "$uuid-manually_set_track_infos"
     private val keyPlayerState = "$uuid-player_state"
 }

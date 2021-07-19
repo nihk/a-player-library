@@ -29,10 +29,7 @@ import java.util.*
 class PlayerView(
     context: Context,
     private val playerArguments: PlayerArguments,
-    // Used to identify a PlayerNonConfig in a singular PlayerViewModel across config changes.
-    // This was done so there can be > 1 PlayerViews on a screen at any given time without bloating
-    // the ViewModelStore with 1 ViewModel per PlayerView.
-    private val uuid: UUID,
+    private val keyPlayerNonConfig: UUID,
     private val vmFactory: PlayerViewModel.Factory,
     private val playerViewWrapperFactory: PlayerViewWrapper.Factory,
     private val errorRenderer: ErrorRenderer,
@@ -46,7 +43,7 @@ class PlayerView(
         ).get(PlayerViewModel::class.java)
     }
     private val playerNonConfig: PlayerNonConfig by lazy {
-        playerViewModel.get(uuid, playerArguments.uri)
+        playerViewModel.get(keyPlayerNonConfig, playerArguments.uri)
     }
     private val onUserLeaveHintViewModel: OnUserLeaveHintViewModel by lazy {
         // Activity scoped because Activity.onUserLeaveHint is only available at the Activity level.
@@ -96,7 +93,7 @@ class PlayerView(
 
         val isPlayerClosed = !activity.isChangingConfigurations
         if (isPlayerClosed) {
-            playerViewModel.remove(uuid)
+            playerViewModel.remove(keyPlayerNonConfig)
         } // else keep PlayerNonConfig around in PlayerViewModel to be used when state is restored after config change
     }
 
@@ -197,7 +194,7 @@ class PlayerView(
             return PlayerView(
                 context = context,
                 playerArguments = playerArguments,
-                uuid = uuid,
+                keyPlayerNonConfig = uuid,
                 vmFactory = vmFactory,
                 playerViewWrapperFactory = playerViewWrapperFactory,
                 errorRenderer = errorRenderer,

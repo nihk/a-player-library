@@ -10,9 +10,9 @@ import java.util.concurrent.TimeUnit
 @Parcelize
 data class PlayerArguments(
     val uri: String,
+    val playbackUiFactory: Class<out PlaybackUi.Factory>,
     val pipConfig: PictureInPictureConfig? = null,
-    val seekConfiguration: SeekConfiguration = SeekConfiguration.DEFAULT,
-    val playbackUiFactory: Class<out PlaybackUi.Factory>
+    val seekConfiguration: SeekConfiguration = SeekConfiguration.DEFAULT
 ) : Parcelable {
     @Parcelize
     data class SeekConfiguration(

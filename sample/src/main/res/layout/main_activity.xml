@@ -77,12 +77,19 @@
 
     </LinearLayout>
 
-    <FrameLayout
-        android:id="@+id/inline_button_container"
+    <LinearLayout
+        android:id="@+id/special_buttons_container"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:orientation="vertical"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent">
+
+        <Button
+            android:id="@+id/list"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="list" />
 
         <Button
             android:id="@+id/inline"
@@ -90,7 +97,7 @@
             android:layout_height="wrap_content"
             android:text="Inline" />
 
-    </FrameLayout>
+    </LinearLayout>
 
     <include
         android:id="@+id/inline_container"

@@ -46,6 +46,13 @@ class MainActivity : AppCompatActivity() {
             )
         }
 
+        binding.list.setOnClickListener {
+            supportFragmentManager.commit {
+                replace(R.id.constraint_layout, ListFragment())
+                addToBackStack(null)
+            }
+        }
+
         binding.inline.setOnClickListener { view ->
             val playerArguments = createPlayerArguments(binding, view)
             supportFragmentManager.commit {

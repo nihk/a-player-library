@@ -196,6 +196,7 @@ class PlayerNonConfig(
 
     override fun close() {
         tearDown()
+        playerSavedState.close()
         scope.cancel()
     }
 
