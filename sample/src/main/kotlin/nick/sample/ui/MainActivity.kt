@@ -7,6 +7,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.commit
 import nick.sample.R
 import nick.sample.databinding.MainActivityBinding
+import nick.sample.ui.list.ListFragment
 import player.core.LibraryActivity
 import player.core.LibraryFragment
 import player.ui.common.OnUserLeaveHintViewModel
