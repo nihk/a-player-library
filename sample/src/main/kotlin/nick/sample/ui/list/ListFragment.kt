@@ -17,7 +17,7 @@ class ListFragment : Fragment(R.layout.list_fragment) {
 
         val playingPositions: MutableList<Int> = savedInstanceState?.getIntegerArrayList(KEY_PLAYING_POSITIONS)
             ?: mutableListOf()
-        val adapter = Adapter(playingPositions)
+        val adapter = Adapter(playingPositions, requireBinding().fullscreenContainer)
         requireBinding().recyclerView.adapter = adapter
 
         adapter.submitList(items)

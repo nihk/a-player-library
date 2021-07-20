@@ -94,12 +94,16 @@ class PlayerView(
         playerViewModel.remove(playerArguments.id)
     }
 
+    // fixme: allowing reparenting will mess this up, likely create duplicate listeners, and
+    //  lifecycleScope gets destroyed.
     override fun onStateChanged(source: LifecycleOwner, event: Lifecycle.Event) {
         when (event) {
             // Need to wait for View tree to be CREATED; things like the View tree's
             // SavedStateRegistry isn't available below that state.
             Lifecycle.Event.ON_CREATE -> {
-                addView(playbackUi.view)
+                if (playbackUi.view.parent != this) {
+                    addView(playbackUi.view)
+                }
                 setUpBackPressHandling()
                 listenToPlayer()
             }

@@ -13,12 +13,14 @@ import player.exoplayer.ExoPlayerModule
 import player.ui.common.TimeFormatter
 import player.ui.def.DefaultPlaybackUi
 import player.ui.inline.InlinePlaybackUi
+import player.ui.inline.OnFullscreenChangedCallback
 import player.ui.sve.SvePlaybackUi
 import java.util.*
 
 class LibraryConfigurationFactory {
     fun create(
-        activity: ComponentActivity
+        activity: ComponentActivity,
+        onFullscreenChangedCallback: OnFullscreenChangedCallback = SampleOnFullscreenChangedCallback()
     ): LibraryConfiguration {
         val shareDelegate = AndroidShareDelegate()
         val closeDelegate = SampleCloseDelegate()
@@ -41,7 +43,7 @@ class LibraryConfigurationFactory {
                 InlinePlaybackUi.Factory(
                     closeDelegate = closeDelegate,
                     onVideoSizeChangedCallback = SampleOnVideoSizeChangedCallback(),
-                    onFullscreenChangedCallback = SampleOnFullscreenChangedCallback()
+                    onFullscreenChangedCallback = onFullscreenChangedCallback
                 )
             ),
             playerEventDelegate = LoggingPlayerEventDelegate(),

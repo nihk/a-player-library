@@ -1,6 +1,7 @@
 package nick.sample.ui.list
 
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -8,7 +9,8 @@ import nick.sample.R
 import nick.sample.databinding.PlayerItemBinding
 
 class Adapter(
-    val playingPositions: MutableList<Int>
+    val playingPositions: MutableList<Int>,
+    private val fullscreenContainer: ViewGroup
 ) : ListAdapter<PlayerItem, PlayerItemViewHolder>(PlayerItemDiffCallback) {
     private var recyclerView: RecyclerView? = null
 
@@ -16,7 +18,7 @@ class Adapter(
         return LayoutInflater.from(parent.context)
             .inflate(R.layout.player_item, parent, false)
             .let { view -> PlayerItemBinding.bind(view) }
-            .let { binding -> PlayerItemViewHolder(binding, playingPositions, ::onPlay) }
+            .let { binding -> PlayerItemViewHolder(binding, playingPositions, ::onPlay, ::onFullscreen) }
     }
 
     override fun onBindViewHolder(holder: PlayerItemViewHolder, position: Int) {
@@ -44,5 +46,10 @@ class Adapter(
         // Only allow 1 video playing in the list at a time.
         holder?.stop()
         playingPositions -= previousPosition
+    }
+
+    private fun onFullscreen(view: View) {
+        (view.parent as? ViewGroup)?.removeView(view)
+        fullscreenContainer.addView(view)
     }
 }
