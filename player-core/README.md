@@ -1,3 +1,3 @@
 ## player-core
 
-Entry points into the library; the actual Activity and/or Fragment that gets attached to a client app.
+Entry point into the library; the View that gets attached to a client app's Activity and/or Fragment
