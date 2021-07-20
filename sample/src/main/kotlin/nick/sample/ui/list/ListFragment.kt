@@ -17,16 +17,23 @@ class ListFragment : Fragment(R.layout.list_fragment) {
 
         val playingPositions: MutableList<Int> = savedInstanceState?.getIntegerArrayList(KEY_PLAYING_POSITIONS)
             ?: mutableListOf()
-        val adapter = Adapter(playingPositions)
+        val fullscreenPositions: MutableList<Int> = savedInstanceState?.getIntegerArrayList(KEY_FULLSCREEN_POSITIONS)
+            ?: mutableListOf()
+        val adapter = Adapter(playingPositions, fullscreenPositions.toMutableSet(), requireBinding().fullscreenContainer)
         requireBinding().recyclerView.adapter = adapter
 
         adapter.submitList(items)
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
+        val adapter = requireBinding().recyclerView.adapter as Adapter
         outState.putIntegerArrayList(
             KEY_PLAYING_POSITIONS,
-            ArrayList((requireBinding().recyclerView.adapter as Adapter).playingPositions)
+            ArrayList(adapter.playingPositions)
+        )
+        outState.putIntegerArrayList(
+            KEY_FULLSCREEN_POSITIONS,
+            ArrayList(adapter.fullscreenPositions)
         )
     }
 
@@ -55,5 +62,6 @@ class ListFragment : Fragment(R.layout.list_fragment) {
         }
 
         private const val KEY_PLAYING_POSITIONS = "playing_positions"
+        private const val KEY_FULLSCREEN_POSITIONS = "fullscreen_positions"
     }
 }

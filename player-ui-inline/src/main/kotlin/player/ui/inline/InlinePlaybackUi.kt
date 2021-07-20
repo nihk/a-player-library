@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.View
 import androidx.activity.OnBackPressedCallback
+import androidx.core.view.doOnAttach
 import androidx.core.view.isVisible
 import androidx.fragment.app.FragmentActivity
 import androidx.savedstate.SavedStateRegistryOwner
@@ -19,10 +20,10 @@ import player.ui.common.PlayerArguments
 import player.ui.common.PlayerController
 import player.ui.common.TracksState
 import player.ui.common.UiState
+import player.ui.controller.requireViewTreeLifecycleOwner
 import player.ui.inline.databinding.InlinePlaybackUiBinding
 
 // todo: a dedicated fullscreen/smallscreen UI (depending on state)
-// fixme: need to save/restore fullscreen button state across config changes
 class InlinePlaybackUi(
     private val activity: FragmentActivity,
     private val playerViewWrapperFactory: PlayerViewWrapper.Factory,
@@ -32,7 +33,8 @@ class InlinePlaybackUi(
     private val registryOwner: SavedStateRegistryOwner,
     private val closeDelegate: CloseDelegate,
     private val onVideoSizeChangedCallback: OnVideoSizeChangedCallback,
-    private val onFullscreenChangedCallback: OnFullscreenChangedCallback
+    private val onFullscreenChangedCallback: OnFullscreenChangedCallback,
+    private val isFullscreenInitially: Boolean? = null
 ) : PlaybackUi {
     @SuppressLint("InflateParams")
     override val view: View = LayoutInflater.from(activity)
@@ -47,15 +49,19 @@ class InlinePlaybackUi(
     }
 
     init {
-        binding.playerContainer.addView(playerViewWrapper.view)
-        bindControls()
+        view.doOnAttach {
+            binding.playerContainer.addView(playerViewWrapper.view)
+            bindControls()
+        }
     }
 
     private fun bindControls() {
+        if (isFullscreenInitially != null) {
+            setFullscreen(isFullscreenInitially)
+        }
         binding.fullscreen.setOnClickListener {
             setFullscreen(isFullscreen = true)
             onFullscreenChangedCallback.onFullscreenChanged(isFullscreen = true, activity)
-            activity.onBackPressedDispatcher.addCallback(backPress)
         }
         binding.closeFullscreen.setOnClickListener {
             closeFullscreen()
@@ -66,7 +72,6 @@ class InlinePlaybackUi(
         binding.pause.setOnClickListener { playerController.pause() }
 
         binding.close.setOnClickListener {
-            backPress.remove() // Don't leak this
             closeDelegate.onClose(activity)
         }
     }
@@ -74,12 +79,16 @@ class InlinePlaybackUi(
     private fun closeFullscreen() {
         setFullscreen(isFullscreen = false)
         onFullscreenChangedCallback.onFullscreenChanged(isFullscreen = false, activity)
-        backPress.remove()
     }
 
     private fun setFullscreen(isFullscreen: Boolean) {
         binding.closeFullscreen.isVisible = isFullscreen
         binding.fullscreen.isVisible = !isFullscreen
+        if (isFullscreen) {
+            addBackPress()
+        } else {
+            backPress.remove()
+        }
     }
 
     private fun setPlayPause(isPlaying: Boolean) {
@@ -114,10 +123,20 @@ class InlinePlaybackUi(
         playerViewWrapper.detachPlayer()
     }
 
+    private fun addBackPress() {
+        activity.onBackPressedDispatcher.addCallback(view.requireViewTreeLifecycleOwner(), backPress)
+    }
+
+    companion object {
+        private const val PROVIDER = "inline_playback_ui"
+        private const val KEY_IS_FULLSCREEN = "is_fullscreen"
+    }
+
     class Factory(
         private val closeDelegate: CloseDelegate,
         private val onVideoSizeChangedCallback: OnVideoSizeChangedCallback,
-        private val onFullscreenChangedCallback: OnFullscreenChangedCallback
+        private val onFullscreenChangedCallback: OnFullscreenChangedCallback,
+        private val isFullscreenInitially: Boolean? = null
     ) : PlaybackUi.Factory {
         override fun create(
             host: FragmentActivity,
@@ -136,7 +155,8 @@ class InlinePlaybackUi(
                 registryOwner = registryOwner,
                 closeDelegate = closeDelegate,
                 onVideoSizeChangedCallback = onVideoSizeChangedCallback,
-                onFullscreenChangedCallback = onFullscreenChangedCallback
+                onFullscreenChangedCallback = onFullscreenChangedCallback,
+                isFullscreenInitially = isFullscreenInitially
             )
         }
     }

@@ -8,7 +8,9 @@ import nick.sample.R
 import nick.sample.databinding.PlayerItemBinding
 
 class Adapter(
-    val playingPositions: MutableList<Int>
+    val playingPositions: MutableList<Int>,
+    val fullscreenPositions: MutableSet<Int>,
+    private val fullscreenContainer: ViewGroup
 ) : ListAdapter<PlayerItem, PlayerItemViewHolder>(PlayerItemDiffCallback) {
     private var recyclerView: RecyclerView? = null
 
@@ -16,7 +18,15 @@ class Adapter(
         return LayoutInflater.from(parent.context)
             .inflate(R.layout.player_item, parent, false)
             .let { view -> PlayerItemBinding.bind(view) }
-            .let { binding -> PlayerItemViewHolder(binding, playingPositions, ::onPlay) }
+            .let { binding ->
+                PlayerItemViewHolder(
+                    binding = binding,
+                    playingPositions = playingPositions,
+                    fullscreenPositions = fullscreenPositions,
+                    onPlay = ::onPlay,
+                    fullscreenContainer = fullscreenContainer
+                )
+            }
     }
 
     override fun onBindViewHolder(holder: PlayerItemViewHolder, position: Int) {

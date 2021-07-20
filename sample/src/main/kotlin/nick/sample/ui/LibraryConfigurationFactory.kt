@@ -10,18 +10,22 @@ import nick.sample.configuration.SampleOnVideoSizeChangedCallback
 import player.common.DefaultPlaybackInfoResolver
 import player.core.LibraryConfiguration
 import player.exoplayer.ExoPlayerModule
+import player.ui.common.CloseDelegate
 import player.ui.common.TimeFormatter
 import player.ui.def.DefaultPlaybackUi
 import player.ui.inline.InlinePlaybackUi
+import player.ui.inline.OnFullscreenChangedCallback
 import player.ui.sve.SvePlaybackUi
 import java.util.*
 
 class LibraryConfigurationFactory {
     fun create(
-        activity: ComponentActivity
+        activity: ComponentActivity,
+        onFullscreenChangedCallback: OnFullscreenChangedCallback = SampleOnFullscreenChangedCallback(),
+        closeDelegate: CloseDelegate = SampleCloseDelegate(),
+        isFullscreenInitially: Boolean? = null
     ): LibraryConfiguration {
         val shareDelegate = AndroidShareDelegate()
-        val closeDelegate = SampleCloseDelegate()
         val timeFormatter = TimeFormatter(Locale.getDefault())
         return LibraryConfiguration(
             activity = activity,
@@ -41,7 +45,8 @@ class LibraryConfigurationFactory {
                 InlinePlaybackUi.Factory(
                     closeDelegate = closeDelegate,
                     onVideoSizeChangedCallback = SampleOnVideoSizeChangedCallback(),
-                    onFullscreenChangedCallback = SampleOnFullscreenChangedCallback()
+                    onFullscreenChangedCallback = onFullscreenChangedCallback,
+                    isFullscreenInitially = isFullscreenInitially
                 )
             ),
             playerEventDelegate = LoggingPlayerEventDelegate(),

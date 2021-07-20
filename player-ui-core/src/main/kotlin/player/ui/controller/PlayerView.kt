@@ -15,9 +15,14 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleRegistry
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import player.common.PlayerViewWrapper
+import player.common.requireNotNull
 import player.ui.common.OnUserLeaveHintViewModel
 import player.ui.common.PipController
 import player.ui.common.PlaybackUi
@@ -32,8 +37,10 @@ class PlayerView(
     private val playerViewWrapperFactory: PlayerViewWrapper.Factory,
     private val errorRenderer: ErrorRenderer,
     private val pipControllerFactory: PipController.Factory,
-    private val playbackUiFactories: List<PlaybackUi.Factory>
+    private val playbackUiFactories: List<PlaybackUi.Factory>,
+    private val scopeFactory: () -> CoroutineScope = { CoroutineScope(SupervisorJob() + Dispatchers.Main) }
 ) : FrameLayout(context), LifecycleEventObserver, LifecycleOwner {
+    private var scope: CoroutineScope? = null
     private val playerViewModel: PlayerViewModel by lazy {
         ViewModelProvider(
             requireViewTreeViewModelStoreOwner(),
@@ -76,6 +83,7 @@ class PlayerView(
 
     override fun onAttachedToWindow() {
         super.onAttachedToWindow()
+        scope = scopeFactory()
         lifecycleRegistry.currentState = Lifecycle.State.STARTED // CREATED is too low for back pressed dispatcher registration
         requireViewTreeLifecycleOwner().lifecycle.addObserver(this)
     }
@@ -86,6 +94,8 @@ class PlayerView(
     // Also, once a lifecycle state is DESTROYED, its lifecycleScope is cancelled and cannot be reused.
     override fun onDetachedFromWindow() {
         super.onDetachedFromWindow()
+        scope.requireNotNull().cancel()
+        scope = null
         lifecycleRegistry.currentState = Lifecycle.State.DESTROYED
         requireViewTreeLifecycleOwner().lifecycle.removeObserver(this)
     }
@@ -94,12 +104,16 @@ class PlayerView(
         playerViewModel.remove(playerArguments.id)
     }
 
+    // fixme: allowing reparenting will mess this up, likely create duplicate listeners, and
+    //  lifecycleScope gets destroyed.
     override fun onStateChanged(source: LifecycleOwner, event: Lifecycle.Event) {
         when (event) {
             // Need to wait for View tree to be CREATED; things like the View tree's
             // SavedStateRegistry isn't available below that state.
             Lifecycle.Event.ON_CREATE -> {
-                addView(playbackUi.view)
+                if (playbackUi.view.parent != this) {
+                    addView(playbackUi.view)
+                }
                 setUpBackPressHandling()
                 listenToPlayer()
             }
@@ -118,36 +132,37 @@ class PlayerView(
     }
 
     private fun listenToPlayer() {
+        val scope = scope.requireNotNull()
         playerNonConfig.playerEvents()
             .onEach { playerEvent ->
                 playbackUi.onPlayerEvent(playerEvent)
                 pipController.onEvent(playerEvent)
             }
-            .launchIn(lifecycleScope)
+            .launchIn(scope)
 
         playerNonConfig.uiStates()
             .onEach { uiState -> playbackUi.onUiState(uiState) }
-            .launchIn(lifecycleScope)
+            .launchIn(scope)
 
         playerNonConfig.tracksStates()
             .onEach { tracksState -> playbackUi.onTracksState(tracksState) }
-            .launchIn(lifecycleScope)
+            .launchIn(scope)
 
         playerNonConfig.errors()
             .onEach { message -> errorRenderer.render(this, message) }
-            .launchIn(lifecycleScope)
+            .launchIn(scope)
 
         playerNonConfig.playbackInfos
             .onEach { playbackInfos -> playbackUi.onPlaybackInfos(playbackInfos) }
-            .launchIn(lifecycleScope)
+            .launchIn(scope)
 
         if (playerArguments.pipConfig?.enabled == true) {
             pipController.events()
-                .launchIn(lifecycleScope)
+                .launchIn(scope)
 
             onUserLeaveHintViewModel.onUserLeaveHints()
                 .onEach { enterPip() }
-                .launchIn(lifecycleScope)
+                .launchIn(scope)
         }
     }
 
