@@ -8,8 +8,6 @@ import androidx.fragment.app.commit
 import nick.sample.R
 import nick.sample.databinding.MainActivityBinding
 import nick.sample.ui.list.ListFragment
-import player.core.LibraryActivity
-import player.core.LibraryFragment
 import player.ui.common.OnUserLeaveHintViewModel
 import player.ui.common.PictureInPictureConfig
 import player.ui.common.PlayerArguments
@@ -25,6 +23,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         val binding = MainActivityBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        binding.libraryView.initialize(LibraryConfigurationFactory().create(this))
 
         binding.toPlayerView.setOnClickListener { view ->
             val playerArguments = createPlayerArguments(binding, view)
@@ -34,14 +33,14 @@ class MainActivity : AppCompatActivity() {
         binding.toPlayerFragment.setOnClickListener { view ->
             val playerArguments = createPlayerArguments(binding, view)
             supportFragmentManager.commit {
-                replace(android.R.id.content, LibraryFragment::class.java, playerArguments.toBundle())
+                replace(android.R.id.content, PlayerFragment.create(playerArguments))
                 addToBackStack(null)
             }
         }
 
         binding.toPlayerActivity.setOnClickListener { view ->
             val playerArguments = createPlayerArguments(binding, view)
-            LibraryActivity.start(
+            PlayerActivity.start(
                 context = this,
                 playerArguments = playerArguments
             )
@@ -57,7 +56,7 @@ class MainActivity : AppCompatActivity() {
         binding.inline.setOnClickListener { view ->
             val playerArguments = createPlayerArguments(binding, view)
             supportFragmentManager.commit {
-                replace(R.id.movable_container, LibraryFragment::class.java, playerArguments.toBundle())
+                replace(R.id.movable_container, PlayerFragment::class.java, playerArguments.toBundle())
             }
         }
     }

@@ -1,4 +1,4 @@
-package nick.sample.data
+package nick.sample.configuration
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay

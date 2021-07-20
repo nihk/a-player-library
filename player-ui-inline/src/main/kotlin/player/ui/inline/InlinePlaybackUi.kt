@@ -22,6 +22,7 @@ import player.ui.common.UiState
 import player.ui.inline.databinding.InlinePlaybackUiBinding
 
 // todo: a dedicated fullscreen/smallscreen UI (depending on state)
+// fixme: need to save/restore fullscreen button state across config changes
 class InlinePlaybackUi(
     private val activity: FragmentActivity,
     private val playerViewWrapperFactory: PlayerViewWrapper.Factory,

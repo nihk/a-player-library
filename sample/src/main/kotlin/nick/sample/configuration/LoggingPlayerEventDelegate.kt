@@ -1,4 +1,4 @@
-package nick.sample.data
+package nick.sample.configuration
 
 import android.util.Log
 import player.common.PlayerEvent

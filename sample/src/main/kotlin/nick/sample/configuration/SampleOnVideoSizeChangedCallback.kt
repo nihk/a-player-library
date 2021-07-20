@@ -1,9 +1,6 @@
-package nick.sample.data
+package nick.sample.configuration
 
-import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.constraintlayout.widget.ConstraintSet
 import androidx.fragment.app.FragmentActivity
-import nick.sample.R
 import player.common.VideoSize
 import player.ui.inline.OnVideoSizeChangedCallback
 

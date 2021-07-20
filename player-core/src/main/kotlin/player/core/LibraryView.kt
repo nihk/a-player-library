@@ -7,7 +7,6 @@ import android.util.AttributeSet
 import android.widget.FrameLayout
 import androidx.core.os.bundleOf
 import androidx.core.view.children
-import androidx.fragment.app.FragmentActivity
 import player.common.requireNotNull
 import player.ui.common.PlayerArguments
 import player.ui.controller.PlayerView
@@ -16,6 +15,7 @@ class LibraryView : FrameLayout {
     val isPlaying: Boolean get() = childCount == 1
 
     private var playerArguments: PlayerArguments? = null
+    private var configuration: LibraryConfiguration? = null
 
     constructor(context: Context) : super(context)
     constructor(context: Context, attributeSet: AttributeSet?) : super(context, attributeSet)
@@ -25,10 +25,15 @@ class LibraryView : FrameLayout {
         defStyleAttr: Int
     ) : super(context, attributeSet, defStyleAttr)
 
+    fun initialize(configuration: LibraryConfiguration) {
+        this.configuration = configuration
+    }
+
     fun play(playerArguments: PlayerArguments) {
+        val configuration = requireNotNull(configuration) { "LibraryView.initialize() needs to be called before playing" }
         tearDownUi()
         this.playerArguments = playerArguments
-        val module = LibraryModule(context as FragmentActivity)
+        val module = LibraryModule(configuration)
         val playerView = module.playerViewFactory.create(
             context = context,
             playerArguments = playerArguments,

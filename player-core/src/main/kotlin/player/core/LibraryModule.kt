@@ -1,6 +1,5 @@
 package player.core
 
-import androidx.fragment.app.FragmentActivity
 import player.common.PlayerModule
 import player.ui.common.PipController
 import player.ui.common.isMinOsForPip
@@ -11,10 +10,7 @@ import player.ui.controller.PlayerView
 import player.ui.controller.PlayerViewModel
 import player.ui.controller.SnackbarErrorRenderer
 
-internal class LibraryModule(activity: FragmentActivity) {
-    private val libraryConfiguration = (activity as? LibraryConfiguration.Provider
-        ?: LibraryInitializer).libraryConfiguration
-
+internal class LibraryModule(private val libraryConfiguration: LibraryConfiguration) {
     val playerViewFactory: PlayerView.Factory get() = PlayerView.Factory(
         vmFactory = playerViewModelFactory,
         playerViewWrapperFactory = module.playerViewWrapperFactory,
@@ -26,7 +22,7 @@ internal class LibraryModule(activity: FragmentActivity) {
     private val module: PlayerModule = libraryConfiguration.playerModule
 
     private val pipControllerFactory: PipController.Factory = if (isMinOsForPip) {
-        AndroidPipController.Factory(activity)
+        AndroidPipController.Factory(libraryConfiguration.activity)
     } else {
         NoOpPipController.Factory()
     }

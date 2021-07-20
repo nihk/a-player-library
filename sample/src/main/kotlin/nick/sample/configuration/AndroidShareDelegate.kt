@@ -1,4 +1,4 @@
-package nick.sample.data
+package nick.sample.configuration
 
 import android.content.Intent
 import androidx.fragment.app.FragmentActivity

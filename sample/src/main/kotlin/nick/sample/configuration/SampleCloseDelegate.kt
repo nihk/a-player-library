@@ -1,16 +1,16 @@
-package nick.sample.data
+package nick.sample.configuration
 
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.commit
 import nick.sample.R
+import nick.sample.ui.PlayerActivity
 import player.ui.common.CloseDelegate
-import player.core.LibraryActivity
 import player.core.LibraryView
 
 class SampleCloseDelegate : CloseDelegate {
     override fun onClose(activity: FragmentActivity) {
-        if (activity is LibraryActivity) {
+        if (activity is PlayerActivity) {
             activity.finish()
         } else {
             val libraryView: LibraryView? = activity.findViewById(R.id.library_view)

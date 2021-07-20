@@ -1,8 +1,10 @@
 package nick.sample.ui.list
 
 import android.graphics.drawable.ColorDrawable
+import androidx.activity.ComponentActivity
 import androidx.recyclerview.widget.RecyclerView
 import nick.sample.databinding.PlayerItemBinding
+import nick.sample.ui.LibraryConfigurationFactory
 import player.ui.common.PlayerArguments
 import player.ui.inline.InlinePlaybackUi
 
@@ -14,6 +16,9 @@ class PlayerItemViewHolder(
     private var item: PlayerItem? = null
 
     init {
+        val configuration = LibraryConfigurationFactory()
+            .create(binding.root.context as ComponentActivity)
+        binding.libraryView.initialize(configuration)
         binding.container.setOnClickListener {
             play()
         }

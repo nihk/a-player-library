@@ -1,4 +1,4 @@
-package nick.sample.data
+package nick.sample.configuration
 
 import android.widget.ImageView
 import coil.load
