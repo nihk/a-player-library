@@ -6,7 +6,10 @@ import player.ui.common.PlayerController
 import player.ui.trackspicker.TracksPickerDialog
 
 interface Navigator {
-    fun toTracksPicker(type: TrackInfo.Type)
+    fun toTracksPicker(
+        type: TrackInfo.Type,
+        onDismissed: () -> Unit
+    )
 
     companion object {
         operator fun invoke(
@@ -19,8 +22,14 @@ interface Navigator {
         private val context: Context,
         private val playerController: PlayerController
     ) : Navigator {
-        override fun toTracksPicker(type: TrackInfo.Type) {
+        override fun toTracksPicker(
+            type: TrackInfo.Type,
+            onDismissed: () -> Unit
+        ) {
             TracksPickerDialog(context, playerController, type)
+                .apply {
+                    setOnDismissListener { onDismissed() }
+                }
                 .show()
         }
     }

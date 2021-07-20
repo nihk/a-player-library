@@ -79,9 +79,9 @@ class SvePlaybackUi(
         view.doOnAttach {
             // Nested because otherwise it will be called immediately, before View is attached.
             view.doOnDetach {
+                registryOwner.lifecycle.removeObserver(observer)
                 val isPlayerClosed = !activity.isChangingConfigurations
                 if (isPlayerClosed) {
-                    registryOwner.lifecycle.removeObserver(observer)
                     registryOwner.savedStateRegistry.unregisterSavedStateProvider(PROVIDER)
                 }
             }
@@ -154,8 +154,7 @@ class SvePlaybackUi(
     }
 
     private fun savedPagePosition(default: Int = 0): Int {
-        val registry = registryOwner.savedStateRegistry
-        val state = registry.consumeRestoredStateForKey(PROVIDER)
+        val state = registryOwner.savedStateRegistry.consumeRestoredStateForKey(PROVIDER)
         return state?.getInt(TAB_POSITION) ?: default
     }
 

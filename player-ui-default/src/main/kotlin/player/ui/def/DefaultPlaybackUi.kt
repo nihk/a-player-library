@@ -1,12 +1,17 @@
 package player.ui.def
 
 import android.annotation.SuppressLint
+import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.SeekBar
+import androidx.core.os.bundleOf
+import androidx.core.view.doOnAttach
+import androidx.core.view.doOnDetach
 import androidx.core.view.isVisible
-import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import androidx.savedstate.SavedStateRegistryOwner
 import player.common.AppPlayer
 import player.common.PlaybackInfo
@@ -33,7 +38,6 @@ import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 
 // todo: this should be more composable for shared components across PlaybackUis, e.g. the seekbar
-// todo: save/restore track type state for keeping TracksPickerDialog open across config changes
 class DefaultPlaybackUi(
     private val activity: FragmentActivity,
     private val navigator: Navigator,
@@ -59,10 +63,30 @@ class DefaultPlaybackUi(
         seekTo = playerController::seekTo
     )
     private val playerViewWrapper = playerViewWrapperFactory.create(activity)
+    private var activeTracksPickerType: TrackInfo.Type? = null
+    private val observer = LifecycleEventObserver { _, event ->
+        when (event) {
+            Lifecycle.Event.ON_CREATE -> {
+                registryOwner.savedStateRegistry.registerSavedStateProvider(PROVIDER, this)
+            }
+        }
+    }
 
     init {
+        registryOwner.lifecycle.addObserver(observer)
+        view.doOnAttach {
+            // Nested because otherwise it will be called immediately, before View is attached.
+            view.doOnDetach {
+                registryOwner.lifecycle.removeObserver(observer)
+                val isPlayerClosed = !activity.isChangingConfigurations
+                if (isPlayerClosed) {
+                    registryOwner.savedStateRegistry.unregisterSavedStateProvider(PROVIDER)
+                }
+            }
+        }
         binding.playerContainer.addView(playerViewWrapper.view)
         bindControls()
+        restoreState()
     }
 
     override fun attach(appPlayer: AppPlayer) {
@@ -129,7 +153,10 @@ class DefaultPlaybackUi(
     }
 
     private fun navigateToTracksPicker(type: TrackInfo.Type) {
-        navigator.toTracksPicker(type)
+        activeTracksPickerType = type
+        navigator.toTracksPicker(type) {
+            activeTracksPickerType = null
+        }
     }
 
     private fun SeekBar.update(seekData: SeekData) {
@@ -180,6 +207,22 @@ class DefaultPlaybackUi(
     private fun setPlayPause(isPlaying: Boolean) {
         binding.play.isVisible = !isPlaying
         binding.pause.isVisible = isPlaying
+    }
+
+    private fun restoreState() {
+        val state = registryOwner.savedStateRegistry.consumeRestoredStateForKey(PROVIDER)
+        val type = state?.getSerializable(KEY_ACTIVE_TRACKS_PICKER_TYPE) as? TrackInfo.Type
+            ?: return
+        navigateToTracksPicker(type)
+    }
+
+    override fun saveState(): Bundle {
+        return bundleOf(KEY_ACTIVE_TRACKS_PICKER_TYPE to activeTracksPickerType)
+    }
+
+    companion object {
+        private const val PROVIDER = "default_playback_ui"
+        private const val KEY_ACTIVE_TRACKS_PICKER_TYPE = "active_tracks_picker_type"
     }
 
     class Factory(

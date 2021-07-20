@@ -20,7 +20,7 @@ interface PlaybackUi : SavedStateRegistry.SavedStateProvider {
     fun attach(appPlayer: AppPlayer)
     fun detachPlayer()
 
-    override fun saveState() = Bundle()
+    override fun saveState(): Bundle = Bundle.EMPTY
 
     interface Factory {
         fun create(
