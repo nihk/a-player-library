@@ -7,13 +7,13 @@ import nick.sample.R
 import nick.sample.databinding.PlayerItemBinding
 
 class Adapter(
-    val playingIds: MutableList<String>
+    val playingPositions: MutableList<Int>
 ) : ListAdapter<PlayerItem, PlayerItemViewHolder>(PlayerItemDiffCallback) {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PlayerItemViewHolder {
         return LayoutInflater.from(parent.context)
             .inflate(R.layout.player_item, parent, false)
             .let { view -> PlayerItemBinding.bind(view) }
-            .let { binding -> PlayerItemViewHolder(binding, playingIds) }
+            .let { binding -> PlayerItemViewHolder(binding, playingPositions) }
     }
 
     override fun onBindViewHolder(holder: PlayerItemViewHolder, position: Int) {
@@ -21,7 +21,7 @@ class Adapter(
     }
 
     override fun onViewDetachedFromWindow(holder: PlayerItemViewHolder) {
-        playingIds.remove(holder.id)
+        playingPositions -= holder.bindingAdapterPosition
         holder.stop()
     }
 }

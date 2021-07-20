@@ -8,10 +8,9 @@ import player.ui.inline.InlinePlaybackUi
 
 class PlayerItemViewHolder(
     private val binding: PlayerItemBinding,
-    private val playingIds: MutableList<String>
+    private val playingPositions: MutableList<Int>
 ) : RecyclerView.ViewHolder(binding.root) {
     private var item: PlayerItem? = null
-    val id: String? get() = item?.id
 
     init {
         binding.container.setOnClickListener {
@@ -23,7 +22,7 @@ class PlayerItemViewHolder(
         stop()
         this.item = item
         binding.container.background = ColorDrawable(item.color)
-        if (item.id in playingIds) {
+        if (bindingAdapterPosition in playingPositions) {
             // Restore state
             playInternal()
         }
@@ -34,7 +33,7 @@ class PlayerItemViewHolder(
     }
 
     private fun play() {
-        playingIds += id!!
+        playingPositions += bindingAdapterPosition
         playInternal()
     }
 

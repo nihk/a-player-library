@@ -15,18 +15,18 @@ class ListFragment : Fragment(R.layout.list_fragment) {
         super.onViewCreated(view, savedInstanceState)
         binding = ListFragmentBinding.bind(view)
 
-        val playingIds: MutableList<String> = savedInstanceState?.getStringArrayList(KEY_PLAYING_IDS)
+        val playingPositions: MutableList<Int> = savedInstanceState?.getIntegerArrayList(KEY_PLAYING_POSITIONS)
             ?: mutableListOf()
-        val adapter = Adapter(playingIds)
+        val adapter = Adapter(playingPositions)
         requireBinding().recyclerView.adapter = adapter
 
         adapter.submitList(items)
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
-        outState.putStringArrayList(
-            KEY_PLAYING_IDS,
-            ArrayList((requireBinding().recyclerView.adapter as Adapter).playingIds)
+        outState.putIntegerArrayList(
+            KEY_PLAYING_POSITIONS,
+            ArrayList((requireBinding().recyclerView.adapter as Adapter).playingPositions)
         )
     }
 
@@ -54,6 +54,6 @@ class ListFragment : Fragment(R.layout.list_fragment) {
             )
         }
 
-        private const val KEY_PLAYING_IDS = "playing_ids"
+        private const val KEY_PLAYING_POSITIONS = "playing_positions"
     }
 }
