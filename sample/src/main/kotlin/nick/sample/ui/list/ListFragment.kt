@@ -46,10 +46,10 @@ class ListFragment : Fragment(R.layout.list_fragment) {
 
         private val items: List<PlayerItem> = List(30) { index ->
             val uriIndex = index % uris.size
-            val color = Color.argb(255, Random.nextInt(256), Random.nextInt(256), Random.nextInt(256))
+            val randomColor = Color.argb(255, Random.nextInt(256), Random.nextInt(256), Random.nextInt(256))
             PlayerItem(
                 uri = uris[uriIndex],
-                color = color,
+                color = randomColor,
                 id = "${uris[uriIndex]}-$index"
             )
         }

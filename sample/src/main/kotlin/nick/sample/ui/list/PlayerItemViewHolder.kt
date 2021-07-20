@@ -8,7 +8,8 @@ import player.ui.inline.InlinePlaybackUi
 
 class PlayerItemViewHolder(
     private val binding: PlayerItemBinding,
-    private val playingPositions: MutableList<Int>
+    private val playingPositions: MutableList<Int>,
+    private val onPlay: (Int /* position */) -> Unit
 ) : RecyclerView.ViewHolder(binding.root) {
     private var item: PlayerItem? = null
 
@@ -40,6 +41,7 @@ class PlayerItemViewHolder(
     private fun playInternal() {
         val item = requireNotNull(item)
         binding.libraryView.play(item.toPlayerArguments())
+        onPlay(bindingAdapterPosition)
     }
 
     private fun PlayerItem.toPlayerArguments(): PlayerArguments {
