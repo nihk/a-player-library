@@ -175,10 +175,6 @@ class PlayerNonConfig(
         requireNotNull(appPlayer).setTrackInfos(trackInfos)
     }
 
-    fun onPipModeChanged(isInPipMode: Boolean) {
-        uiStates.value = uiStates.value.copy(isControllerUsable = !isInPipMode)
-    }
-
     override fun seekRelative(duration: Duration) {
         requireNotNull(appPlayer).seekRelative(duration)
     }
