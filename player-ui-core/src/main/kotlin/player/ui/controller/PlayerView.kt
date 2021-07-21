@@ -14,7 +14,6 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleRegistry
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -68,9 +67,8 @@ class PlayerView(
         )
     }
     private val activity: ComponentActivity get() = context as ComponentActivity
-    // Custom Lifecycle because a View can get attached/detach out of sync with its host Lifecycle.
-    // This is useful for automated unregistration/cancellation of resources like back press callbacks,
-    // coroutine scopes.
+    // Custom Lifecycle because a View can get attached/detached out of sync with its host Lifecycle.
+    // This is useful for automated unregistration/cancellation of resources like back press callbacks.
     private val lifecycleRegistry = LifecycleRegistry(this)
 
     init {
@@ -88,10 +86,6 @@ class PlayerView(
         requireViewTreeLifecycleOwner().lifecycle.addObserver(this)
     }
 
-    // note: this assumes that this View being detached from the Window means a destructive action.
-    // Reparenting this View won't behave as expected in this current state, because reparenting
-    // detaches the View from the Window.
-    // Also, once a lifecycle state is DESTROYED, its lifecycleScope is cancelled and cannot be reused.
     override fun onDetachedFromWindow() {
         super.onDetachedFromWindow()
         scope.requireNotNull().cancel()
@@ -104,13 +98,12 @@ class PlayerView(
         playerViewModel.remove(playerArguments.id)
     }
 
-    // fixme: allowing reparenting will mess this up, likely create duplicate listeners, and
-    //  lifecycleScope gets destroyed.
     override fun onStateChanged(source: LifecycleOwner, event: Lifecycle.Event) {
         when (event) {
             // Need to wait for View tree to be CREATED; things like the View tree's
             // SavedStateRegistry isn't available below that state.
             Lifecycle.Event.ON_CREATE -> {
+                // PlaybackUi.view will already be added to PlayerView when PlayerView is reparented.
                 if (playbackUi.view.parent != this) {
                     addView(playbackUi.view)
                 }
