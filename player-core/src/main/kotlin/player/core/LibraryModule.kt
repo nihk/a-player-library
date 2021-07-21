@@ -11,14 +11,6 @@ import player.ui.controller.PlayerViewModel
 import player.ui.controller.SnackbarErrorRenderer
 
 internal class LibraryModule(private val libraryConfiguration: LibraryConfiguration) {
-    val playerViewFactory: PlayerView.Factory get() = PlayerView.Factory(
-        vmFactory = playerViewModelFactory,
-        playerViewWrapperFactory = module.playerViewWrapperFactory,
-        errorRenderer = SnackbarErrorRenderer(),
-        pipControllerFactory = pipControllerFactory,
-        playbackUiFactories = libraryConfiguration.playbackUiFactories
-    )
-
     private val module: PlayerModule = libraryConfiguration.playerModule
 
     private val pipControllerFactory: PipController.Factory = if (isMinOsForPip) {
@@ -27,7 +19,7 @@ internal class LibraryModule(private val libraryConfiguration: LibraryConfigurat
         NoOpPipController.Factory()
     }
 
-    private val playerNonConfigFactory: PlayerNonConfig.Factory get() = PlayerNonConfig.Factory(
+    private val playerNonConfigFactory: PlayerNonConfig.Factory = PlayerNonConfig.Factory(
         appPlayerFactory = module.appPlayerFactory,
         playerEventStream = module.playerEventStream,
         playerEventDelegate = libraryConfiguration.playerEventDelegate,
@@ -35,7 +27,15 @@ internal class LibraryModule(private val libraryConfiguration: LibraryConfigurat
         seekDataUpdater = module.seekDataUpdater
     )
 
-    private val playerViewModelFactory: PlayerViewModel.Factory get() = PlayerViewModel.Factory(
+    private val playerViewModelFactory: PlayerViewModel.Factory = PlayerViewModel.Factory(
        playerNonConfigFactory
+    )
+
+    val playerViewFactory: PlayerView.Factory = PlayerView.Factory(
+        vmFactory = playerViewModelFactory,
+        playerViewWrapperFactory = module.playerViewWrapperFactory,
+        errorRenderer = SnackbarErrorRenderer(),
+        pipControllerFactory = pipControllerFactory,
+        playbackUiFactories = libraryConfiguration.playbackUiFactories
     )
 }
