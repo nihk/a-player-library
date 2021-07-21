@@ -2,7 +2,10 @@ package nick.sample.ui.list
 
 import android.graphics.drawable.ColorDrawable
 import android.view.ViewGroup
+import android.view.ViewPropertyAnimator
+import android.view.animation.AccelerateDecelerateInterpolator
 import androidx.activity.ComponentActivity
+import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.FragmentActivity
 import androidx.recyclerview.widget.RecyclerView
 import nick.sample.databinding.PlayerItemBinding
@@ -20,7 +23,7 @@ class PlayerItemViewHolder(
     private val playingPositions: MutableList<Int>,
     private val fullscreenPositions: MutableSet<Int>,
     private val onPlay: (Int /* position */) -> Unit,
-    private val fullscreenContainer: ViewGroup
+    private val fullscreenContainer: ViewGroup,
 ) : RecyclerView.ViewHolder(binding.root) {
     private val libraryView: LibraryView = binding.libraryView
     private var item: PlayerItem? = null
@@ -32,6 +35,61 @@ class PlayerItemViewHolder(
     }
 
     private fun handleFullscreen(isFullscreen: Boolean) {
+        val x = fullscreenContainer.x
+        val y = fullscreenContainer.y
+        val height = fullscreenContainer.height
+        val width = fullscreenContainer.width
+
+        val animation: ViewPropertyAnimator = if (isFullscreen) {
+            fullscreenContainer.updateLayoutParams {
+                this.width = binding.container.width
+                this.height = binding.container.height
+            }
+            fullscreenContainer.x = binding.container.x
+            fullscreenContainer.y = binding.container.y
+
+            fullscreenContainer.animate()
+                .setUpdateListener { valueAnimator ->
+                    val progress = valueAnimator.animatedValue as Float
+                    fullscreenContainer.updateLayoutParams {
+                        this.width = binding.container.width + ((width - binding.container.width) * progress).toInt()
+                        this.height = binding.container.height + ((height - binding.container.height) * progress).toInt()
+                    }
+                }
+                .x(x)
+                .y(y)
+                .withStartAction {
+                    handleFullscreenReparenting(isFullscreen)
+                }
+        } else {
+            fullscreenContainer.animate()
+                .setUpdateListener { valueAnimator ->
+                    val progress = valueAnimator.animatedValue as Float
+                    fullscreenContainer.updateLayoutParams {
+                        this.width = width - ((width - binding.container.width) * progress).toInt()
+                        this.height = height - ((height - binding.container.height) * progress).toInt()
+                    }
+                }
+                .x(binding.container.x)
+                .y(binding.container.y)
+                .withEndAction {
+                    handleFullscreenReparenting(isFullscreen)
+                    fullscreenContainer.updateLayoutParams {
+                        this.width = ViewGroup.LayoutParams.MATCH_PARENT
+                        this.height = ViewGroup.LayoutParams.MATCH_PARENT
+                    }
+                    fullscreenContainer.x = x
+                    fullscreenContainer.y = y
+                }
+        }
+
+        animation
+            .setDuration(250L)
+            .setInterpolator(AccelerateDecelerateInterpolator())
+            .start()
+    }
+
+    private fun handleFullscreenReparenting(isFullscreen: Boolean) {
         libraryView.detachFromParent()
         if (isFullscreen) {
             fullscreenContainer.addView(libraryView)
@@ -52,7 +110,8 @@ class PlayerItemViewHolder(
             playInternal()
         }
         if (bindingAdapterPosition in fullscreenPositions) {
-            handleFullscreen(true)
+            // Avoid animating
+            handleFullscreenReparenting(true)
         }
     }
 

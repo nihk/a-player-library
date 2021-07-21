@@ -35,6 +35,7 @@ class Adapter(
 
     override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
         this.recyclerView = recyclerView
+        playingPositions.firstOrNull()?.let(recyclerView::scrollToPosition)
     }
 
     override fun onDetachedFromRecyclerView(recyclerView: RecyclerView) {

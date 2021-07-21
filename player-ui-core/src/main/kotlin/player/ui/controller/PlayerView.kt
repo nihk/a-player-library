@@ -27,7 +27,6 @@ import player.ui.common.PipController
 import player.ui.common.PlaybackUi
 import player.ui.common.PlayerArguments
 
-// todo: PiP UI states
 @SuppressLint("ViewConstructor")
 class PlayerView(
     context: Context,
