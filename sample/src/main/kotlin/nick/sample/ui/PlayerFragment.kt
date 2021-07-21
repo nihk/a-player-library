@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.Fragment
 import nick.sample.R
+import nick.sample.configuration.SlowPlaybackInfoResolver
 import nick.sample.databinding.PlayerFragmentBinding
 import player.ui.common.PlayerArguments
 import player.ui.common.toBundle

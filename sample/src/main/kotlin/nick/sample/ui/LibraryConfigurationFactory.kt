@@ -7,7 +7,8 @@ import nick.sample.configuration.LoggingPlayerEventDelegate
 import nick.sample.configuration.SampleCloseDelegate
 import nick.sample.configuration.SampleOnFullscreenChangedCallback
 import nick.sample.configuration.SampleOnVideoSizeChangedCallback
-import player.common.DefaultPlaybackInfoResolver
+import nick.sample.configuration.SlowPlaybackInfoResolver
+import player.common.PlaybackInfoResolver
 import player.core.LibraryConfiguration
 import player.exoplayer.ExoPlayerModule
 import player.ui.common.CloseDelegate
@@ -23,7 +24,8 @@ class LibraryConfigurationFactory {
         activity: ComponentActivity,
         onFullscreenChangedCallback: OnFullscreenChangedCallback = SampleOnFullscreenChangedCallback(),
         closeDelegate: CloseDelegate = SampleCloseDelegate(),
-        isFullscreenInitially: Boolean? = null
+        isFullscreenInitially: Boolean? = null,
+        playbackInfoResolver: PlaybackInfoResolver = SlowPlaybackInfoResolver()
     ): LibraryConfiguration {
         val shareDelegate = AndroidShareDelegate()
         val timeFormatter = TimeFormatter(Locale.getDefault())
@@ -50,7 +52,7 @@ class LibraryConfigurationFactory {
                 )
             ),
             playerEventDelegate = LoggingPlayerEventDelegate(),
-            playbackInfoResolver = DefaultPlaybackInfoResolver()
+            playbackInfoResolver = playbackInfoResolver
         )
     }
 }

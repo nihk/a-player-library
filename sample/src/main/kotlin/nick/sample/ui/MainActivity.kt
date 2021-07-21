@@ -6,6 +6,7 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.commit
 import nick.sample.R
+import nick.sample.configuration.SlowPlaybackInfoResolver
 import nick.sample.databinding.MainActivityBinding
 import nick.sample.ui.list.ListFragment
 import player.ui.common.OnUserLeaveHintViewModel

@@ -7,6 +7,7 @@ import androidx.fragment.app.FragmentActivity
 import androidx.recyclerview.widget.RecyclerView
 import nick.sample.databinding.PlayerItemBinding
 import nick.sample.ui.LibraryConfigurationFactory
+import player.common.DefaultPlaybackInfoResolver
 import player.core.LibraryView
 import player.ui.common.CloseDelegate
 import player.ui.common.PlayerArguments
@@ -88,7 +89,8 @@ class PlayerItemViewHolder(
                         activity.onBackPressed()
                     }
                 },
-                isFullscreenInitially = bindingAdapterPosition in fullscreenPositions
+                isFullscreenInitially = bindingAdapterPosition in fullscreenPositions,
+                playbackInfoResolver = DefaultPlaybackInfoResolver()
             )
         binding.libraryView.initialize(configuration)
     }
