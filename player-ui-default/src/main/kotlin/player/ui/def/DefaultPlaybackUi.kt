@@ -125,9 +125,11 @@ class DefaultPlaybackUi(
         playbackInfos.forEach { playbackInfo ->
             when (playbackInfo) {
                 is PlaybackInfo.MediaTitle -> {
-                    binding.title.apply {
-                        isVisible = true
-                        text = playbackInfo.title
+                    if (playbackInfo.mediaUriRef == playerArguments.uri) {
+                        binding.title.apply {
+                            isVisible = true
+                            text = playbackInfo.title
+                        }
                     }
                 }
             }
