@@ -10,7 +10,7 @@ class PlayerViewModel(
     private val handle: SavedStateHandle,
     private val playerNonConfigFactory: PlayerNonConfig.Factory
 ) : ViewModel() {
-    private val playerNonConfigs: LinkedHashMap<String, PlayerNonConfig> = linkedMapOf()
+    private val playerNonConfigs: MutableMap<String, PlayerNonConfig> = mutableMapOf()
 
     fun get(playerArguments: PlayerArguments): PlayerNonConfig {
         return playerNonConfigs.getOrPut(playerArguments.id) {
@@ -18,21 +18,13 @@ class PlayerViewModel(
         }
     }
 
-    // fixme: hack to avoid passing parameters
-    fun getLatest(): PlayerNonConfig? {
-        return playerNonConfigs.values.lastOrNull()
-    }
-
     fun remove(id: String) {
-        val playerNonConfig = playerNonConfigs[id]
-        playerNonConfigs.remove(id)
+        val playerNonConfig = playerNonConfigs.remove(id)
         playerNonConfig?.close()
     }
 
     override fun onCleared() {
-        playerNonConfigs.values.forEach { playerNonConfig ->
-            playerNonConfig.close()
-        }
+        playerNonConfigs.values.forEach(PlayerNonConfig::close)
         playerNonConfigs.clear()
     }
 
