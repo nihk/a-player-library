@@ -32,7 +32,6 @@ import player.ui.common.PlayerController
 import player.ui.common.TracksState
 import player.ui.common.UiState
 import java.io.Closeable
-import java.util.*
 import kotlin.time.Duration
 
 class PlayerNonConfig(
@@ -123,20 +122,30 @@ class PlayerNonConfig(
 
                 when (playerEvent) {
                     is PlayerEvent.Initial -> uiStates.value = uiStates.value.copy(isControllerUsable = true)
-                    is PlayerEvent.OnTracksChanged -> {
-                        if (playerEvent.trackInfos.isEmpty()) return@onEach
-                        val trackIndices = playerEvent.trackInfos.map(TrackInfo::indices)
-                        // fixme: state is getting stale w.r.t. isManuallySet, across process recreation.
-                        val settableTracks = playerSavedState.manuallySetTracks
-                            .filter { trackInfo -> trackInfo.indices in trackIndices }
-                        appPlayer.setTrackInfos(settableTracks)
-                        val trackTypes = playerEvent.trackInfos.map(TrackInfo::type)
-                        tracksStates.value = TracksState.Available(trackTypes)
-                    }
+                    is PlayerEvent.OnTracksChanged -> handleTracksChanged(playerEvent)
                     is PlayerEvent.OnPlayerError -> errors.emit(playerEvent.exception.message.toString())
                 }
             }
             .launchIn(scope)
+    }
+
+    private fun handleTracksChanged(playerEvent: PlayerEvent.OnTracksChanged) {
+        if (playerEvent.trackInfos.isEmpty()) return
+        // Compare against indices only, because the rest of the data might be inconsistent if the
+        // player instance hasn't resolved all its tracks yet.
+        val trackIndices = playerEvent.trackInfos.map(TrackInfo::indices)
+        val settableTracks = playerSavedState.manuallySetTracks
+            .filter { trackInfo -> trackInfo.indices in trackIndices }
+        // Tracks in saved state tied to PlaybackInfo resolving might be absent in the player.
+        // This can happen when tracks are resolved lazily, e.g. with side-loaded captions, so
+        // update the cache remove tracks that were already set.
+        val unsettableTracks = playerSavedState.manuallySetTracks - settableTracks
+        playerSavedState.saveTracks(unsettableTracks)
+
+        appPlayer.requireNotNull().setTrackInfos(settableTracks)
+
+        val trackTypes = playerEvent.trackInfos.map(TrackInfo::type)
+        tracksStates.value = TracksState.Available(trackTypes)
     }
 
     override fun isPlaying(): Boolean = appPlayer?.state?.isPlaying == true

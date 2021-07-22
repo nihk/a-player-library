@@ -16,6 +16,10 @@ class PlayerSavedState(
 
     fun save(playerState: PlayerState?, tracks: List<TrackInfo>) {
         handle[keyPlayerState] = playerState
+        saveTracks(tracks)
+    }
+
+    fun saveTracks(tracks: List<TrackInfo>) {
         handle[keyManuallySetTrackInfos] = tracks.filter(TrackInfo::isManuallySet)
     }
 
