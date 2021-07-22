@@ -136,9 +136,8 @@ class PlayerNonConfig(
         val trackIndices = playerEvent.trackInfos.map(TrackInfo::indices)
         val settableTracks = playerSavedState.manuallySetTracks
             .filter { trackInfo -> trackInfo.indices in trackIndices }
-        // Tracks in saved state tied to PlaybackInfo resolving might be absent in the player.
-        // This can happen when tracks are resolved lazily, e.g. with side-loaded captions, so
-        // update the cache remove tracks that were already set.
+        // Keep state of the tracks that were saved but aren't able to be set yet. This can happen
+        // with tracks that come in late, e.g. side-loaded captions resolving.
         val unsettableTracks = playerSavedState.manuallySetTracks - settableTracks
         playerSavedState.saveTracks(unsettableTracks)
 
