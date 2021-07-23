@@ -66,6 +66,10 @@ internal fun ExoPlayer.getTrackInfos(trackTypes: List<Int>, trackNameProvider: T
                             TrackInfo(
                                 name = name,
                                 type = trackType.toTrackInfoType(),
+                                size = TrackInfo.Size(
+                                    width = format.width,
+                                    height = format.height
+                                ),
                                 indices = TrackInfo.Indices(
                                     index = trackIndex,
                                     groupIndex = groupIndex,

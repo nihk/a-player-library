@@ -19,6 +19,7 @@ class TracksPickerDialog(
     context: Context,
     private val playerController: PlayerController,
     private val trackType: TrackInfo.Type,
+    private val filter: (TrackInfo) -> Boolean
 ) : BottomSheetDialog(context), LifecycleOwner {
     private var binding: TracksFragmentBinding? = null
     private val registry = LifecycleRegistry(this)
@@ -54,8 +55,9 @@ class TracksPickerDialog(
             .launchIn(lifecycleScope)
     }
 
-    private fun trackInfosBy(type: TrackInfo.Type): List<TrackInfo> {
-        return playerController.tracks().filter { it.type == type }
+    private fun queryTrackInfos(): List<TrackInfo> {
+        return playerController.tracks()
+            .filter { it.type == trackType && filter(it) }
     }
 
     private fun List<TrackInfo>.toTrackOptions(): List<TrackOption> {
@@ -70,7 +72,7 @@ class TracksPickerDialog(
     }
 
     private fun submitTrackOptions(adapter: TracksAdapter) {
-        val trackInfos = trackInfosBy(trackType)
+        val trackInfos = queryTrackInfos()
         val trackOptions = if (trackInfos.isEmpty()) {
             // todo: this is a bit jarring when tracks update/change, which puts the player in a
             //  temporary state where there are no tracks, but I also don't want tracks to be
@@ -84,7 +86,7 @@ class TracksPickerDialog(
                 isSelected = !hasManuallySetOption,
                 action = TrackOption.Action.Clear(trackInfos.first().indices.rendererIndex) // These will all be the same
             )
-            listOf(auto) + trackInfosBy(trackType).toTrackOptions()
+            listOf(auto) + trackInfos.toTrackOptions()
         }
         adapter.submitList(trackOptions)
     }

@@ -156,7 +156,7 @@ class DefaultPlaybackUi(
 
     private fun navigateToTracksPicker(type: TrackInfo.Type) {
         activeTracksPickerType = type
-        navigator.toTracksPicker(type) {
+        navigator.toTracksPicker(TrackConfig.create(type)) {
             activeTracksPickerType = null
         }
     }
