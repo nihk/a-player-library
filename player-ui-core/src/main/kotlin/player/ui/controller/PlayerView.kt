@@ -28,7 +28,7 @@ import player.ui.common.PlaybackUi
 import player.ui.common.PlayerArguments
 import player.ui.core.R
 
-@SuppressLint("ViewConstructor")
+@SuppressLint("ViewConstructor") // This class should not be used in XML
 class PlayerView(
     context: Context,
     private val playerArguments: PlayerArguments,

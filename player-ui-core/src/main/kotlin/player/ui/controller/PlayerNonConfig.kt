@@ -11,7 +11,6 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.filterNot
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.runningFold
@@ -62,6 +61,7 @@ class PlayerNonConfig(
 
     val playbackInfos: StateFlow<List<PlaybackInfo>> = playbackInfoResolver.playbackInfos(uri)
         .onEach { playbackInfo -> playbackInfo.sideEffect() }
+        // Aggregate all new and old PlaybackInfos into a single list
         .runningFold(emptyList<PlaybackInfo>()) { list, playbackInfo ->
             list + if (playbackInfo is PlaybackInfo.Batched) {
                 playbackInfo.playbackInfos
@@ -69,7 +69,6 @@ class PlayerNonConfig(
                 listOf(playbackInfo)
             }
         }
-        .filterNot { playbackInfos -> playbackInfos.isEmpty() }
         .onEach { playbackInfos -> appPlayer?.handlePlaybackInfos(playbackInfos) }
         .stateIn(
             scope = scope,
