@@ -2,11 +2,12 @@ package player.ui.def
 
 import android.content.Context
 import player.ui.common.PlayerController
+import player.ui.trackspicker.TracksPickerConfig
 import player.ui.trackspicker.TracksPickerDialog
 
 interface Navigator {
     fun toTracksPicker(
-        trackConfig: TrackConfig,
+        config: TracksPickerConfig,
         onDismissed: () -> Unit
     )
 
@@ -22,10 +23,10 @@ interface Navigator {
         private val playerController: PlayerController
     ) : Navigator {
         override fun toTracksPicker(
-            trackConfig: TrackConfig,
+            config: TracksPickerConfig,
             onDismissed: () -> Unit
         ) {
-            TracksPickerDialog(context, playerController, trackConfig.type, trackConfig.filter)
+            TracksPickerDialog(context, playerController, config)
                 .apply {
                     setOnDismissListener { onDismissed() }
                 }

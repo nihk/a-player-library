@@ -2,6 +2,7 @@ package player.ui.trackspicker
 
 import android.content.Context
 import android.os.Bundle
+import androidx.core.view.isVisible
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleRegistry
@@ -13,22 +14,23 @@ import player.common.PlayerEvent
 import player.common.TrackInfo
 import player.common.requireNotNull
 import player.ui.common.PlayerController
-import player.ui.trackspicker.databinding.TracksFragmentBinding
+import player.ui.trackspicker.databinding.TracksPickerDialogBinding
 
 class TracksPickerDialog(
     context: Context,
     private val playerController: PlayerController,
-    private val trackType: TrackInfo.Type,
-    private val filter: (TrackInfo) -> Boolean
+    private val config: TracksPickerConfig
 ) : BottomSheetDialog(context), LifecycleOwner {
-    private var binding: TracksFragmentBinding? = null
+    private var binding: TracksPickerDialogBinding? = null
     private val registry = LifecycleRegistry(this)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         registry.currentState = Lifecycle.State.CREATED
-        binding = TracksFragmentBinding.inflate(layoutInflater)
+        binding = TracksPickerDialogBinding.inflate(layoutInflater)
         setContentView(requireBinding().root)
+
+        requireBinding().title.setText(config.title)
 
         val adapter = TracksAdapter { action ->
             when (action) {
@@ -57,7 +59,7 @@ class TracksPickerDialog(
 
     private fun queryTrackInfos(): List<TrackInfo> {
         return playerController.tracks()
-            .filter { it.type == trackType && filter(it) }
+            .filter { it.type == config.type && config.filter(it) }
     }
 
     private fun List<TrackInfo>.toTrackOptions(): List<TrackOption> {
@@ -73,6 +75,7 @@ class TracksPickerDialog(
 
     private fun submitTrackOptions(adapter: TracksAdapter) {
         val trackInfos = queryTrackInfos()
+        requireBinding().title.isVisible = trackInfos.isNotEmpty()
         val trackOptions = if (trackInfos.isEmpty()) {
             // todo: this is a bit jarring when tracks update/change, which puts the player in a
             //  temporary state where there are no tracks, but I also don't want tracks to be

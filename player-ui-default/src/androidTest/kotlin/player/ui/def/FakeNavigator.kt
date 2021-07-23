@@ -1,9 +1,9 @@
 package player.ui.def
 
-import player.common.TrackInfo
+import player.ui.trackspicker.TracksPickerConfig
 
 class FakeNavigator : Navigator {
-    override fun toTracksPicker(type: TrackInfo.Type, onDismissed: () -> Unit) {
+    override fun toTracksPicker(config: TracksPickerConfig, onDismissed: () -> Unit) {
         error("unused")
     }
 }

@@ -16,15 +16,15 @@ import org.junit.Test
 import player.common.PlaybackInfo
 import player.common.PlayerEvent
 import player.common.SeekData
-import player.ui.test.FakeCloseDelegate
 import player.test.FakePlayerViewWrapper
-import player.ui.test.FakeShareDelegate
-import player.ui.test.FakeTimeFormatter
 import player.ui.common.PlayerArguments
 import player.ui.common.UiState
+import player.ui.test.FakeCloseDelegate
 import player.ui.test.FakePipController
 import player.ui.test.FakePlayerController
 import player.ui.test.FakeSeekBarListener
+import player.ui.test.FakeShareDelegate
+import player.ui.test.FakeTimeFormatter
 import player.ui.test.TestActivity
 
 class DefaultPlaybackUiTest {
@@ -98,6 +98,7 @@ class DefaultPlaybackUiTest {
         private val playerViewWrapperFactory = FakePlayerViewWrapper.Factory(playerViewWrapper)
         private val pipController = FakePipController()
         private val playerController = FakePlayerController()
+        private val tracksPickerConfigFactory = FakeTracksPickerConfigFactory()
         private val playerArguments = PlayerArguments(
             id = "id",
             uri = "",
@@ -119,7 +120,8 @@ class DefaultPlaybackUiTest {
                     registryOwner = testActivity,
                     closeDelegate = closeDelegate,
                     shareDelegate = shareDelegate,
-                    timeFormatter = timeFormatter
+                    timeFormatter = timeFormatter,
+                    tracksPickerConfigFactory = tracksPickerConfigFactory
                 )
 
                 testActivity.attach(defaultPlaybackUi.view)

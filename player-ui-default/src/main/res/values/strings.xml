@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="closed_captions">Closed Captions</string>
+    <string name="playback_quality">Playback Quality</string>
+    <string name="audio_tracks">Audio Tracks</string>
+</resources>

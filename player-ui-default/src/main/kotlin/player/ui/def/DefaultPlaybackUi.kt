@@ -49,7 +49,8 @@ class DefaultPlaybackUi(
     private val registryOwner: SavedStateRegistryOwner,
     private val closeDelegate: CloseDelegate,
     private val shareDelegate: ShareDelegate?,
-    private val timeFormatter: TimeFormatter
+    private val timeFormatter: TimeFormatter,
+    private val tracksPickerConfigFactory: TracksPickerConfigFactory
 ) : PlaybackUi {
     @SuppressLint("InflateParams")
     override val view: View = LayoutInflater.from(activity)
@@ -156,7 +157,8 @@ class DefaultPlaybackUi(
 
     private fun navigateToTracksPicker(type: TrackInfo.Type) {
         activeTracksPickerType = type
-        navigator.toTracksPicker(TrackConfig.create(type)) {
+        val config = tracksPickerConfigFactory.create(type)
+        navigator.toTracksPicker(config) {
             activeTracksPickerType = null
         }
     }
@@ -251,7 +253,8 @@ class DefaultPlaybackUi(
                 registryOwner = registryOwner,
                 closeDelegate = closeDelegate,
                 shareDelegate = shareDelegate,
-                timeFormatter = timeFormatter
+                timeFormatter = timeFormatter,
+                tracksPickerConfigFactory = TracksPickerConfigFactory.Default()
             )
         }
     }
