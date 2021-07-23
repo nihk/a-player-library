@@ -102,21 +102,25 @@ class PlayerView(
             // Need to wait for View tree to be CREATED; things like the View tree's
             // SavedStateRegistry isn't available below that state.
             Lifecycle.Event.ON_CREATE -> {
-                // PlaybackUi.view will already be added to PlayerView when PlayerView is reparented.
-                if (playbackUi.view.parent != this) {
-                    // Override default WRAP_CONTENT params when adding a child View.
-                    val layoutParams = LayoutParams(
-                        LayoutParams.MATCH_PARENT,
-                        LayoutParams.MATCH_PARENT,
-                    )
-                    addView(playbackUi.view, 0, layoutParams)
-                }
+                addPlaybackUi()
                 setUpBackPressHandling()
                 listenToPlayer()
             }
             Lifecycle.Event.ON_START -> start()
             Lifecycle.Event.ON_STOP -> stop()
         }
+    }
+
+    private fun addPlaybackUi() {
+        // PlaybackUi.view will already be added to PlayerView when PlayerView is reparented.
+        if (playbackUi.view.parent == this) return
+
+        // Override default WRAP_CONTENT params when adding a child View.
+        val layoutParams = LayoutParams(
+            LayoutParams.MATCH_PARENT,
+            LayoutParams.MATCH_PARENT,
+        )
+        addView(playbackUi.view, 0, layoutParams)
     }
 
     private fun start() {
