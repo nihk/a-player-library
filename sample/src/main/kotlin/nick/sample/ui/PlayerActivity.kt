@@ -37,7 +37,7 @@ abstract class PlayerActivity : AppCompatActivity(R.layout.player_activity) {
     companion object {
         fun start(context: Context, playerArguments: PlayerArguments) {
             val clazz = if (
-                playerArguments.pipConfig?.enabled == true
+                playerArguments.pipConfig?.isEnabled == true
                 && context.isPipAllowed()
             ) {
                 PipPlayerActivity::class.java

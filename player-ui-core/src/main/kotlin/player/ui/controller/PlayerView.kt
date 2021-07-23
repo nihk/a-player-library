@@ -13,6 +13,7 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleRegistry
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.flowWithLifecycle
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -146,13 +147,16 @@ class PlayerView(
             .onEach { playbackInfos -> playbackUi.onPlaybackInfos(playbackInfos) }
             .launchIn(scope)
 
-        if (playerArguments.pipConfig?.enabled == true) {
+        if (playerArguments.pipConfig?.isEnabled == true) {
             pipController.events()
+                .flowWithLifecycle(requireViewTreeLifecycleOwner().lifecycle)
                 .launchIn(scope)
 
-            onUserLeaveHintViewModel.onUserLeaveHints()
-                .onEach { enterPip() }
-                .launchIn(scope)
+            if (playerArguments.pipConfig?.onUserLeaveHints == true) {
+                onUserLeaveHintViewModel.onUserLeaveHints()
+                    .onEach { enterPip() }
+                    .launchIn(scope)
+            }
         }
     }
 
@@ -162,7 +166,7 @@ class PlayerView(
 
     private fun setUpBackPressHandling() {
         val pipConfig = playerArguments.pipConfig
-        val pipOnBackPress = pipConfig?.enabled == true && pipConfig.onBackPresses
+        val pipOnBackPress = pipConfig?.onBackPresses == true
         if (!pipOnBackPress) return
 
         val onBackPressed = object : OnBackPressedCallback(true) {

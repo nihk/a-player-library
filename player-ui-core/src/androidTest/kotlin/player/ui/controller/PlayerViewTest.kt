@@ -83,7 +83,6 @@ class PlayerViewTest {
         block: PlayerViewRobot.() -> Unit
     ) {
         val pipConfig = PictureInPictureConfig(
-            enabled = pipOnBackPress,
             onBackPresses = pipOnBackPress
         )
         PlayerViewRobot(pipConfig).block()

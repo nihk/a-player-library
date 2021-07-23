@@ -3,5 +3,4 @@
     android:id="@+id/container"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context="player.core.LibraryActivity" />
+    android:layout_height="match_parent" />
