@@ -1,11 +1,11 @@
 package nick.sample.configuration
 
 import android.content.Intent
-import androidx.fragment.app.FragmentActivity
+import androidx.activity.ComponentActivity
 import player.ui.common.ShareDelegate
 
 class AndroidShareDelegate : ShareDelegate {
-    override fun share(activity: FragmentActivity, uri: String) {
+    override fun share(activity: ComponentActivity, uri: String) {
         val sendIntent = Intent().apply {
             action = Intent.ACTION_SEND
             putExtra(Intent.EXTRA_TEXT, uri)

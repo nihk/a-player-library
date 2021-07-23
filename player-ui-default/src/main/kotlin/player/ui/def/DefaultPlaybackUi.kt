@@ -5,14 +5,13 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.SeekBar
+import androidx.activity.ComponentActivity
 import androidx.core.os.bundleOf
 import androidx.core.view.doOnAttach
 import androidx.core.view.doOnDetach
 import androidx.core.view.isVisible
-import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
-import androidx.savedstate.SavedStateRegistryOwner
 import player.common.AppPlayer
 import player.common.PlaybackInfo
 import player.common.PlayerEvent
@@ -39,14 +38,13 @@ import kotlin.time.toDuration
 
 // todo: this should be more composable for shared components across PlaybackUis, e.g. the seekbar
 class DefaultPlaybackUi(
-    private val activity: FragmentActivity,
+    private val activity: ComponentActivity,
     private val navigator: Navigator,
     private val seekBarListenerFactory: SeekBarListener.Factory,
     private val playerViewWrapperFactory: PlayerViewWrapper.Factory,
     private val pipController: PipController,
     private val playerController: PlayerController,
     private val playerArguments: PlayerArguments,
-    private val registryOwner: SavedStateRegistryOwner,
     private val closeDelegate: CloseDelegate,
     private val shareDelegate: ShareDelegate?,
     private val timeFormatter: TimeFormatter,
@@ -68,20 +66,20 @@ class DefaultPlaybackUi(
     private val observer = LifecycleEventObserver { _, event ->
         when (event) {
             Lifecycle.Event.ON_CREATE -> {
-                registryOwner.savedStateRegistry.registerSavedStateProvider(PROVIDER, this)
+                activity.savedStateRegistry.registerSavedStateProvider(PROVIDER, this)
             }
         }
     }
 
     init {
-        registryOwner.lifecycle.addObserver(observer)
+        activity.lifecycle.addObserver(observer)
         view.doOnAttach {
             // Nested because otherwise it will be called immediately, before View is attached.
             view.doOnDetach {
-                registryOwner.lifecycle.removeObserver(observer)
+                activity.lifecycle.removeObserver(observer)
                 val isPlayerClosed = !activity.isChangingConfigurations
                 if (isPlayerClosed) {
-                    registryOwner.savedStateRegistry.unregisterSavedStateProvider(PROVIDER)
+                    activity.savedStateRegistry.unregisterSavedStateProvider(PROVIDER)
                 }
             }
         }
@@ -214,7 +212,7 @@ class DefaultPlaybackUi(
     }
 
     private fun restoreState() {
-        val state = registryOwner.savedStateRegistry.consumeRestoredStateForKey(PROVIDER)
+        val state = activity.savedStateRegistry.consumeRestoredStateForKey(PROVIDER)
         val type = state?.getSerializable(KEY_ACTIVE_TRACKS_PICKER_TYPE) as? TrackInfo.Type
             ?: return
         navigateToTracksPicker(type)
@@ -235,22 +233,20 @@ class DefaultPlaybackUi(
         private val shareDelegate: ShareDelegate? = null,
     ) : PlaybackUi.Factory {
         override fun create(
-            host: FragmentActivity,
+            activity: ComponentActivity,
             playerViewWrapperFactory: PlayerViewWrapper.Factory,
             pipController: PipController,
             playerController: PlayerController,
-            playerArguments: PlayerArguments,
-            registryOwner: SavedStateRegistryOwner
+            playerArguments: PlayerArguments
         ): PlaybackUi {
             return DefaultPlaybackUi(
-                activity = host,
+                activity = activity,
                 seekBarListenerFactory = DefaultSeekBarListener.Factory(),
-                navigator = Navigator(host, playerController),
+                navigator = Navigator(activity, playerController),
                 playerViewWrapperFactory = playerViewWrapperFactory,
                 pipController = pipController,
                 playerController = playerController,
                 playerArguments = playerArguments,
-                registryOwner = registryOwner,
                 closeDelegate = closeDelegate,
                 shareDelegate = shareDelegate,
                 timeFormatter = timeFormatter,

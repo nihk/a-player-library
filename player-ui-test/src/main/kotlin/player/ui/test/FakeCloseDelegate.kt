@@ -1,13 +1,13 @@
 package player.ui.test
 
-import androidx.fragment.app.FragmentActivity
+import androidx.activity.ComponentActivity
 import player.ui.common.CloseDelegate
 
 class FakeCloseDelegate : CloseDelegate {
     var didClose: Boolean = false
         private set
 
-    override fun onClose(activity: FragmentActivity) {
+    override fun onClose(activity: ComponentActivity) {
         didClose = true
     }
 }

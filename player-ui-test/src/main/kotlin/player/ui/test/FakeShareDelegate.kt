@@ -1,13 +1,13 @@
 package player.ui.test
 
-import androidx.fragment.app.FragmentActivity
+import androidx.activity.ComponentActivity
 import player.ui.common.ShareDelegate
 
 class FakeShareDelegate : ShareDelegate {
     var didShare: Boolean = false
         private set
 
-    override fun share(activity: FragmentActivity, uri: String) {
+    override fun share(activity: ComponentActivity, uri: String) {
         didShare = true
     }
 }

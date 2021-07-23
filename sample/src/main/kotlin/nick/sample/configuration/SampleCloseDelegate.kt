@@ -1,5 +1,6 @@
 package nick.sample.configuration
 
+import androidx.activity.ComponentActivity
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.commit
@@ -9,7 +10,7 @@ import player.ui.common.CloseDelegate
 import player.core.LibraryView
 
 class SampleCloseDelegate : CloseDelegate {
-    override fun onClose(activity: FragmentActivity) {
+    override fun onClose(activity: ComponentActivity) {
         if (activity is PlayerActivity) {
             activity.finish()
         } else {
@@ -17,6 +18,7 @@ class SampleCloseDelegate : CloseDelegate {
             if (libraryView?.isPlaying == true) {
                 libraryView.stop()
             }
+            activity as FragmentActivity
             activity.supportFragmentManager.commit {
                 activity.supportFragmentManager.fragments.forEach { fragment ->
                     remove(fragment)

@@ -2,9 +2,8 @@ package player.ui.common
 
 import android.os.Bundle
 import android.view.View
-import androidx.fragment.app.FragmentActivity
+import androidx.activity.ComponentActivity
 import androidx.savedstate.SavedStateRegistry
-import androidx.savedstate.SavedStateRegistryOwner
 import player.common.AppPlayer
 import player.common.PlaybackInfo
 import player.common.PlayerEvent
@@ -24,12 +23,11 @@ interface PlaybackUi : SavedStateRegistry.SavedStateProvider {
 
     interface Factory {
         fun create(
-            host: FragmentActivity,
+            activity: ComponentActivity,
             playerViewWrapperFactory: PlayerViewWrapper.Factory,
             pipController: PipController,
             playerController: PlayerController,
-            playerArguments: PlayerArguments,
-            registryOwner: SavedStateRegistryOwner
+            playerArguments: PlayerArguments
         ): PlaybackUi
     }
 }

@@ -5,14 +5,13 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.SeekBar
+import androidx.activity.ComponentActivity
 import androidx.core.os.bundleOf
 import androidx.core.view.doOnAttach
 import androidx.core.view.doOnDetach
 import androidx.core.view.isVisible
-import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
-import androidx.savedstate.SavedStateRegistryOwner
 import androidx.viewpager2.widget.ViewPager2
 import com.google.android.material.tabs.TabLayoutMediator
 import player.common.AppPlayer
@@ -41,13 +40,12 @@ import kotlin.time.toDuration
 
 // todo: move title TextView to ViewHolder?
 class SvePlaybackUi(
-    private val activity: FragmentActivity,
+    private val activity: ComponentActivity,
     private val seekBarListenerFactory: SeekBarListener.Factory,
     private val playerViewWrapperFactory: PlayerViewWrapper.Factory,
     private val pipController: PipController,
     private val playerController: PlayerController,
     private val playerArguments: PlayerArguments,
-    private val registryOwner: SavedStateRegistryOwner,
     private val closeDelegate: CloseDelegate,
     private val shareDelegate: ShareDelegate?,
     private val imageLoader: ImageLoader,
@@ -69,20 +67,20 @@ class SvePlaybackUi(
     private val observer = LifecycleEventObserver { _, event ->
         when (event) {
             Lifecycle.Event.ON_CREATE -> {
-                registryOwner.savedStateRegistry.registerSavedStateProvider(PROVIDER, this)
+                activity.savedStateRegistry.registerSavedStateProvider(PROVIDER, this)
             }
         }
     }
 
     init {
-        registryOwner.lifecycle.addObserver(observer)
+        activity.lifecycle.addObserver(observer)
         view.doOnAttach {
             // Nested because otherwise it will be called immediately, before View is attached.
             view.doOnDetach {
-                registryOwner.lifecycle.removeObserver(observer)
+                activity.lifecycle.removeObserver(observer)
                 val isPlayerClosed = !activity.isChangingConfigurations
                 if (isPlayerClosed) {
-                    registryOwner.savedStateRegistry.unregisterSavedStateProvider(PROVIDER)
+                    activity.savedStateRegistry.unregisterSavedStateProvider(PROVIDER)
                 }
             }
         }
@@ -154,7 +152,7 @@ class SvePlaybackUi(
     }
 
     private fun savedPagePosition(default: Int = 0): Int {
-        val state = registryOwner.savedStateRegistry.consumeRestoredStateForKey(PROVIDER)
+        val state = activity.savedStateRegistry.consumeRestoredStateForKey(PROVIDER)
         return state?.getInt(TAB_POSITION) ?: default
     }
 
@@ -261,21 +259,19 @@ class SvePlaybackUi(
         private val shareDelegate: ShareDelegate? = null
     ) : PlaybackUi.Factory {
         override fun create(
-            host: FragmentActivity,
+            activity: ComponentActivity,
             playerViewWrapperFactory: PlayerViewWrapper.Factory,
             pipController: PipController,
             playerController: PlayerController,
             playerArguments: PlayerArguments,
-            registryOwner: SavedStateRegistryOwner
         ): PlaybackUi {
             return SvePlaybackUi(
-                activity = host,
+                activity = activity,
                 seekBarListenerFactory = DefaultSeekBarListener.Factory(),
                 playerViewWrapperFactory = playerViewWrapperFactory,
                 pipController = pipController,
                 playerController = playerController,
                 playerArguments = playerArguments,
-                registryOwner = registryOwner,
                 closeDelegate = closeDelegate,
                 shareDelegate = shareDelegate,
                 imageLoader = imageLoader,

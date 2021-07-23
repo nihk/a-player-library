@@ -3,11 +3,10 @@ package player.ui.inline
 import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.View
+import androidx.activity.ComponentActivity
 import androidx.activity.OnBackPressedCallback
 import androidx.core.view.doOnAttach
 import androidx.core.view.isVisible
-import androidx.fragment.app.FragmentActivity
-import androidx.savedstate.SavedStateRegistryOwner
 import player.common.AppPlayer
 import player.common.PlaybackInfo
 import player.common.PlayerEvent
@@ -25,12 +24,11 @@ import player.ui.inline.databinding.InlinePlaybackUiBinding
 
 // todo: a dedicated fullscreen/smallscreen UI (depending on state)
 class InlinePlaybackUi(
-    private val activity: FragmentActivity,
+    private val activity: ComponentActivity,
     private val playerViewWrapperFactory: PlayerViewWrapper.Factory,
     private val pipController: PipController,
     private val playerController: PlayerController,
     private val playerArguments: PlayerArguments,
-    private val registryOwner: SavedStateRegistryOwner,
     private val closeDelegate: CloseDelegate,
     private val onVideoSizeChangedCallback: OnVideoSizeChangedCallback,
     private val onFullscreenChangedCallback: OnFullscreenChangedCallback,
@@ -139,20 +137,18 @@ class InlinePlaybackUi(
         private val isFullscreenInitially: Boolean? = null
     ) : PlaybackUi.Factory {
         override fun create(
-            host: FragmentActivity,
+            activity: ComponentActivity,
             playerViewWrapperFactory: PlayerViewWrapper.Factory,
             pipController: PipController,
             playerController: PlayerController,
             playerArguments: PlayerArguments,
-            registryOwner: SavedStateRegistryOwner
         ): PlaybackUi {
             return InlinePlaybackUi(
-                activity = host,
+                activity = activity,
                 playerViewWrapperFactory = playerViewWrapperFactory,
                 pipController = pipController,
                 playerController = playerController,
                 playerArguments = playerArguments,
-                registryOwner = registryOwner,
                 closeDelegate = closeDelegate,
                 onVideoSizeChangedCallback = onVideoSizeChangedCallback,
                 onFullscreenChangedCallback = onFullscreenChangedCallback,

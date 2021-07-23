@@ -117,7 +117,6 @@ class DefaultPlaybackUiTest {
                     pipController = pipController,
                     playerController = playerController,
                     playerArguments = playerArguments,
-                    registryOwner = testActivity,
                     closeDelegate = closeDelegate,
                     shareDelegate = shareDelegate,
                     timeFormatter = timeFormatter,

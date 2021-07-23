@@ -6,7 +6,6 @@ import android.view.ViewPropertyAnimator
 import android.view.animation.DecelerateInterpolator
 import androidx.activity.ComponentActivity
 import androidx.core.view.updateLayoutParams
-import androidx.fragment.app.FragmentActivity
 import androidx.recyclerview.widget.RecyclerView
 import nick.sample.databinding.PlayerItemBinding
 import nick.sample.ui.SampleLibraryConfigurationFactory
@@ -140,13 +139,13 @@ class PlayerItemViewHolder(
                 onFullscreenChangedCallback = object : OnFullscreenChangedCallback {
                     override fun onFullscreenChanged(
                         isFullscreen: Boolean,
-                        activity: FragmentActivity
+                        activity: ComponentActivity
                     ) {
                         handleFullscreen(isFullscreen)
                     }
                 },
                 closeDelegate = object : CloseDelegate {
-                    override fun onClose(activity: FragmentActivity) {
+                    override fun onClose(activity: ComponentActivity) {
                         activity.onBackPressed()
                     }
                 },

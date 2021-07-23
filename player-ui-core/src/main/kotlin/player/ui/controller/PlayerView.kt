@@ -8,7 +8,6 @@ import android.view.View
 import android.widget.FrameLayout
 import androidx.activity.ComponentActivity
 import androidx.activity.OnBackPressedCallback
-import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
@@ -57,12 +56,11 @@ class PlayerView(
         playbackUiFactories.first { factory ->
             playerArguments.playbackUiFactory.isAssignableFrom(factory::class.java)
         }.create(
-            host = context as FragmentActivity,
+            activity = activity,
             playerViewWrapperFactory = playerViewWrapperFactory,
             pipController = pipController,
             playerController = playerNonConfig,
-            playerArguments = playerArguments,
-            registryOwner = activity
+            playerArguments = playerArguments
         )
     }
     private val activity: ComponentActivity get() = context as ComponentActivity
