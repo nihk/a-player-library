@@ -66,7 +66,7 @@ class MainActivity : AppCompatActivity() {
             id = "id",
             uri = "https://devstreaming-cdn.apple.com/videos/streaming/examples/bipbop_16x9/bipbop_16x9_variant.m3u8",
             pipConfig = PictureInPictureConfig(
-                onBackPresses = true,
+                onBackPresses = binding.enablePip.isChecked,
                 onUserLeaveHints = false
             ),
             playbackUiFactory = when {
