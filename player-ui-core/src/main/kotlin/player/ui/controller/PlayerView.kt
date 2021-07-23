@@ -5,9 +5,9 @@ import android.content.Context
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.view.View
-import android.widget.FrameLayout
 import androidx.activity.ComponentActivity
 import androidx.activity.OnBackPressedCallback
+import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
@@ -38,7 +38,7 @@ class PlayerView(
     private val pipControllerFactory: PipController.Factory,
     private val playbackUiFactories: List<PlaybackUi.Factory>,
     private val scopeFactory: () -> CoroutineScope = { CoroutineScope(SupervisorJob() + Dispatchers.Main) }
-) : FrameLayout(context), LifecycleEventObserver, LifecycleOwner {
+) : CoordinatorLayout(context), LifecycleEventObserver, LifecycleOwner {
     private var scope: CoroutineScope? = null
     private val playerViewModel: PlayerViewModel by lazy {
         ViewModelProvider(
@@ -104,7 +104,12 @@ class PlayerView(
             Lifecycle.Event.ON_CREATE -> {
                 // PlaybackUi.view will already be added to PlayerView when PlayerView is reparented.
                 if (playbackUi.view.parent != this) {
-                    addView(playbackUi.view)
+                    // Override default WRAP_CONTENT params when adding a child View.
+                    val layoutParams = LayoutParams(
+                        LayoutParams.MATCH_PARENT,
+                        LayoutParams.MATCH_PARENT,
+                    )
+                    addView(playbackUi.view, 0, layoutParams)
                 }
                 setUpBackPressHandling()
                 listenToPlayer()
