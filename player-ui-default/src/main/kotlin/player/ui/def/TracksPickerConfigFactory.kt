@@ -9,8 +9,10 @@ interface TracksPickerConfigFactory {
     class Default : TracksPickerConfigFactory {
         override fun create(type: TrackInfo.Type): TracksPickerConfig {
             return when (type) {
-                TrackInfo.Type.VIDEO -> TracksPickerConfig(type, R.string.playback_quality) {
-                    it.size.height != -1 // Omit audio only tracks
+                TrackInfo.Type.VIDEO -> TracksPickerConfig(type, R.string.playback_quality) { tracks ->
+                    tracks
+                        .filter { it.size.height != -1 } // Omit audio only tracks
+                        .sortedByDescending { it.size.width } // Highest to lowest quality
                 }
                 TrackInfo.Type.AUDIO -> TracksPickerConfig(type, R.string.audio_tracks)
                 TrackInfo.Type.TEXT -> TracksPickerConfig(type, R.string.closed_captions)

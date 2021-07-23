@@ -59,7 +59,8 @@ class TracksPickerDialog(
 
     private fun queryTrackInfos(): List<TrackInfo> {
         return playerController.tracks()
-            .filter { it.type == config.type && config.filter(it) }
+            .filter { it.type == config.type }
+            .let { config.mapper(it) }
     }
 
     private fun List<TrackInfo>.toTrackOptions(): List<TrackOption> {
