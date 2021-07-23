@@ -94,10 +94,14 @@ class PlayerNonConfig(
         return appPlayer.requireNotNull()
     }
 
-    fun onAppBackgrounded() {
-        // When a user backgrounds the app, then later foregrounds it back to the video, a good UX is
-        // to have the player be paused upon return.
-        val state = appPlayer?.state?.copy(isPlaying = false)
+    fun tearDown(override: PlayingState? = null) {
+        val state = appPlayer?.state?.run {
+            if (override != null) {
+                copy(isPlaying = override == PlayingState.Playing)
+            } else {
+                this
+            }
+        }
         playerSavedState.save(state, appPlayer?.tracks.orEmpty())
         tearDown()
     }

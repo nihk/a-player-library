@@ -183,7 +183,7 @@ class FakeErrorRenderer : ErrorRenderer {
     var didRender: Boolean = false
     var collectedMessage: String? = null
 
-    override fun render(view: View, message: String) {
+    override fun render(view: View, message: String, action: ErrorRenderer.Action?) {
         didRender = true
         collectedMessage = message
     }

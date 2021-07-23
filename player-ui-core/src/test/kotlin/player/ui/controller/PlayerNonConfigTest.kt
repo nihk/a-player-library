@@ -156,7 +156,7 @@ class PlayerNonConfigTest {
         }
 
         fun onAppBackgrounded() {
-            playerNonConfig.onAppBackgrounded()
+            playerNonConfig.tearDown()
         }
 
         fun assertPlayerCreated(times: Int) {

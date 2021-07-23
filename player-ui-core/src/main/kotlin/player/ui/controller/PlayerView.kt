@@ -26,6 +26,7 @@ import player.ui.common.OnUserLeaveHintViewModel
 import player.ui.common.PipController
 import player.ui.common.PlaybackUi
 import player.ui.common.PlayerArguments
+import player.ui.core.R
 
 @SuppressLint("ViewConstructor")
 class PlayerView(
@@ -108,17 +109,26 @@ class PlayerView(
                 setUpBackPressHandling()
                 listenToPlayer()
             }
-            Lifecycle.Event.ON_START -> {
-                val appPlayer = playerNonConfig.getPlayer()
-                playbackUi.attach(appPlayer)
-            }
-            Lifecycle.Event.ON_STOP -> {
-                playbackUi.detachPlayer()
-                val isAppBackgrounded = !activity.isChangingConfigurations
-                if (isAppBackgrounded) {
-                    playerNonConfig.onAppBackgrounded()
-                }
-            }
+            Lifecycle.Event.ON_START -> start()
+            Lifecycle.Event.ON_STOP -> stop()
+        }
+    }
+
+    private fun start() {
+        val appPlayer = playerNonConfig.getPlayer()
+        playbackUi.attach(appPlayer)
+    }
+
+    private fun stop(
+        forceTearDown: Boolean = false,
+        // When a user backgrounds the app, then later foregrounds it back to the video, a good UX is
+        // to have the player be paused upon return.
+        override: PlayingState? = PlayingState.Paused
+    ) {
+        playbackUi.detachPlayer()
+        val isAppBackgrounded = !activity.isChangingConfigurations
+        if (isAppBackgrounded || forceTearDown) {
+            playerNonConfig.tearDown(override)
         }
     }
 
@@ -140,7 +150,16 @@ class PlayerView(
             .launchIn(scope)
 
         playerNonConfig.errors()
-            .onEach { message -> errorRenderer.render(this, message) }
+            .onEach { message ->
+                val action = ErrorRenderer.Action(
+                    name = activity.getString(R.string.retry),
+                    callback = {
+                        stop(forceTearDown = true, override = PlayingState.Playing) // Enter playing state if retry was successful
+                        start()
+                    }
+                )
+                errorRenderer.render(this, message, action)
+            }
             .launchIn(scope)
 
         playerNonConfig.playbackInfos
