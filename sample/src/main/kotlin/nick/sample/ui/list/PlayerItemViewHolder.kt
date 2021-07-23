@@ -39,6 +39,8 @@ class PlayerItemViewHolder(
         val y = fullscreenContainer.y
         val height = fullscreenContainer.height
         val width = fullscreenContainer.width
+        val widthDelta = width - binding.container.width
+        val heightDelta = height - binding.container.height
 
         val animation: ViewPropertyAnimator = if (isFullscreen) {
             fullscreenContainer.updateLayoutParams {
@@ -49,25 +51,25 @@ class PlayerItemViewHolder(
             fullscreenContainer.y = binding.container.y
 
             fullscreenContainer.animate()
+                .withStartAction {
+                    handleFullscreenReparenting(isFullscreen)
+                }
                 .setUpdateListener { valueAnimator ->
                     val progress = valueAnimator.animatedValue as Float
                     fullscreenContainer.updateLayoutParams {
-                        this.width = binding.container.width + ((width - binding.container.width) * progress).toInt()
-                        this.height = binding.container.height + ((height - binding.container.height) * progress).toInt()
+                        this.width = binding.container.width + (widthDelta * progress).toInt()
+                        this.height = binding.container.height + (heightDelta * progress).toInt()
                     }
                 }
                 .x(x)
                 .y(y)
-                .withStartAction {
-                    handleFullscreenReparenting(isFullscreen)
-                }
         } else {
             fullscreenContainer.animate()
                 .setUpdateListener { valueAnimator ->
                     val progress = valueAnimator.animatedValue as Float
                     fullscreenContainer.updateLayoutParams {
-                        this.width = width - ((width - binding.container.width) * progress).toInt()
-                        this.height = height - ((height - binding.container.height) * progress).toInt()
+                        this.width = width - (widthDelta * progress).toInt()
+                        this.height = height - (heightDelta * progress).toInt()
                     }
                 }
                 .x(binding.container.x)
