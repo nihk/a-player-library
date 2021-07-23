@@ -9,7 +9,7 @@ import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.FragmentActivity
 import androidx.recyclerview.widget.RecyclerView
 import nick.sample.databinding.PlayerItemBinding
-import nick.sample.ui.LibraryConfigurationFactory
+import nick.sample.ui.SampleLibraryConfigurationFactory
 import player.common.DefaultPlaybackInfoResolver
 import player.core.LibraryView
 import player.ui.common.CloseDelegate
@@ -134,7 +134,7 @@ class PlayerItemViewHolder(
     }
 
     private fun initialize() {
-        val configuration = LibraryConfigurationFactory()
+        val configuration = SampleLibraryConfigurationFactory()
             .create(
                 activity = binding.root.context as ComponentActivity,
                 onFullscreenChangedCallback = object : OnFullscreenChangedCallback {

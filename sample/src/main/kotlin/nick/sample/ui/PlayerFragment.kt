@@ -4,7 +4,6 @@ import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.Fragment
 import nick.sample.R
-import nick.sample.configuration.SlowPlaybackInfoResolver
 import nick.sample.databinding.PlayerFragmentBinding
 import player.ui.common.PlayerArguments
 import player.ui.common.toBundle
@@ -16,7 +15,7 @@ class PlayerFragment : Fragment(R.layout.player_fragment) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         val binding = PlayerFragmentBinding.bind(view)
-        binding.libraryView.initialize(LibraryConfigurationFactory().create(requireActivity()))
+        binding.libraryView.initialize(SampleLibraryConfigurationFactory().create(requireActivity()))
         binding.libraryView.play(playerArguments)
     }
 

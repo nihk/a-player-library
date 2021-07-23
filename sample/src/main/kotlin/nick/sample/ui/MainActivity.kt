@@ -6,7 +6,6 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.commit
 import nick.sample.R
-import nick.sample.configuration.SlowPlaybackInfoResolver
 import nick.sample.databinding.MainActivityBinding
 import nick.sample.ui.list.ListFragment
 import player.ui.common.OnUserLeaveHintViewModel
@@ -24,7 +23,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         val binding = MainActivityBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        binding.libraryView.initialize(LibraryConfigurationFactory().create(this))
+        binding.libraryView.initialize(SampleLibraryConfigurationFactory().create(this))
 
         binding.toPlayerView.setOnClickListener { view ->
             val playerArguments = createPlayerArguments(binding, view)

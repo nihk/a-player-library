@@ -19,7 +19,7 @@ import player.ui.inline.OnFullscreenChangedCallback
 import player.ui.sve.SvePlaybackUi
 import java.util.*
 
-class LibraryConfigurationFactory {
+class SampleLibraryConfigurationFactory {
     fun create(
         activity: ComponentActivity,
         onFullscreenChangedCallback: OnFullscreenChangedCallback = SampleOnFullscreenChangedCallback(),
