@@ -3,7 +3,7 @@ package nick.sample.ui.list
 import android.graphics.drawable.ColorDrawable
 import android.view.ViewGroup
 import android.view.ViewPropertyAnimator
-import android.view.animation.AccelerateDecelerateInterpolator
+import android.view.animation.DecelerateInterpolator
 import androidx.activity.ComponentActivity
 import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.FragmentActivity
@@ -87,7 +87,7 @@ class PlayerItemViewHolder(
 
         animation
             .setDuration(250L)
-            .setInterpolator(AccelerateDecelerateInterpolator())
+            .setInterpolator(DecelerateInterpolator())
             .start()
     }
 
