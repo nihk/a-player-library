@@ -68,7 +68,7 @@ class TracksPickerDialog(
             TrackOption(
                 id = trackInfo.indices.groupIndex, // fixme: this might not be consistent for other player impl's, e.g. MediaPlayer
                 name = trackInfo.name ?: "Unknown",
-                isSelected = trackInfo.isManuallySet,
+                isSelected = trackInfo.isManuallySet || (!config.withAuto && trackInfo.isSelected),
                 action = TrackOption.Action.Set(trackInfo)
             )
         }
@@ -83,14 +83,19 @@ class TracksPickerDialog(
             //  selectable when none exist.
             emptyList()
         } else {
-            val hasManuallySetOption = trackInfos.any(TrackInfo::isManuallySet)
-            val auto = TrackOption(
-                id = -1,
-                name = "Auto",
-                isSelected = !hasManuallySetOption,
-                action = TrackOption.Action.Clear(trackInfos.first().indices.rendererIndex) // These will all be the same
-            )
-            listOf(auto) + trackInfos.toTrackOptions()
+            val trackOptions = trackInfos.toTrackOptions()
+            if (config.withAuto) {
+                val hasManuallySetOption = trackInfos.any(TrackInfo::isManuallySet)
+                val auto = TrackOption(
+                    id = -1,
+                    name = context.getString(R.string.auto),
+                    isSelected = !hasManuallySetOption,
+                    action = TrackOption.Action.Clear(trackInfos.first().indices.rendererIndex) // These will all be the same
+                )
+                listOf(auto) + trackOptions
+            } else {
+                trackOptions
+            }
         }
         adapter.submitList(trackOptions)
     }

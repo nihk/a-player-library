@@ -250,7 +250,7 @@ class DefaultPlaybackUi(
                 closeDelegate = closeDelegate,
                 shareDelegate = shareDelegate,
                 timeFormatter = timeFormatter,
-                tracksPickerConfigFactory = TracksPickerConfigFactory.Default()
+                tracksPickerConfigFactory = TracksPickerConfigFactory()
             )
         }
     }
