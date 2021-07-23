@@ -129,7 +129,7 @@ class AndroidPipController(
             requestCode = RequestPause,
             control = ControlPause,
             iconDrawable = R.drawable.pip_pause,
-            title = "Pause"
+            title = activity.getString(R.string.pause)
         )
     }
 
@@ -138,7 +138,7 @@ class AndroidPipController(
             requestCode = RequestPlay,
             control = ControlPlay,
             iconDrawable = R.drawable.pip_play,
-            title = "Play"
+            title = activity.getString(R.string.play)
         )
     }
 
