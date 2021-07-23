@@ -165,7 +165,7 @@
         <LinearLayout
             android:id="@+id/bottom_row"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="@dimen/minimum_a11y_side"
             android:layout_margin="8dp"
             android:orientation="horizontal"
             app:layout_constraintBottom_toBottomOf="parent"
@@ -175,7 +175,7 @@
             <ImageView
                 android:id="@+id/text_tracks"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:minWidth="@dimen/minimum_a11y_side"
                 android:minHeight="@dimen/minimum_a11y_side"
@@ -186,7 +186,7 @@
             <ImageView
                 android:id="@+id/video_tracks"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:minWidth="@dimen/minimum_a11y_side"
                 android:minHeight="@dimen/minimum_a11y_side"
@@ -197,7 +197,7 @@
             <ImageView
                 android:id="@+id/audio_tracks"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:minWidth="@dimen/minimum_a11y_side"
                 android:minHeight="@dimen/minimum_a11y_side"
