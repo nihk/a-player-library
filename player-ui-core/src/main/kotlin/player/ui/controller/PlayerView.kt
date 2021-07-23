@@ -128,12 +128,12 @@ class PlayerView(
         forceTearDown: Boolean = false,
         // When a user backgrounds the app, then later foregrounds it back to the video, a good UX is
         // to have the player be paused upon return.
-        override: PlayingState? = PlayingState.Paused
+        isPlayingOverride: Boolean? = false
     ) {
         playbackUi.detachPlayer()
         val isAppBackgrounded = !activity.isChangingConfigurations
         if (isAppBackgrounded || forceTearDown) {
-            playerNonConfig.tearDown(override)
+            playerNonConfig.tearDown(isPlayingOverride)
         }
     }
 
@@ -159,7 +159,7 @@ class PlayerView(
                 val action = ErrorRenderer.Action(
                     name = activity.getString(R.string.retry),
                     callback = {
-                        stop(forceTearDown = true, override = PlayingState.Playing) // Enter playing state if retry was successful
+                        stop(forceTearDown = true, isPlayingOverride = true) // Enter playing state if retry was successful
                         start()
                     }
                 )

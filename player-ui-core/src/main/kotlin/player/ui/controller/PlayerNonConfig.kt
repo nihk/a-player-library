@@ -94,10 +94,10 @@ class PlayerNonConfig(
         return appPlayer.requireNotNull()
     }
 
-    fun tearDown(override: PlayingState? = null) {
+    fun tearDown(isPlayingOverride: Boolean? = null) {
         val state = appPlayer?.state?.run {
-            if (override != null) {
-                copy(isPlaying = override == PlayingState.Playing)
+            if (isPlayingOverride != null) {
+                copy(isPlaying = isPlayingOverride)
             } else {
                 this
             }
