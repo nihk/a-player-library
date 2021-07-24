@@ -26,35 +26,18 @@
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/close" />
 
-    <FrameLayout
-        android:id="@+id/play_pause_container"
+    <ImageView
+        android:id="@+id/play_pause"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:minWidth="@dimen/minimum_a11y_side"
+        android:minHeight="@dimen/minimum_a11y_side"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
-
-        <ImageView
-            android:id="@+id/play"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:contentDescription="play"
-            android:minWidth="@dimen/minimum_a11y_side"
-            android:minHeight="@dimen/minimum_a11y_side"
-            app:srcCompat="@drawable/play" />
-
-        <ImageView
-            android:id="@+id/pause"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:contentDescription="pause"
-            android:minWidth="@dimen/minimum_a11y_side"
-            android:minHeight="@dimen/minimum_a11y_side"
-            app:srcCompat="@drawable/pause"
-            tools:visibility="gone" />
-
-    </FrameLayout>
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/play_pause"
+        tools:ignore="ContentDescription" />
 
     <FrameLayout
         android:layout_width="wrap_content"

@@ -67,8 +67,13 @@ class InlinePlaybackUi(
         }
 
         setPlayPause(playerController.isPlaying())
-        binding.play.setOnClickListener { playerController.play() }
-        binding.pause.setOnClickListener { playerController.pause() }
+        binding.playPause.setOnClickListener { view ->
+            if (view.isSelected) {
+                playerController.pause()
+            } else {
+                playerController.play()
+            }
+        }
 
         binding.close.setOnClickListener {
             closeDelegate.onClose(activity)
@@ -91,8 +96,9 @@ class InlinePlaybackUi(
     }
 
     private fun setPlayPause(isPlaying: Boolean) {
-        binding.play.isVisible = !isPlaying
-        binding.pause.isVisible = isPlaying
+        binding.playPause.isSelected = isPlaying
+        val a11y = if (isPlaying) R.string.pause else R.string.play
+        binding.playPause.contentDescription = activity.getString(a11y)
     }
 
     override fun onPlayerEvent(playerEvent: PlayerEvent) {

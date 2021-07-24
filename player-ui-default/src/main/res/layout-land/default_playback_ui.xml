@@ -117,40 +117,23 @@
             android:layout_marginEnd="48dp"
             android:minWidth="@dimen/minimum_a11y_side"
             android:minHeight="@dimen/minimum_a11y_side"
-            app:layout_constraintBottom_toBottomOf="@id/play_pause_container"
-            app:layout_constraintEnd_toStartOf="@id/play_pause_container"
-            app:layout_constraintTop_toTopOf="@id/play_pause_container"
+            app:layout_constraintBottom_toBottomOf="@id/play_pause"
+            app:layout_constraintEnd_toStartOf="@id/play_pause"
+            app:layout_constraintTop_toTopOf="@id/play_pause"
             app:srcCompat="@drawable/rewind" />
 
-        <FrameLayout
-            android:id="@+id/play_pause_container"
+        <ImageView
+            android:id="@+id/play_pause"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="48dp"
+            android:minWidth="@dimen/minimum_a11y_side"
+            android:minHeight="@dimen/minimum_a11y_side"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
-
-            <ImageView
-                android:id="@+id/play"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:contentDescription="play"
-                android:minWidth="@dimen/minimum_a11y_side"
-                android:minHeight="@dimen/minimum_a11y_side"
-                app:srcCompat="@drawable/play" />
-
-            <ImageView
-                android:id="@+id/pause"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:contentDescription="pause"
-                android:minWidth="@dimen/minimum_a11y_side"
-                android:minHeight="@dimen/minimum_a11y_side"
-                app:srcCompat="@drawable/pause" />
-
-        </FrameLayout>
+            app:layout_constraintTop_toTopOf="parent"
+            app:srcCompat="@drawable/play_pause"
+            tools:ignore="ContentDescription" />
 
         <ImageView
             android:id="@+id/seek_forward"
@@ -159,9 +142,9 @@
             android:layout_marginStart="48dp"
             android:minWidth="@dimen/minimum_a11y_side"
             android:minHeight="@dimen/minimum_a11y_side"
-            app:layout_constraintBottom_toBottomOf="@id/play_pause_container"
-            app:layout_constraintStart_toEndOf="@id/play_pause_container"
-            app:layout_constraintTop_toTopOf="@id/play_pause_container"
+            app:layout_constraintBottom_toBottomOf="@id/play_pause"
+            app:layout_constraintStart_toEndOf="@id/play_pause"
+            app:layout_constraintTop_toTopOf="@id/play_pause"
             app:srcCompat="@drawable/fast_forward" />
 
         <LinearLayout

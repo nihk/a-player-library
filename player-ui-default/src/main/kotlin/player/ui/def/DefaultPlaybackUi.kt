@@ -182,8 +182,13 @@ class DefaultPlaybackUi(
         binding.seekBar.setOnSeekBarChangeListener(seekBarListener)
 
         setPlayPause(playerController.isPlaying())
-        binding.play.setOnClickListener { playerController.play() }
-        binding.pause.setOnClickListener { playerController.pause() }
+        binding.playPause.setOnClickListener { view ->
+            if (view.isSelected) {
+                playerController.pause()
+            } else {
+                playerController.play()
+            }
+        }
 
         binding.seekBackward.setOnClickListener {
             val amount = -playerArguments.seekConfiguration.backwardAmount.toDuration(DurationUnit.MILLISECONDS)
@@ -222,10 +227,10 @@ class DefaultPlaybackUi(
         // todo: content descriptions
     }
 
-    // fixme: use a single drawable for a11y purposes
     private fun setPlayPause(isPlaying: Boolean) {
-        binding.play.isVisible = !isPlaying
-        binding.pause.isVisible = isPlaying
+        binding.playPause.isSelected = isPlaying
+        val a11y = if (isPlaying) R.string.pause else R.string.play
+        binding.playPause.contentDescription = activity.getString(a11y)
     }
 
     private fun restoreState() {
