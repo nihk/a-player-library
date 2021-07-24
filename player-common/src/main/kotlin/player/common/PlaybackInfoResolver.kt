@@ -5,10 +5,14 @@ import kotlinx.coroutines.flow.flowOf
 
 interface PlaybackInfoResolver {
     fun playbackInfos(uri: String): Flow<PlaybackInfo>
-}
 
-class DefaultPlaybackInfoResolver : PlaybackInfoResolver {
-    override fun playbackInfos(uri: String): Flow<PlaybackInfo> {
-        return flowOf(PlaybackInfo.MediaUri(uri))
+    companion object {
+        operator fun invoke(): PlaybackInfoResolver = Default()
+    }
+
+    class Default : PlaybackInfoResolver {
+        override fun playbackInfos(uri: String): Flow<PlaybackInfo> {
+            return flowOf(PlaybackInfo.MediaUri(uri))
+        }
     }
 }
