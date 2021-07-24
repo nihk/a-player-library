@@ -12,7 +12,7 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
-import player.common.DefaultPlaybackInfoResolver
+import player.common.PlaybackInfoResolver
 import player.common.PlayerEvent
 import player.common.PlayerState
 import player.test.FakeAppPlayer
@@ -113,7 +113,7 @@ class PlayerNonConfigTest {
         private val events = MutableSharedFlow<PlayerEvent>()
         private val playerEventStream = FakePlayerEventStream(events)
         private val playerEventDelegate = FakePlayerEventDelegate()
-        private val playbackInfoResolver = DefaultPlaybackInfoResolver()
+        private val playbackInfoResolver = PlaybackInfoResolver()
         private val seekDataUpdater = FakeSeekDataUpdater()
         private val playerNonConfig = PlayerNonConfig(
             playerSavedState = playerSavedState,

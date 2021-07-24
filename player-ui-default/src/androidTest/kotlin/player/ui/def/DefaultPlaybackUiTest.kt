@@ -7,6 +7,8 @@ import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
+import androidx.test.espresso.matcher.ViewMatchers.isNotSelected
+import androidx.test.espresso.matcher.ViewMatchers.isSelected
 import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.espresso.matcher.ViewMatchers.withText
 import org.hamcrest.Matcher
@@ -15,7 +17,6 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 import player.common.PlaybackInfo
 import player.common.PlayerEvent
-import player.common.SeekData
 import player.test.FakePlayerViewWrapper
 import player.ui.common.PlayerArguments
 import player.ui.common.UiState
@@ -64,8 +65,7 @@ class DefaultPlaybackUiTest {
             val event = PlayerEvent.OnIsPlayingChanged(isPlaying = true)
             sendPlayerEvent(event)
 
-            assertPlayButton(isVisible = false)
-            assertPauseButton(isVisible = true)
+            assertPlayPauseButton(isShowingPause = true)
         }
     }
 
@@ -75,8 +75,7 @@ class DefaultPlaybackUiTest {
             val event = PlayerEvent.OnIsPlayingChanged(isPlaying = false)
             sendPlayerEvent(event)
 
-            assertPlayButton(isVisible = true)
-            assertPauseButton(isVisible = false)
+            assertPlayPauseButton(isShowingPause = false)
         }
     }
 
@@ -84,8 +83,7 @@ class DefaultPlaybackUiTest {
         hasShareDelegate: Boolean = true,
         initialUiState: UiState = UiState(
             isControllerUsable = true,
-            showLoading = false,
-            seekData = SeekData.INITIAL
+            showLoading = false
         )
     ) {
         private val shareDelegate = if (hasShareDelegate) FakeShareDelegate() else null
@@ -160,14 +158,9 @@ class DefaultPlaybackUiTest {
                 .check(matches(withText(title)))
         }
 
-        fun assertPlayButton(isVisible: Boolean) {
-            onView(withId(R.id.play))
-                .check(matches(isVisible.toVisibilityMatcher()))
-        }
-
-        fun assertPauseButton(isVisible: Boolean) {
-            onView(withId(R.id.pause))
-                .check(matches(isVisible.toVisibilityMatcher()))
+        fun assertPlayPauseButton(isShowingPause: Boolean) {
+            onView(withId(R.id.play_pause))
+                .check(matches(isShowingPause.toSelectedMatcher()))
         }
 
         private fun Boolean.toVisibilityMatcher(): Matcher<View> {
@@ -175,6 +168,14 @@ class DefaultPlaybackUiTest {
                 isDisplayed()
             } else {
                 not(isDisplayed())
+            }
+        }
+
+        private fun Boolean.toSelectedMatcher(): Matcher<View> {
+            return if (this) {
+                isSelected()
+            } else {
+                isNotSelected()
             }
         }
     }

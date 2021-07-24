@@ -16,7 +16,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
-import player.common.DefaultPlaybackInfoResolver
+import player.common.PlaybackInfoResolver
 import player.common.PlayerEvent
 import player.common.PlayerException
 import player.test.FakeAppPlayer
@@ -100,7 +100,7 @@ class PlayerViewTest {
         private val pipController = FakePipController()
         private val pipControllerFactory = FakePipController.Factory(pipController)
         private val errorRenderer = FakeErrorRenderer()
-        private val playbackInfoResolver = DefaultPlaybackInfoResolver()
+        private val playbackInfoResolver = PlaybackInfoResolver()
         private val seekDataUpdater = FakeSeekDataUpdater()
         private val scenario: FragmentScenario<TestFragment>
         private val playbackUi = FakePlaybackUi()
