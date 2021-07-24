@@ -11,7 +11,6 @@ import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.LifecycleRegistry
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.flowWithLifecycle
 import kotlinx.coroutines.CoroutineScope
@@ -38,7 +37,7 @@ class PlayerView(
     private val pipControllerFactory: PipController.Factory,
     private val playbackUiFactories: List<PlaybackUi.Factory>,
     private val scopeFactory: () -> CoroutineScope = { CoroutineScope(SupervisorJob() + Dispatchers.Main) }
-) : CoordinatorLayout(context), LifecycleEventObserver, LifecycleOwner {
+) : CoordinatorLayout(context), LifecycleEventObserver {
     private var scope: CoroutineScope? = null
     private val playerViewModel: PlayerViewModel by lazy {
         ViewModelProvider(
@@ -66,9 +65,15 @@ class PlayerView(
         )
     }
     private val activity: ComponentActivity get() = context as ComponentActivity
-    // Custom Lifecycle because a View can get attached/detached out of sync with its host Lifecycle.
-    // This is useful for automated unregistration/cancellation of resources like back press callbacks.
-    private val lifecycleRegistry = LifecycleRegistry(this)
+    private val pipBackPress = object : OnBackPressedCallback(true) {
+        override fun handleOnBackPressed() {
+            val result = enterPip()
+            if (result == PipController.Result.DidNotEnterPip) {
+                remove()
+                activity.onBackPressed()
+            }
+        }
+    }
 
     init {
         id = View.generateViewId()
@@ -81,16 +86,16 @@ class PlayerView(
     override fun onAttachedToWindow() {
         super.onAttachedToWindow()
         scope = scopeFactory()
-        lifecycleRegistry.currentState = Lifecycle.State.STARTED // CREATED is too low for back pressed dispatcher registration
         requireViewTreeLifecycleOwner().lifecycle.addObserver(this)
+        setUpBackPressHandling()
     }
 
     override fun onDetachedFromWindow() {
         super.onDetachedFromWindow()
         scope.requireNotNull().cancel()
         scope = null
-        lifecycleRegistry.currentState = Lifecycle.State.DESTROYED
         requireViewTreeLifecycleOwner().lifecycle.removeObserver(this)
+        clearBackPress()
     }
 
     fun release() {
@@ -103,7 +108,6 @@ class PlayerView(
             // SavedStateRegistry isn't available below that state.
             Lifecycle.Event.ON_CREATE -> {
                 addPlaybackUi()
-                setUpBackPressHandling()
                 listenToPlayer()
             }
             Lifecycle.Event.ON_START -> start()
@@ -201,20 +205,11 @@ class PlayerView(
         val pipOnBackPress = pipConfig?.onBackPresses == true
         if (!pipOnBackPress) return
 
-        val onBackPressed = object : OnBackPressedCallback(true) {
-            override fun handleOnBackPressed() {
-                val result = enterPip()
-                if (result == PipController.Result.DidNotEnterPip) {
-                    remove()
-                    activity.onBackPressed()
-                }
-            }
-        }
-        activity.onBackPressedDispatcher.addCallback(this, onBackPressed)
+        activity.onBackPressedDispatcher.addCallback(pipBackPress)
     }
 
-    override fun getLifecycle(): Lifecycle {
-        return lifecycleRegistry
+    private fun clearBackPress() {
+        pipBackPress.remove()
     }
 
     class Factory(
