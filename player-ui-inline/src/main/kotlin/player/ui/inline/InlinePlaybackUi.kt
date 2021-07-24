@@ -11,6 +11,7 @@ import player.common.AppPlayer
 import player.common.PlaybackInfo
 import player.common.PlayerEvent
 import player.common.PlayerViewWrapper
+import player.common.SeekData
 import player.common.VideoSize
 import player.ui.common.CloseDelegate
 import player.ui.common.PipController
@@ -110,6 +111,7 @@ class InlinePlaybackUi(
     }
 
     override fun onUiState(uiState: UiState) = Unit
+    override fun onSeekData(seekData: SeekData) = Unit
     override fun onTracksState(tracksState: TracksState) = Unit
     override fun onPlaybackInfos(playbackInfos: List<PlaybackInfo>) = Unit
 

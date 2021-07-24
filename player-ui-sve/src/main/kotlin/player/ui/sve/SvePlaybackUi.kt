@@ -107,11 +107,13 @@ class SvePlaybackUi(
     override fun onUiState(uiState: UiState) {
         binding.playerController.isVisible = uiState.isControllerUsable && !pipController.isInPip()
         binding.progressBar.isVisible = uiState.showLoading
-        if (!seekBarListener.requireNotNull().isSeekBarBeingTouched) {
-            val seekData = uiState.seekData
-            binding.seekBar.update(seekData)
-            updateTimestamps(seekData.position, seekData.duration)
-        }
+    }
+
+    override fun onSeekData(seekData: SeekData) {
+        if (seekBarListener.requireNotNull().isSeekBarBeingTouched) return
+
+        binding.seekBar.update(seekData)
+        updateTimestamps(seekData.position, seekData.duration)
     }
 
     override fun onTracksState(tracksState: TracksState) = Unit

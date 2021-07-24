@@ -2,6 +2,7 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/default_container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:background="@android:color/black">
@@ -135,19 +136,19 @@
                 android:id="@+id/play"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:contentDescription="play"
                 android:minWidth="@dimen/minimum_a11y_side"
                 android:minHeight="@dimen/minimum_a11y_side"
-                app:srcCompat="@drawable/play"
-                android:contentDescription="play" />
+                app:srcCompat="@drawable/play" />
 
             <ImageView
                 android:id="@+id/pause"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:contentDescription="pause"
                 android:minWidth="@dimen/minimum_a11y_side"
                 android:minHeight="@dimen/minimum_a11y_side"
-                app:srcCompat="@drawable/pause"
-                android:contentDescription="pause" />
+                app:srcCompat="@drawable/pause" />
 
         </FrameLayout>
 

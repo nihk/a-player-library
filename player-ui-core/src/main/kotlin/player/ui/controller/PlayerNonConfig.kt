@@ -53,6 +53,9 @@ class PlayerNonConfig(
     private val uiStates = MutableStateFlow(UiState.INITIAL)
     fun uiStates(): StateFlow<UiState> = uiStates
 
+    private val seekData = MutableStateFlow(SeekData.INITIAL)
+    fun seekData(): StateFlow<SeekData> = seekData
+
     private val errors = MutableSharedFlow<String>()
     fun errors(): Flow<String> = errors
 
@@ -86,7 +89,7 @@ class PlayerNonConfig(
             }
             playerJobs += listenToPlayerEvents(appPlayer)
             playerJobs += seekDataUpdater.seekData(appPlayer)
-                .onEach { seekData -> uiStates.value = uiStates.value.copy(seekData = seekData) }
+                .onEach { seekData -> this.seekData.value = seekData }
                 .launchIn(scope)
         }
 
@@ -199,7 +202,7 @@ class PlayerNonConfig(
     }
 
     override fun latestSeekData(): SeekData {
-        return uiStates.value.seekData
+        return seekData.value
     }
 
     override fun close() {

@@ -154,6 +154,10 @@ class PlayerView(
             .onEach { uiState -> playbackUi.onUiState(uiState) }
             .launchIn(scope)
 
+        playerNonConfig.seekData()
+            .onEach { seekData -> playbackUi.onSeekData(seekData) }
+            .launchIn(scope)
+
         playerNonConfig.tracksStates()
             .onEach { tracksState -> playbackUi.onTracksState(tracksState) }
             .launchIn(scope)

@@ -107,11 +107,13 @@ class DefaultPlaybackUi(
     override fun onUiState(uiState: UiState) {
         binding.playerController.isVisible = uiState.isControllerUsable && !pipController.isInPip()
         binding.progressBar.isVisible = uiState.showLoading
-        if (!seekBarListener.requireNotNull().isSeekBarBeingTouched) {
-            val seekData = uiState.seekData
-            binding.seekBar.update(seekData)
-            updateTimestamps(seekData.position, seekData.duration)
-        }
+    }
+
+    override fun onSeekData(seekData: SeekData) {
+        if (seekBarListener.requireNotNull().isSeekBarBeingTouched) return
+
+        binding.seekBar.update(seekData)
+        updateTimestamps(seekData.position, seekData.duration)
     }
 
     override fun onTracksState(tracksState: TracksState) {
@@ -195,6 +197,20 @@ class DefaultPlaybackUi(
         binding.close.setOnClickListener {
             closeDelegate.onClose(activity)
         }
+
+        binding.defaultContainer.setOnClickListener {
+            val isVisible = binding.playerController.isVisible
+            val action = { binding.playerController.isVisible = !isVisible }
+            binding.playerController.animate()
+                .alpha(if (isVisible) 0f else 1f)
+                .apply {
+                    if (isVisible) {
+                        withEndAction(action)
+                    } else {
+                        withStartAction(action)
+                    }
+                }
+        }
     }
 
     private fun updateTimestamps(
@@ -206,6 +222,7 @@ class DefaultPlaybackUi(
         // todo: content descriptions
     }
 
+    // fixme: use a single drawable for a11y purposes
     private fun setPlayPause(isPlaying: Boolean) {
         binding.play.isVisible = !isPlaying
         binding.pause.isVisible = isPlaying
