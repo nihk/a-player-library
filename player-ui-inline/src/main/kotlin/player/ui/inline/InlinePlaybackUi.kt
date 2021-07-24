@@ -30,8 +30,8 @@ class InlinePlaybackUi(
     private val playerController: PlayerController,
     private val playerArguments: PlayerArguments,
     private val closeDelegate: CloseDelegate,
-    private val onVideoSizeChangedCallback: OnVideoSizeChangedCallback,
     private val onFullscreenChangedCallback: OnFullscreenChangedCallback,
+    private val onVideoSizeChangedCallback: OnVideoSizeChangedCallback?,
     private val isFullscreenInitially: Boolean? = null
 ) : PlaybackUi {
     @SuppressLint("InflateParams")
@@ -104,7 +104,7 @@ class InlinePlaybackUi(
                     widthPx = playerEvent.width,
                     heightPx = playerEvent.height
                 )
-                onVideoSizeChangedCallback.onVideoSizeChanged(videoSize, activity)
+                onVideoSizeChangedCallback?.onVideoSizeChanged(videoSize, activity)
             }
         }
     }
@@ -132,8 +132,8 @@ class InlinePlaybackUi(
 
     class Factory(
         private val closeDelegate: CloseDelegate,
-        private val onVideoSizeChangedCallback: OnVideoSizeChangedCallback,
         private val onFullscreenChangedCallback: OnFullscreenChangedCallback,
+        private val onVideoSizeChangedCallback: OnVideoSizeChangedCallback? = null,
         private val isFullscreenInitially: Boolean? = null
     ) : PlaybackUi.Factory {
         override fun create(
@@ -150,8 +150,8 @@ class InlinePlaybackUi(
                 playerController = playerController,
                 playerArguments = playerArguments,
                 closeDelegate = closeDelegate,
-                onVideoSizeChangedCallback = onVideoSizeChangedCallback,
                 onFullscreenChangedCallback = onFullscreenChangedCallback,
+                onVideoSizeChangedCallback = onVideoSizeChangedCallback,
                 isFullscreenInitially = isFullscreenInitially
             )
         }
