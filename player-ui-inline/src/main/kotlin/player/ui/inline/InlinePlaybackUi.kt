@@ -133,11 +133,6 @@ class InlinePlaybackUi(
         activity.onBackPressedDispatcher.addCallback(view.requireViewTreeLifecycleOwner(), backPress)
     }
 
-    companion object {
-        private const val PROVIDER = "inline_playback_ui"
-        private const val KEY_IS_FULLSCREEN = "is_fullscreen"
-    }
-
     class Factory(
         private val closeDelegate: CloseDelegate,
         private val onFullscreenChangedCallback: OnFullscreenChangedCallback,
