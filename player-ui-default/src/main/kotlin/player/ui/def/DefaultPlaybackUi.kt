@@ -36,7 +36,6 @@ import kotlin.time.Duration
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 
-// todo: save controller visibility state across config changes
 // fixme: why is seekbar thumb ripple drawable activating when clicking on the default_container parent?
 // todo: this should be more composable for shared components across PlaybackUis, e.g. the seekbar
 class DefaultPlaybackUi(
@@ -205,19 +204,7 @@ class DefaultPlaybackUi(
             closeDelegate.onClose(activity)
         }
 
-        binding.defaultContainer.setOnClickListener {
-            val isVisible = binding.playerController.isVisible
-            val action = { binding.playerController.isVisible = !isVisible }
-            binding.playerController.animate()
-                .alpha(if (isVisible) 0f else 1f)
-                .apply {
-                    if (isVisible) {
-                        withEndAction(action)
-                    } else {
-                        withStartAction(action)
-                    }
-                }
-        }
+        binding.fadingContainer.setFadable(binding.playerController)
     }
 
     private fun updateTimestamps(
