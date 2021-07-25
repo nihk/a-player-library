@@ -60,9 +60,7 @@ class SvePlaybackUi(
             updateTimestamps(position, playerController.latestSeekData().duration)
         },
         seekTo = playerController::seekTo,
-        onTrackingTouchChanged = { isTracking ->
-            binding.fadingContainer.setFadingEnabled(!isTracking && playerController.isPlaying())
-        }
+        onTrackingTouchChanged = { isTracking -> setFadingEnabled(!isTracking) }
     )
     private var didRestoreViewPagerState = false
     private val playerViewWrapper = playerViewWrapperFactory.create(activity)
@@ -187,7 +185,7 @@ class SvePlaybackUi(
 
         binding.tabLayout.setTouchStateListener(object : SveTabLayout.TouchStateListener {
             override fun onTouchState(touchState: SveTabLayout.TouchState) {
-                binding.fadingContainer.setFadingEnabled(touchState == SveTabLayout.TouchState.Up)
+                setFadingEnabled(touchState == SveTabLayout.TouchState.Up)
             }
         })
 
@@ -199,7 +197,7 @@ class SvePlaybackUi(
             }
 
             override fun onPageScrollStateChanged(state: Int) {
-                binding.fadingContainer.setFadingEnabled(state == ViewPager2.SCROLL_STATE_IDLE)
+                setFadingEnabled(state == ViewPager2.SCROLL_STATE_IDLE)
             }
 
             override fun onPageScrolled(
@@ -246,6 +244,10 @@ class SvePlaybackUi(
         binding.close.setOnClickListener {
             closeDelegate.onClose(activity)
         }
+    }
+
+    private fun setFadingEnabled(tryEnabling: Boolean) {
+        binding.fadingContainer.setFadingEnabled(tryEnabling && playerController.isPlaying())
     }
 
     private fun updateTimestamps(
