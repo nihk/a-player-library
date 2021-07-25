@@ -1,5 +1,7 @@
 package player.ui.controller
 
+import android.graphics.PointF
+import android.graphics.Rect
 import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.findViewTreeLifecycleOwner
@@ -14,4 +16,19 @@ fun View.requireViewTreeSavedStateRegistryOwner() = findViewTreeSavedStateRegist
 fun View.detachFromParent() {
     val parent = parent as? ViewGroup ?: return
     parent.removeView(this)
+}
+
+operator fun View.contains(pointF: PointF): Boolean {
+    return getRectOnScreen().contains(pointF.x.toInt(), pointF.y.toInt())
+}
+
+fun View.getRectOnScreen(): Rect {
+    val location = IntArray(2)
+    getLocationOnScreen(location)
+    return Rect(
+        location.first(),
+        location.last(),
+        location.first() + width,
+        location.last() + height
+    )
 }

@@ -7,6 +7,8 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.ViewConfiguration
 import android.widget.FrameLayout
+import androidx.core.content.res.use
+import androidx.core.view.doOnAttach
 import androidx.core.view.isVisible
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -16,22 +18,31 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import player.common.requireNotNull
+import player.ui.controller.contains
 import kotlin.math.abs
 
 // todo: save/restore visibility state
+/**
+ * A layout that fades a child View after a delay.
+ *
+ * Clicks on specified children can debounce that fade.
+ *
+ * Clicks on this layout itself and unspecific children will toggle the visibility without a
+ * delay (outside the animation).
+ */
 class FadingFrameLayout : FrameLayout, View.OnClickListener {
     constructor(context: Context) : super(context) {
-        initialize(context)
+        initialize(context, null, 0)
     }
     constructor(context: Context, attributeSet: AttributeSet?) : super(context, attributeSet) {
-        initialize(context)
+        initialize(context, attributeSet, 0)
     }
     constructor(
         context: Context,
         attributeSet: AttributeSet?,
         defStyleAttr: Int
     ) : super(context, attributeSet, defStyleAttr) {
-        initialize(context)
+        initialize(context, attributeSet, defStyleAttr)
     }
 
     private var scope: CoroutineScope? = null
@@ -40,15 +51,31 @@ class FadingFrameLayout : FrameLayout, View.OnClickListener {
     private var fadable: View? = null
     private var touchSlop: Int = -1
     private var down: PointF? = null
+    private val debouncers = mutableListOf<View>()
+    private var debouncerIds: List<Int>? = null
+    private var fadableId: Int? = null
 
-    private fun initialize(context: Context) {
+    private fun initialize(context: Context, attributeSet: AttributeSet?, defStyleAttr: Int) {
         touchSlop = ViewConfiguration.get(context).scaledTouchSlop
         setOnClickListener(this)
-    }
+        context.theme.obtainStyledAttributes(
+            attributeSet,
+            R.styleable.FadingFrameLayout,
+            defStyleAttr,
+            0
+        ).use { typedArray ->
+            debouncerIds = typedArray.getString(R.styleable.FadingFrameLayout_debouncers)
+                ?.split(",")
+                .orEmpty()
+                .map { name -> resources.getIdentifier(name, "id", context.packageName) }
 
-    fun setFadable(view: View) {
-        fadable = view
-        hide()
+            fadableId = typedArray.getResourceId(R.styleable.FadingFrameLayout_fadable, 0)
+        }
+
+        doOnAttach {
+            debouncers += debouncerIds?.map { id -> findViewById<View>(id).requireNotNull() }.orEmpty()
+            fadable = fadableId?.let { findViewById(it) }
+        }
     }
 
     override fun onAttachedToWindow() {
@@ -63,7 +90,7 @@ class FadingFrameLayout : FrameLayout, View.OnClickListener {
     }
 
     fun hide(withDelay: Boolean = true) {
-        hide?.cancel()
+        cancelJob()
 
         fun hideAnimation() {
             requireFadable()
@@ -83,7 +110,7 @@ class FadingFrameLayout : FrameLayout, View.OnClickListener {
     }
 
     fun show(hideAtEnd: Boolean = true) {
-        hide?.cancel()
+        cancelJob()
 
         requireFadable()
             .animate()
@@ -96,6 +123,10 @@ class FadingFrameLayout : FrameLayout, View.OnClickListener {
             }
     }
 
+    private fun cancelJob() {
+        hide?.cancel()
+    }
+
     override fun onClick(v: View?) {
         if (requireFadable().isVisible) {
             hide(withDelay = false)
@@ -106,21 +137,27 @@ class FadingFrameLayout : FrameLayout, View.OnClickListener {
 
     override fun onInterceptTouchEvent(ev: MotionEvent): Boolean {
         when (ev.actionMasked) {
-            MotionEvent.ACTION_DOWN -> {
-                down = PointF(ev.rawX, ev.rawY)
-            }
+            MotionEvent.ACTION_DOWN -> down = PointF(ev.rawX, ev.rawY)
+            MotionEvent.ACTION_MOVE -> cancelJob()
             MotionEvent.ACTION_UP -> {
                 val down = down.requireNotNull()
-                val didClickChild = abs(ev.rawX - down.x) <= touchSlop
+                val tapped = abs(ev.rawX - down.x) <= touchSlop
                     || abs(ev.rawY - down.y) <= touchSlop
-                if (didClickChild) {
-                    // User clicked a child control, so debounce the fade.
+                if (tapped) {
+                    if (!requireFadable().isVisible
+                        || debouncers.any { debouncer -> down in debouncer }) {
+                        show()
+                    } else {
+                        hide(withDelay = false)
+                    }
+                } else {
+                    // Moved
                     show()
                 }
             }
         }
 
-        return false
+        return super.onInterceptTouchEvent(ev)
     }
 
     private fun requireFadable() = fadable.requireNotNull()

@@ -5,6 +5,8 @@
     android:id="@+id/fading_container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    app:debouncers="share,seek_bar,seek_backward,play_pause,seek_forward,text_tracks,video_tracks,audio_tracks"
+    app:fadable="@+id/player_controller"
     tools:background="@android:color/black">
 
     <FrameLayout

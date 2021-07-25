@@ -50,7 +50,7 @@ class SvePlaybackUi(
     private val shareDelegate: ShareDelegate?,
     private val imageLoader: ImageLoader,
     private val timeFormatter: TimeFormatter
-) : PlaybackUi, View.OnClickListener {
+) : PlaybackUi {
     @SuppressLint("InflateParams")
     override val view: View = LayoutInflater.from(activity)
         .inflate(R.layout.sve_playback_ui, null)
@@ -63,7 +63,7 @@ class SvePlaybackUi(
     )
     private var didRestoreViewPagerState = false
     private val playerViewWrapper = playerViewWrapperFactory.create(activity)
-    private val adapter = SveAdapter(playerViewWrapper, imageLoader, ::onClick)
+    private val adapter = SveAdapter(playerViewWrapper, imageLoader)
     private val observer = LifecycleEventObserver { _, event ->
         when (event) {
             Lifecycle.Event.ON_CREATE -> {
@@ -234,21 +234,6 @@ class SvePlaybackUi(
         binding.close.setOnClickListener {
             closeDelegate.onClose(activity)
         }
-    }
-
-    // ViewPager2 steals click events, so delegate ViewHolder click events to this.
-    override fun onClick(v: View) {
-        val isVisible = binding.playerController.isVisible
-        val action = { binding.playerController.isVisible = !isVisible }
-        binding.playerController.animate()
-            .alpha(if (isVisible) 0f else 1f)
-            .apply {
-                if (isVisible) {
-                    withEndAction(action)
-                } else {
-                    withStartAction(action)
-                }
-            }
     }
 
     private fun updateTimestamps(

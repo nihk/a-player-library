@@ -1,9 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<player.ui.common.FadingFrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/fading_container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    app:debouncers="seek_forward,seek_backward,play_pause,seek_bar,share,tab_layout"
+    app:fadable="@+id/player_controller"
     tools:background="@android:color/black">
 
     <androidx.viewpager2.widget.ViewPager2
@@ -161,4 +164,4 @@
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-</FrameLayout>
+</player.ui.common.FadingFrameLayout>

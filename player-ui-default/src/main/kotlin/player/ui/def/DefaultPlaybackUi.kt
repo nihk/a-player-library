@@ -203,8 +203,6 @@ class DefaultPlaybackUi(
         binding.close.setOnClickListener {
             closeDelegate.onClose(activity)
         }
-
-        binding.fadingContainer.setFadable(binding.playerController)
     }
 
     private fun updateTimestamps(
