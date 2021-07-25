@@ -162,11 +162,11 @@ class PlayerNonConfig(
     }
 
     override fun play() {
-        requireNotNull(appPlayer).play()
+        appPlayer?.play()
     }
 
     override fun pause() {
-        requireNotNull(appPlayer).pause()
+        appPlayer?.pause()
     }
 
     private fun tearDown() {
@@ -182,23 +182,23 @@ class PlayerNonConfig(
     }
 
     override fun clearTrackInfos(rendererIndex: Int) {
-        requireNotNull(appPlayer).clearTrackInfos(rendererIndex)
+        appPlayer?.clearTrackInfos(rendererIndex)
     }
 
     override fun setTrackInfos(trackInfos: List<TrackInfo>) {
-        requireNotNull(appPlayer).setTrackInfos(trackInfos)
+        appPlayer?.setTrackInfos(trackInfos)
     }
 
     override fun seekRelative(duration: Duration) {
-        requireNotNull(appPlayer).seekRelative(duration)
+        appPlayer?.seekRelative(duration)
     }
 
     override fun seekTo(duration: Duration) {
-        requireNotNull(appPlayer).seekTo(duration)
+        appPlayer?.seekTo(duration)
     }
 
     override fun toPlaylistItem(index: Int) {
-        requireNotNull(appPlayer).toPlaylistItem(index)
+        appPlayer?.toPlaylistItem(index)
     }
 
     override fun latestSeekData(): SeekData {
