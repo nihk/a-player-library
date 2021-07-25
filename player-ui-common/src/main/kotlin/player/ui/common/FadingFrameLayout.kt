@@ -69,8 +69,7 @@ class FadingFrameLayout : FrameLayout, View.OnClickListener {
         ).use { typedArray ->
             debouncerIds = typedArray.getString(R.styleable.FadingFrameLayout_debouncers)
                 ?.split(",")
-                .orEmpty()
-                .map { name -> resources.getIdentifier(name, "id", context.packageName) }
+                ?.map { name -> resources.getIdentifier(name.trim(), "id", context.packageName) }
 
             fadableId = typedArray.getResourceId(R.styleable.FadingFrameLayout_fadable, 0)
             delay = typedArray.getInteger(R.styleable.FadingFrameLayout_delay, 3_000).toLong()
