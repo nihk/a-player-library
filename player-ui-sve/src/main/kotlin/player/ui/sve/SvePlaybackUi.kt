@@ -185,6 +185,12 @@ class SvePlaybackUi(
             imageLoader.load(binding.image, item.imageUri)
         }.attach()
 
+        binding.tabLayout.setTouchStateListener(object : SveTabLayout.TouchStateListener {
+            override fun onTouchState(touchState: SveTabLayout.TouchState) {
+                binding.fadingContainer.setFadingEnabled(touchState == SveTabLayout.TouchState.Up)
+            }
+        })
+
         binding.viewPager.registerOnPageChangeCallback(binding.tabLayout.pageChangeCallback)
         binding.viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
             override fun onPageSelected(position: Int) {

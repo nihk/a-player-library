@@ -95,6 +95,8 @@ class FadingFrameLayout : FrameLayout, View.OnClickListener {
     }
 
     fun setFadingEnabled(isEnabled: Boolean) {
+        if (isFadingEnabled == isEnabled) return
+
         isFadingEnabled = isEnabled
         if (isEnabled) {
             if (requireFadable().isVisible) {
