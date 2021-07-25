@@ -68,14 +68,17 @@
             app:srcCompat="@drawable/share"
             tools:visibility="visible" />
 
+        <!-- Clickable because: https://stackoverflow.com/a/45517646/2997980 -->
         <SeekBar
             android:id="@+id/seek_bar"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:clickable="true"
             android:splitTrack="false"
             app:layout_constraintBottom_toTopOf="@id/time_barrier"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
+            tools:ignore="KeyboardInaccessibleWidget"
             tools:max="100"
             tools:progress="55"
             tools:secondaryProgress="70" />

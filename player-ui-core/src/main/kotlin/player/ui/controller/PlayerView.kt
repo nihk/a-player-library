@@ -78,8 +78,6 @@ class PlayerView(
     init {
         id = View.generateViewId()
         keepScreenOn = true
-        isClickable = true
-        isFocusable = true
         background = ColorDrawable(Color.BLACK)
     }
 
