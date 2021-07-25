@@ -192,6 +192,10 @@ class SvePlaybackUi(
                 setTitle(item.title)
             }
 
+            override fun onPageScrollStateChanged(state: Int) {
+                binding.fadingContainer.setFadingEnabled(state == ViewPager2.SCROLL_STATE_IDLE)
+            }
+
             override fun onPageScrolled(
                 position: Int,
                 positionOffset: Float,
