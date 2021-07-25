@@ -74,7 +74,7 @@
 
         <SeekBar
             android:id="@+id/seek_bar"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:splitTrack="false"
             app:layout_constraintBottom_toTopOf="@id/time_barrier"
