@@ -59,7 +59,10 @@ class SvePlaybackUi(
         updateProgress = { position ->
             updateTimestamps(position, playerController.latestSeekData().duration)
         },
-        seekTo = playerController::seekTo
+        seekTo = playerController::seekTo,
+        onTrackingTouchChanged = { isTracking ->
+            binding.fadingContainer.setFadingEnabled(!isTracking && playerController.isPlaying())
+        }
     )
     private var didRestoreViewPagerState = false
     private val playerViewWrapper = playerViewWrapperFactory.create(activity)
@@ -75,6 +78,7 @@ class SvePlaybackUi(
     init {
         activity.lifecycle.addObserver(observer)
         view.doOnAttach {
+            bindControls()
             // Nested because otherwise it will be called immediately, before View is attached.
             view.doOnDetach {
                 activity.lifecycle.removeObserver(observer)
@@ -84,8 +88,6 @@ class SvePlaybackUi(
                 }
             }
         }
-
-        bindControls()
     }
 
     override fun attach(appPlayer: AppPlayer) {
@@ -249,6 +251,8 @@ class SvePlaybackUi(
         binding.playPause.isSelected = isPlaying
         val a11y = if (isPlaying) R.string.pause else R.string.play
         binding.playPause.contentDescription = activity.getString(a11y)
+        // It's generally a good UX to keep all controls visible while in a paused state.
+        binding.fadingContainer.setFadingEnabled(isPlaying)
     }
 
     override fun saveState(): Bundle {

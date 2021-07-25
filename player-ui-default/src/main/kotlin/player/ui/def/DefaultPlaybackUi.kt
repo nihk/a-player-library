@@ -78,6 +78,9 @@ class DefaultPlaybackUi(
     init {
         activity.lifecycle.addObserver(observer)
         view.doOnAttach {
+            binding.playerContainer.addView(playerViewWrapper.view)
+            bindControls()
+            restoreState()
             // Nested because otherwise it will be called immediately, before View is attached.
             view.doOnDetach {
                 activity.lifecycle.removeObserver(observer)
@@ -87,9 +90,6 @@ class DefaultPlaybackUi(
                 }
             }
         }
-        binding.playerContainer.addView(playerViewWrapper.view)
-        bindControls()
-        restoreState()
     }
 
     override fun attach(appPlayer: AppPlayer) {
@@ -192,11 +192,8 @@ class DefaultPlaybackUi(
         binding.playPause.setOnClickListener { view ->
             if (view.isSelected) {
                 playerController.pause()
-                // It's generally a good UX to keep all controls visible while in a paused state.
-                binding.fadingContainer.setFadingEnabled(false)
             } else {
                 playerController.play()
-                binding.fadingContainer.setFadingEnabled(true)
             }
         }
 
@@ -227,6 +224,8 @@ class DefaultPlaybackUi(
         binding.playPause.isSelected = isPlaying
         val a11y = if (isPlaying) R.string.pause else R.string.play
         binding.playPause.contentDescription = activity.getString(a11y)
+        // It's generally a good UX to keep all controls visible while in a paused state.
+        binding.fadingContainer.setFadingEnabled(isPlaying)
     }
 
     private fun restoreState() {
