@@ -82,6 +82,18 @@ class FadingFrameLayout : FrameLayout, View.OnClickListener {
         }
     }
 
+    fun setDelay(delay: Long) {
+        this.delay = delay
+    }
+
+    fun setFadable(fadable: View) {
+        this.fadable = fadable
+    }
+
+    fun addDebouncer(debouncer: View) {
+        debouncers += debouncer
+    }
+
     override fun onAttachedToWindow() {
         super.onAttachedToWindow()
         requireScope()
