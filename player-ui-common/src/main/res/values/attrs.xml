@@ -4,5 +4,6 @@
 <!--        Comma separated array of ID references-->
         <attr name="debouncers" format="string" />
         <attr name="fadable" format="reference" />
+        <attr name="delay" format="integer" />
     </declare-styleable>
 </resources>

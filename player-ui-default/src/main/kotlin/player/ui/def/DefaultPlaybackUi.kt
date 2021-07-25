@@ -60,7 +60,10 @@ class DefaultPlaybackUi(
         updateProgress = { position ->
             updateTimestamps(position, playerController.latestSeekData().duration)
         },
-        seekTo = playerController::seekTo
+        seekTo = playerController::seekTo,
+        onTrackingTouchChanged = { isTracking ->
+            binding.fadingContainer.setFadingEnabled(!isTracking && playerController.isPlaying())
+        }
     )
     private val playerViewWrapper = playerViewWrapperFactory.create(activity)
     private var activeTracksPickerType: TrackInfo.Type? = null
@@ -157,10 +160,13 @@ class DefaultPlaybackUi(
     }
 
     private fun navigateToTracksPicker(type: TrackInfo.Type) {
+        // Keep things visible in the background of the dialog - it's a bit less distracting.
+        binding.fadingContainer.setFadingEnabled(false)
         activeTracksPickerType = type
         val config = tracksPickerConfigFactory.create(type)
         navigator.toTracksPicker(config) {
             activeTracksPickerType = null
+            binding.fadingContainer.setFadingEnabled(playerController.isPlaying())
         }
     }
 
@@ -186,8 +192,11 @@ class DefaultPlaybackUi(
         binding.playPause.setOnClickListener { view ->
             if (view.isSelected) {
                 playerController.pause()
+                // It's generally a good UX to keep all controls visible while in a paused state.
+                binding.fadingContainer.setFadingEnabled(false)
             } else {
                 playerController.play()
+                binding.fadingContainer.setFadingEnabled(true)
             }
         }
 

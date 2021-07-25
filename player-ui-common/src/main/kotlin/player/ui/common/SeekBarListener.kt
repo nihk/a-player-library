@@ -9,7 +9,8 @@ interface SeekBarListener : SeekBar.OnSeekBarChangeListener {
     interface Factory {
         fun create(
             updateProgress: (Duration) -> Unit,
-            seekTo: (Duration) -> Unit
+            seekTo: (Duration) -> Unit,
+            onTrackingTouchChanged: (isTracking: Boolean) -> Unit = {}
         ): SeekBarListener
     }
 }

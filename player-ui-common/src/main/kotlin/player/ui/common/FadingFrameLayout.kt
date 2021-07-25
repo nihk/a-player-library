@@ -47,13 +47,16 @@ class FadingFrameLayout : FrameLayout, View.OnClickListener {
 
     private var scope: CoroutineScope? = null
     private var hide: Job? = null
-    private var delay: Long = 3_000L
-    private var fadable: View? = null
+    private var delay: Long? = null
     private var touchSlop: Int = -1
     private var down: PointF? = null
+    // Clicks on debouncers will restart the fade delay.
     private val debouncers = mutableListOf<View>()
     private var debouncerIds: List<Int>? = null
+    // The View to fade in and out.
+    private var fadable: View? = null
     private var fadableId: Int? = null
+    private var isFadingEnabled: Boolean = true
 
     private fun initialize(context: Context, attributeSet: AttributeSet?, defStyleAttr: Int) {
         touchSlop = ViewConfiguration.get(context).scaledTouchSlop
@@ -70,11 +73,13 @@ class FadingFrameLayout : FrameLayout, View.OnClickListener {
                 .map { name -> resources.getIdentifier(name, "id", context.packageName) }
 
             fadableId = typedArray.getResourceId(R.styleable.FadingFrameLayout_fadable, 0)
+            delay = typedArray.getInteger(R.styleable.FadingFrameLayout_delay, 3_000).toLong()
         }
 
         doOnAttach {
             debouncers += debouncerIds?.map { id -> findViewById<View>(id).requireNotNull() }.orEmpty()
             fadable = fadableId?.let { findViewById(it) }
+            hide() // Kick things off
         }
     }
 
@@ -89,6 +94,18 @@ class FadingFrameLayout : FrameLayout, View.OnClickListener {
         scope = null
     }
 
+    fun setFadingEnabled(isEnabled: Boolean) {
+        isFadingEnabled = isEnabled
+        if (isEnabled) {
+            if (requireFadable().isVisible) {
+                // Restart
+                hide()
+            }
+        } else {
+            cancelJob()
+        }
+    }
+
     fun hide(withDelay: Boolean = true) {
         cancelJob()
 
@@ -101,7 +118,7 @@ class FadingFrameLayout : FrameLayout, View.OnClickListener {
 
         if (withDelay) {
             hide = requireScope().launch {
-                delay(delay)
+                delay(delay.requireNotNull())
                 hideAnimation()
             }
         } else {
@@ -109,7 +126,7 @@ class FadingFrameLayout : FrameLayout, View.OnClickListener {
         }
     }
 
-    fun show(hideAtEnd: Boolean = true) {
+    fun show() {
         cancelJob()
 
         requireFadable()
@@ -117,7 +134,7 @@ class FadingFrameLayout : FrameLayout, View.OnClickListener {
             .withStartAction { requireFadable().isVisible = true }
             .alpha(1f)
             .withEndAction {
-                if (hideAtEnd) {
+                if (isFadingEnabled) {
                     hide()
                 }
             }
@@ -135,32 +152,31 @@ class FadingFrameLayout : FrameLayout, View.OnClickListener {
         }
     }
 
-    override fun onInterceptTouchEvent(ev: MotionEvent): Boolean {
-        when (ev.actionMasked) {
-            MotionEvent.ACTION_DOWN -> down = PointF(ev.rawX, ev.rawY)
-            MotionEvent.ACTION_MOVE -> cancelJob()
+    override fun onInterceptTouchEvent(event: MotionEvent): Boolean {
+        when (event.actionMasked) {
+            MotionEvent.ACTION_DOWN -> down = PointF(event.rawX, event.rawY)
             MotionEvent.ACTION_UP -> {
                 val down = down.requireNotNull()
-                val tapped = abs(ev.rawX - down.x) <= touchSlop
-                    || abs(ev.rawY - down.y) <= touchSlop
+                val tapped = abs(event.rawX - down.x) <= touchSlop
+                    || abs(event.rawY - down.y) <= touchSlop
                 if (tapped) {
                     if (!requireFadable().isVisible
                         || debouncers.any { debouncer -> down in debouncer }) {
                         show()
                     } else {
+                        // Intercepted a child View tap, but wasn't a debouncer, so treat as
+                        // if it were a tap on this View, i.e. hide immediately.
                         hide(withDelay = false)
                     }
-                } else {
-                    // Moved
-                    show()
                 }
             }
         }
 
-        return super.onInterceptTouchEvent(ev)
+        return super.onInterceptTouchEvent(event)
     }
 
     private fun requireFadable() = fadable.requireNotNull()
+
     private fun requireScope(): CoroutineScope {
         if (scope == null) {
             scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
