@@ -1,6 +1,5 @@
 package player.exoplayer
 
-import android.util.Log
 import com.google.android.exoplayer2.ExoPlaybackException
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.SimpleExoPlayer
@@ -86,7 +85,6 @@ internal class ExoPlayerEventStream(
         }
 
         awaitClose {
-            Log.d("asdf", "Removing player listeners")
             player.run {
                 removeListener(listener)
                 (this as? SimpleExoPlayer)?.removeAnalyticsListener(listener)
