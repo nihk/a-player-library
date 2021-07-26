@@ -1,9 +1,11 @@
 package player.ui.sve
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.res.Resources
 import android.graphics.Canvas
 import android.util.AttributeSet
+import android.view.MotionEvent
 import androidx.core.view.ViewCompat
 import androidx.viewpager2.widget.ViewPager2
 import com.google.android.material.tabs.TabLayout
@@ -25,6 +27,7 @@ internal class SveTabLayout : TabLayout {
         : super(context, attrs, defStyleAttr)
 
     private var shouldDraw = false
+    private var touchStateListener: TouchStateListener? = null
 
     init {
         addTabLayoutInsets()
@@ -51,5 +54,32 @@ internal class SveTabLayout : TabLayout {
         val itemPadding = context.resources.getDimension(R.dimen.tab_padding_horizontal)
         val padding = (screenWidth / 2 - itemWidth / 2 - itemPadding / 2).toInt()
         ViewCompat.setPaddingRelative(slidingTabIndicator, padding, 0, padding, 0)
+    }
+
+    @SuppressLint("ClickableViewAccessibility")
+    override fun onTouchEvent(ev: MotionEvent): Boolean {
+        val touchState = when (ev.actionMasked) {
+            MotionEvent.ACTION_DOWN -> TouchState.Down
+            MotionEvent.ACTION_MOVE -> TouchState.Moving
+            MotionEvent.ACTION_UP -> TouchState.Up
+            else -> TouchState.Unknown
+        }
+        touchStateListener?.onTouchState(touchState)
+        return super.onTouchEvent(ev)
+    }
+
+    fun setTouchStateListener(listener: TouchStateListener) {
+        this.touchStateListener = listener
+    }
+
+    interface TouchStateListener {
+        fun onTouchState(touchState: TouchState)
+    }
+
+    enum class TouchState {
+        Unknown,
+        Down,
+        Moving,
+        Up
     }
 }

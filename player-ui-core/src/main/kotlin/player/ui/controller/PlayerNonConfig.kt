@@ -53,6 +53,9 @@ class PlayerNonConfig(
     private val uiStates = MutableStateFlow(UiState.INITIAL)
     fun uiStates(): StateFlow<UiState> = uiStates
 
+    private val seekData = MutableStateFlow(SeekData.INITIAL)
+    fun seekData(): StateFlow<SeekData> = seekData
+
     private val errors = MutableSharedFlow<String>()
     fun errors(): Flow<String> = errors
 
@@ -86,7 +89,7 @@ class PlayerNonConfig(
             }
             playerJobs += listenToPlayerEvents(appPlayer)
             playerJobs += seekDataUpdater.seekData(appPlayer)
-                .onEach { seekData -> uiStates.value = uiStates.value.copy(seekData = seekData) }
+                .onEach { seekData -> this.seekData.value = seekData }
                 .launchIn(scope)
         }
 
@@ -159,11 +162,11 @@ class PlayerNonConfig(
     }
 
     override fun play() {
-        requireNotNull(appPlayer).play()
+        appPlayer?.play()
     }
 
     override fun pause() {
-        requireNotNull(appPlayer).pause()
+        appPlayer?.pause()
     }
 
     private fun tearDown() {
@@ -179,27 +182,27 @@ class PlayerNonConfig(
     }
 
     override fun clearTrackInfos(rendererIndex: Int) {
-        requireNotNull(appPlayer).clearTrackInfos(rendererIndex)
+        appPlayer?.clearTrackInfos(rendererIndex)
     }
 
     override fun setTrackInfos(trackInfos: List<TrackInfo>) {
-        requireNotNull(appPlayer).setTrackInfos(trackInfos)
+        appPlayer?.setTrackInfos(trackInfos)
     }
 
     override fun seekRelative(duration: Duration) {
-        requireNotNull(appPlayer).seekRelative(duration)
+        appPlayer?.seekRelative(duration)
     }
 
     override fun seekTo(duration: Duration) {
-        requireNotNull(appPlayer).seekTo(duration)
+        appPlayer?.seekTo(duration)
     }
 
     override fun toPlaylistItem(index: Int) {
-        requireNotNull(appPlayer).toPlaylistItem(index)
+        appPlayer?.toPlaylistItem(index)
     }
 
     override fun latestSeekData(): SeekData {
-        return uiStates.value.seekData
+        return seekData.value
     }
 
     override fun close() {

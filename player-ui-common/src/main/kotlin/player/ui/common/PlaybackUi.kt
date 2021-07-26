@@ -8,12 +8,14 @@ import player.common.AppPlayer
 import player.common.PlaybackInfo
 import player.common.PlayerEvent
 import player.common.PlayerViewWrapper
+import player.common.SeekData
 
 interface PlaybackUi : SavedStateRegistry.SavedStateProvider {
     val view: View
 
     fun onPlayerEvent(playerEvent: PlayerEvent)
     fun onUiState(uiState: UiState)
+    fun onSeekData(seekData: SeekData)
     fun onTracksState(tracksState: TracksState)
     fun onPlaybackInfos(playbackInfos: List<PlaybackInfo>)
     fun attach(appPlayer: AppPlayer)

@@ -1,9 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<player.ui.common.FadingFrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/fading_container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    app:fadable="@+id/player_controller"
+    app:debouncers="seek_forward,seek_backward,play_pause,seek_bar,share,tab_layout"
     tools:background="@android:color/black">
 
     <androidx.viewpager2.widget.ViewPager2
@@ -65,14 +68,17 @@
             app:srcCompat="@drawable/share"
             tools:visibility="visible" />
 
+        <!-- Clickable because: https://stackoverflow.com/a/45517646/2997980 -->
         <SeekBar
             android:id="@+id/seek_bar"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:clickable="true"
             android:splitTrack="false"
             app:layout_constraintBottom_toTopOf="@id/time_barrier"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
+            tools:ignore="KeyboardInaccessibleWidget"
             tools:max="100"
             tools:progress="55"
             tools:secondaryProgress="70" />
@@ -90,7 +96,7 @@
             android:layout_height="wrap_content"
             android:layout_margin="16dp"
             android:textColor="@android:color/white"
-            app:layout_constraintBottom_toTopOf="@id/play_pause_container"
+            app:layout_constraintBottom_toTopOf="@id/play_pause"
             app:layout_constraintStart_toStartOf="parent"
             tools:text="02:21" />
 
@@ -112,39 +118,23 @@
             android:layout_marginEnd="48dp"
             android:minWidth="@dimen/minimum_a11y_side"
             android:minHeight="@dimen/minimum_a11y_side"
-            app:layout_constraintBottom_toBottomOf="@id/play_pause_container"
-            app:layout_constraintEnd_toStartOf="@id/play_pause_container"
-            app:layout_constraintTop_toTopOf="@id/play_pause_container"
+            app:layout_constraintBottom_toBottomOf="@id/play_pause"
+            app:layout_constraintEnd_toStartOf="@id/play_pause"
+            app:layout_constraintTop_toTopOf="@id/play_pause"
             app:srcCompat="@drawable/rewind" />
 
-        <FrameLayout
-            android:id="@+id/play_pause_container"
+        <ImageView
+            android:id="@+id/play_pause"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
+            android:minWidth="@dimen/minimum_a11y_side"
+            android:minHeight="@dimen/minimum_a11y_side"
             app:layout_constraintBottom_toTopOf="@id/tab_layout"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent">
-
-            <ImageView
-                android:id="@+id/play"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:minWidth="@dimen/minimum_a11y_side"
-                android:minHeight="@dimen/minimum_a11y_side"
-                app:srcCompat="@drawable/play"
-                android:contentDescription="play" />
-
-            <ImageView
-                android:id="@+id/pause"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:minWidth="@dimen/minimum_a11y_side"
-                android:minHeight="@dimen/minimum_a11y_side"
-                app:srcCompat="@drawable/pause"
-                android:contentDescription="pause" />
-
-        </FrameLayout>
+            app:layout_constraintStart_toStartOf="parent"
+            app:srcCompat="@drawable/play_pause"
+            tools:ignore="ContentDescription" />
 
         <ImageView
             android:id="@+id/seek_forward"
@@ -153,15 +143,16 @@
             android:layout_marginStart="48dp"
             android:minWidth="@dimen/minimum_a11y_side"
             android:minHeight="@dimen/minimum_a11y_side"
-            app:layout_constraintBottom_toBottomOf="@id/play_pause_container"
-            app:layout_constraintStart_toEndOf="@id/play_pause_container"
-            app:layout_constraintTop_toTopOf="@id/play_pause_container"
+            app:layout_constraintBottom_toBottomOf="@id/play_pause"
+            app:layout_constraintStart_toEndOf="@id/play_pause"
+            app:layout_constraintTop_toTopOf="@id/play_pause"
             app:srcCompat="@drawable/fast_forward" />
 
         <player.ui.sve.SveTabLayout
             android:id="@+id/tab_layout"
             android:layout_width="0dp"
             android:layout_height="@dimen/tab_layout_height"
+            android:background="@android:color/transparent"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -177,4 +168,4 @@
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-</FrameLayout>
+</player.ui.common.FadingFrameLayout>

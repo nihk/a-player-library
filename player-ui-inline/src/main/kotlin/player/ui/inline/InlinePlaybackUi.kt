@@ -11,6 +11,7 @@ import player.common.AppPlayer
 import player.common.PlaybackInfo
 import player.common.PlayerEvent
 import player.common.PlayerViewWrapper
+import player.common.SeekData
 import player.common.VideoSize
 import player.ui.common.CloseDelegate
 import player.ui.common.PipController
@@ -30,8 +31,8 @@ class InlinePlaybackUi(
     private val playerController: PlayerController,
     private val playerArguments: PlayerArguments,
     private val closeDelegate: CloseDelegate,
-    private val onVideoSizeChangedCallback: OnVideoSizeChangedCallback,
     private val onFullscreenChangedCallback: OnFullscreenChangedCallback,
+    private val onVideoSizeChangedCallback: OnVideoSizeChangedCallback?,
     private val isFullscreenInitially: Boolean? = null
 ) : PlaybackUi {
     @SuppressLint("InflateParams")
@@ -66,8 +67,13 @@ class InlinePlaybackUi(
         }
 
         setPlayPause(playerController.isPlaying())
-        binding.play.setOnClickListener { playerController.play() }
-        binding.pause.setOnClickListener { playerController.pause() }
+        binding.playPause.setOnClickListener { view ->
+            if (view.isSelected) {
+                playerController.pause()
+            } else {
+                playerController.play()
+            }
+        }
 
         binding.close.setOnClickListener {
             closeDelegate.onClose(activity)
@@ -90,8 +96,9 @@ class InlinePlaybackUi(
     }
 
     private fun setPlayPause(isPlaying: Boolean) {
-        binding.play.isVisible = !isPlaying
-        binding.pause.isVisible = isPlaying
+        binding.playPause.isSelected = isPlaying
+        val a11y = if (isPlaying) R.string.pause else R.string.play
+        binding.playPause.contentDescription = activity.getString(a11y)
     }
 
     override fun onPlayerEvent(playerEvent: PlayerEvent) {
@@ -104,12 +111,13 @@ class InlinePlaybackUi(
                     widthPx = playerEvent.width,
                     heightPx = playerEvent.height
                 )
-                onVideoSizeChangedCallback.onVideoSizeChanged(videoSize, activity)
+                onVideoSizeChangedCallback?.onVideoSizeChanged(videoSize, activity)
             }
         }
     }
 
     override fun onUiState(uiState: UiState) = Unit
+    override fun onSeekData(seekData: SeekData) = Unit
     override fun onTracksState(tracksState: TracksState) = Unit
     override fun onPlaybackInfos(playbackInfos: List<PlaybackInfo>) = Unit
 
@@ -125,15 +133,10 @@ class InlinePlaybackUi(
         activity.onBackPressedDispatcher.addCallback(view.requireViewTreeLifecycleOwner(), backPress)
     }
 
-    companion object {
-        private const val PROVIDER = "inline_playback_ui"
-        private const val KEY_IS_FULLSCREEN = "is_fullscreen"
-    }
-
     class Factory(
         private val closeDelegate: CloseDelegate,
-        private val onVideoSizeChangedCallback: OnVideoSizeChangedCallback,
         private val onFullscreenChangedCallback: OnFullscreenChangedCallback,
+        private val onVideoSizeChangedCallback: OnVideoSizeChangedCallback? = null,
         private val isFullscreenInitially: Boolean? = null
     ) : PlaybackUi.Factory {
         override fun create(
@@ -150,8 +153,8 @@ class InlinePlaybackUi(
                 playerController = playerController,
                 playerArguments = playerArguments,
                 closeDelegate = closeDelegate,
-                onVideoSizeChangedCallback = onVideoSizeChangedCallback,
                 onFullscreenChangedCallback = onFullscreenChangedCallback,
+                onVideoSizeChangedCallback = onVideoSizeChangedCallback,
                 isFullscreenInitially = isFullscreenInitially
             )
         }

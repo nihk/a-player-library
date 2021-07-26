@@ -7,6 +7,7 @@ import androidx.test.core.app.ApplicationProvider
 import player.common.AppPlayer
 import player.common.PlaybackInfo
 import player.common.PlayerEvent
+import player.common.SeekData
 import player.ui.common.PlaybackUi
 
 class FakePlaybackUi : PlaybackUi {
@@ -16,6 +17,7 @@ class FakePlaybackUi : PlaybackUi {
 
     override fun onPlayerEvent(playerEvent: PlayerEvent) = Unit
     override fun onUiState(uiState: player.ui.common.UiState) = Unit
+    override fun onSeekData(seekData: SeekData) = Unit
     override fun onTracksState(tracksState: player.ui.common.TracksState) = Unit
     override fun onPlaybackInfos(playbackInfos: List<PlaybackInfo>) = Unit
     override fun saveState(): Bundle = Bundle()

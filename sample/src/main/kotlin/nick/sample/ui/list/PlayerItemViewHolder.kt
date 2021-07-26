@@ -9,7 +9,7 @@ import androidx.core.view.updateLayoutParams
 import androidx.recyclerview.widget.RecyclerView
 import nick.sample.databinding.PlayerItemBinding
 import nick.sample.ui.SampleLibraryConfigurationFactory
-import player.common.DefaultPlaybackInfoResolver
+import player.common.PlaybackInfoResolver
 import player.core.LibraryView
 import player.ui.common.CloseDelegate
 import player.ui.common.PlayerArguments
@@ -150,7 +150,7 @@ class PlayerItemViewHolder(
                     }
                 },
                 isFullscreenInitially = bindingAdapterPosition in fullscreenPositions,
-                playbackInfoResolver = DefaultPlaybackInfoResolver()
+                playbackInfoResolver = PlaybackInfoResolver()
             )
         binding.libraryView.initialize(configuration)
     }

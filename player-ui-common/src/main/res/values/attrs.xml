@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="FadingFrameLayout">
+<!--        Comma separated array of ID references-->
+        <attr name="debouncers" format="string" />
+        <attr name="fadable" format="reference" />
+        <attr name="delay" format="integer" />
+    </declare-styleable>
+</resources>

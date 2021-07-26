@@ -1,7 +1,6 @@
 package player.mediaplayer
 
 import android.media.MediaPlayer
-import android.util.Log
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
@@ -63,7 +62,6 @@ internal class MediaPlayerEventStream : PlayerEventStream {
 
         awaitClose {
             mediaPlayer.run {
-                Log.d("asdf", "Closing player event stream")
                 setOnErrorListener(null)
                 setOnBufferingUpdateListener(null)
                 setOnCompletionListener(null)

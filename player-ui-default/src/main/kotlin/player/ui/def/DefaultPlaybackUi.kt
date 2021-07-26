@@ -59,7 +59,10 @@ class DefaultPlaybackUi(
         updateProgress = { position ->
             updateTimestamps(position, playerController.latestSeekData().duration)
         },
-        seekTo = playerController::seekTo
+        seekTo = playerController::seekTo,
+        onTrackingTouchChanged = { isTracking ->
+            binding.fadingContainer.setFadingEnabled(!isTracking && playerController.isPlaying())
+        }
     )
     private val playerViewWrapper = playerViewWrapperFactory.create(activity)
     private var activeTracksPickerType: TrackInfo.Type? = null
@@ -74,6 +77,9 @@ class DefaultPlaybackUi(
     init {
         activity.lifecycle.addObserver(observer)
         view.doOnAttach {
+            binding.playerContainer.addView(playerViewWrapper.view)
+            bindControls()
+            restoreState()
             // Nested because otherwise it will be called immediately, before View is attached.
             view.doOnDetach {
                 activity.lifecycle.removeObserver(observer)
@@ -83,9 +89,6 @@ class DefaultPlaybackUi(
                 }
             }
         }
-        binding.playerContainer.addView(playerViewWrapper.view)
-        bindControls()
-        restoreState()
     }
 
     override fun attach(appPlayer: AppPlayer) {
@@ -107,11 +110,13 @@ class DefaultPlaybackUi(
     override fun onUiState(uiState: UiState) {
         binding.playerController.isVisible = uiState.isControllerUsable && !pipController.isInPip()
         binding.progressBar.isVisible = uiState.showLoading
-        if (!seekBarListener.requireNotNull().isSeekBarBeingTouched) {
-            val seekData = uiState.seekData
-            binding.seekBar.update(seekData)
-            updateTimestamps(seekData.position, seekData.duration)
-        }
+    }
+
+    override fun onSeekData(seekData: SeekData) {
+        if (seekBarListener.requireNotNull().isSeekBarBeingTouched) return
+
+        binding.seekBar.update(seekData)
+        updateTimestamps(seekData.position, seekData.duration)
     }
 
     override fun onTracksState(tracksState: TracksState) {
@@ -154,10 +159,13 @@ class DefaultPlaybackUi(
     }
 
     private fun navigateToTracksPicker(type: TrackInfo.Type) {
+        // Keep things visible in the background of the dialog - it's a bit less distracting.
+        binding.fadingContainer.setFadingEnabled(false)
         activeTracksPickerType = type
         val config = tracksPickerConfigFactory.create(type)
         navigator.toTracksPicker(config) {
             activeTracksPickerType = null
+            binding.fadingContainer.setFadingEnabled(playerController.isPlaying())
         }
     }
 
@@ -180,8 +188,13 @@ class DefaultPlaybackUi(
         binding.seekBar.setOnSeekBarChangeListener(seekBarListener)
 
         setPlayPause(playerController.isPlaying())
-        binding.play.setOnClickListener { playerController.play() }
-        binding.pause.setOnClickListener { playerController.pause() }
+        binding.playPause.setOnClickListener { view ->
+            if (view.isSelected) {
+                playerController.pause()
+            } else {
+                playerController.play()
+            }
+        }
 
         binding.seekBackward.setOnClickListener {
             val amount = -playerArguments.seekConfiguration.backwardAmount.toDuration(DurationUnit.MILLISECONDS)
@@ -207,8 +220,11 @@ class DefaultPlaybackUi(
     }
 
     private fun setPlayPause(isPlaying: Boolean) {
-        binding.play.isVisible = !isPlaying
-        binding.pause.isVisible = isPlaying
+        binding.playPause.isSelected = isPlaying
+        val a11y = if (isPlaying) R.string.pause else R.string.play
+        binding.playPause.contentDescription = activity.getString(a11y)
+        // It's generally a good UX to keep all controls visible while in a paused state.
+        binding.fadingContainer.setFadingEnabled(isPlaying)
     }
 
     private fun restoreState() {
