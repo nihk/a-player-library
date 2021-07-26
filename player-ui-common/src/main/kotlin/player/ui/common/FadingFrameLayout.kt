@@ -3,6 +3,7 @@ package player.ui.common
 import android.content.Context
 import android.graphics.PointF
 import android.util.AttributeSet
+import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewConfiguration
@@ -171,6 +172,7 @@ class FadingFrameLayout : FrameLayout, View.OnClickListener {
     }
 
     override fun onClick(v: View?) {
+        Log.d("qwer", "clicked")
         if (requireFadable().isVisible) {
             hide(withDelay = false)
         } else {
@@ -179,6 +181,7 @@ class FadingFrameLayout : FrameLayout, View.OnClickListener {
     }
 
     override fun onInterceptTouchEvent(event: MotionEvent): Boolean {
+        Log.d("qwer", "event: ${event.actionMasked}")
         when (event.actionMasked) {
             MotionEvent.ACTION_DOWN -> down = PointF(event.rawX, event.rawY)
             MotionEvent.ACTION_UP -> {

@@ -4,20 +4,20 @@ import android.content.Context
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
+import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.ViewTreeObserver
 import android.widget.FrameLayout
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.testing.launchFragmentInContainer
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.espresso.Espresso.onView
+import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
 import androidx.test.espresso.matcher.ViewMatchers.withId
-import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.test.TestCoroutineScope
 import kotlinx.coroutines.test.runBlockingTest
 import kotlinx.coroutines.withTimeout
@@ -25,7 +25,6 @@ import org.hamcrest.Matchers.not
 import org.junit.Rule
 import org.junit.Test
 import player.test.CoroutinesTestRule
-import kotlin.coroutines.resume
 
 class FadingFrameLayoutTest {
     @get:Rule
@@ -34,7 +33,46 @@ class FadingFrameLayoutTest {
     @Test
     fun fadableViewIsGoneAfterDelay() = fadingRobot {
         assertFadableVisibility(isVisible = true)
-        awaitDelay()
+        awaitFade()
+        assertFadableVisibility(isVisible = false)
+    }
+
+    @Test
+    fun tappingFadedMakesFadableReappear() = fadingRobot {
+        awaitFade()
+        tapOnContainer()
+        assertFadableVisibility(isVisible = true)
+    }
+
+    @Test
+    fun tappingVisibleMakesFadableDisappear() = fadingRobot {
+        tapOnContainer()
+        assertFadableVisibility(isVisible = false)
+    }
+
+    @Test
+    fun tappingVisibleTwiceMakesFadableVisible() = fadingRobot {
+        tapOnContainer()
+        tapOnContainer()
+        assertFadableVisibility(isVisible = true)
+    }
+
+    @Test
+    fun tappingOnDebouncableKeepsViewVisible() = fadingRobot {
+        tapOnDebouncable()
+        assertFadableVisibility(isVisible = true)
+    }
+
+    @Test
+    fun tappingOnDebouncableTwiceKeepsViewVisible() = fadingRobot {
+        tapOnDebouncable()
+        tapOnDebouncable()
+        assertFadableVisibility(isVisible = true)
+    }
+
+    @Test
+    fun tappingOnNonDebouncableFades() = fadingRobot {
+        tapOnNonDebouncable()
         assertFadableVisibility(isVisible = false)
     }
 
@@ -52,6 +90,7 @@ class FadingFrameLayoutTest {
         private val container: ViewGroup
         private val fadableId = View.generateViewId()
         private val debouncerId = View.generateViewId()
+        private val nonDebouncerId = View.generateViewId()
         private val containerId = View.generateViewId()
 
         init {
@@ -59,12 +98,22 @@ class FadingFrameLayoutTest {
                 id = debouncerId
                 background = ColorDrawable(Color.YELLOW)
                 layoutParams = ViewGroup.LayoutParams(250, 250)
+                isClickable = true
+            }
+            val nonDebouncer = FrameLayout(context).apply {
+                id = nonDebouncerId
+                background = ColorDrawable(Color.GREEN)
+                layoutParams = FrameLayout.LayoutParams(250, 250).apply {
+                    gravity = Gravity.END
+                }
+                isClickable = true
             }
 
             fadable = FrameLayout(context).apply {
                 id = fadableId
                 background = ColorDrawable(Color.BLUE)
                 addView(debouncer)
+                addView(nonDebouncer)
             }
 
             container = FadingFrameLayout(context).apply {
@@ -79,38 +128,47 @@ class FadingFrameLayoutTest {
             launchFragmentInContainer { TestFragment(container) }
         }
 
-        suspend fun assertFadableVisibility(isVisible: Boolean) {
+        fun assertFadableVisibility(isVisible: Boolean) {
             val visibility = if (isVisible) {
                 isDisplayed()
             } else {
                 not(isDisplayed())
             }
-            withTimeout(5_000L) {
-                while (fadable.isVisible != isVisible) {
-                }
-            }
             onView(withId(fadableId))
                 .check(matches(visibility))
         }
 
-        suspend fun awaitDelay() {
+        suspend fun awaitFade() {
             testCoroutineScope.advanceUntilIdle()
-            fadable.blah()
+            awaitVisibility(isVisible = false)
         }
 
-        suspend fun View.blah() = suspendCancellableCoroutine<Unit> {
-            val listener = object : ViewTreeObserver.OnGlobalLayoutListener {
-                override fun onGlobalLayout() {
-                    viewTreeObserver.removeOnGlobalLayoutListener(this)
-                    it.resume(Unit)
-                }
-            }
+        suspend fun awaitVisible() {
+            testCoroutineScope.advanceUntilIdle()
+            awaitVisibility(isVisible = true)
+        }
 
-            it.invokeOnCancellation {
-                viewTreeObserver.removeOnGlobalLayoutListener(listener)
+        private suspend fun awaitVisibility(isVisible: Boolean) {
+            // Workaround for suspendCancellableCoroutine bug on TestCoroutineScope.
+            // https://github.com/Kotlin/kotlinx.coroutines/issues/1204
+            withTimeout(5_000L) {
+                while (fadable.isVisible != isVisible) {}
             }
+        }
 
-            viewTreeObserver.addOnGlobalLayoutListener(listener)
+        fun tapOnContainer() {
+            onView(withId(containerId))
+                .perform(click())
+        }
+
+        fun tapOnDebouncable() {
+            onView(withId(debouncerId))
+                .perform(click())
+        }
+
+        fun tapOnNonDebouncable() {
+            onView(withId(nonDebouncerId))
+                .perform(click())
         }
     }
 }
