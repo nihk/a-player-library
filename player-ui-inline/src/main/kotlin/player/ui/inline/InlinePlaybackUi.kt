@@ -58,12 +58,13 @@ class InlinePlaybackUi(
         if (isFullscreenInitially != null) {
             setFullscreen(isFullscreenInitially)
         }
-        binding.fullscreen.setOnClickListener {
-            setFullscreen(isFullscreen = true)
-            onFullscreenChangedCallback.onFullscreenChanged(isFullscreen = true, activity)
-        }
-        binding.closeFullscreen.setOnClickListener {
-            closeFullscreen()
+        binding.toggleFullscreen.setOnClickListener { view ->
+            setFullscreen(!view.isSelected)
+            if (view.isSelected) {
+                onFullscreenChangedCallback.onFullscreenChanged(isFullscreen = true, activity)
+            } else {
+                closeFullscreen()
+            }
         }
 
         setPlayPause(playerController.isPlaying())
@@ -86,8 +87,7 @@ class InlinePlaybackUi(
     }
 
     private fun setFullscreen(isFullscreen: Boolean) {
-        binding.closeFullscreen.isVisible = isFullscreen
-        binding.fullscreen.isVisible = !isFullscreen
+        binding.toggleFullscreen.isSelected = isFullscreen
         if (isFullscreen) {
             addBackPress()
         } else {
@@ -99,6 +99,8 @@ class InlinePlaybackUi(
         binding.playPause.isSelected = isPlaying
         val a11y = if (isPlaying) R.string.pause else R.string.play
         binding.playPause.contentDescription = activity.getString(a11y)
+        // It's generally a good UX to keep all controls visible while in a paused state.
+        binding.fadingContainer.setFadingEnabled(isPlaying)
     }
 
     override fun onPlayerEvent(playerEvent: PlayerEvent) {

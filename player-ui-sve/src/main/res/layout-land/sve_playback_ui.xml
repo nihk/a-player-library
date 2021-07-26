@@ -31,12 +31,11 @@
 
         <ImageView
             android:id="@+id/close"
+            style="@style/controller_buttons"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="8dp"
             android:contentDescription="close"
-            android:minWidth="@dimen/minimum_a11y_side"
-            android:minHeight="@dimen/minimum_a11y_side"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:srcCompat="@drawable/close" />
@@ -57,11 +56,10 @@
 
         <ImageView
             android:id="@+id/share"
+            style="@style/controller_buttons"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="8dp"
-            android:minWidth="@dimen/minimum_a11y_side"
-            android:minHeight="@dimen/minimum_a11y_side"
             android:visibility="gone"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
@@ -113,11 +111,10 @@
 
         <ImageView
             android:id="@+id/seek_backward"
+            style="@style/controller_buttons"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginEnd="48dp"
-            android:minWidth="@dimen/minimum_a11y_side"
-            android:minHeight="@dimen/minimum_a11y_side"
             app:layout_constraintBottom_toBottomOf="@id/play_pause"
             app:layout_constraintEnd_toStartOf="@id/play_pause"
             app:layout_constraintTop_toTopOf="@id/play_pause"
@@ -125,10 +122,9 @@
 
         <ImageView
             android:id="@+id/play_pause"
+            style="@style/controller_buttons"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:minWidth="@dimen/minimum_a11y_side"
-            android:minHeight="@dimen/minimum_a11y_side"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -138,11 +134,10 @@
 
         <ImageView
             android:id="@+id/seek_forward"
+            style="@style/controller_buttons"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="48dp"
-            android:minWidth="@dimen/minimum_a11y_side"
-            android:minHeight="@dimen/minimum_a11y_side"
             app:layout_constraintBottom_toBottomOf="@id/play_pause"
             app:layout_constraintStart_toEndOf="@id/play_pause"
             app:layout_constraintTop_toTopOf="@id/play_pause"

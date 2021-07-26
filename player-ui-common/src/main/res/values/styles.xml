@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="controller_buttons">
+        <item name="android:background">?selectableItemBackgroundBorderless</item>
+        <item name="android:minWidth">@dimen/minimum_a11y_side</item>
+        <item name="android:minHeight">@dimen/minimum_a11y_side</item>
+    </style>
+</resources>
