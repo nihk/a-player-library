@@ -10,13 +10,6 @@ import android.widget.FrameLayout
 import androidx.core.content.res.use
 import androidx.core.view.doOnAttach
 import androidx.core.view.isVisible
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import player.common.requireNotNull
 import player.ui.controller.contains
 import kotlin.math.abs
@@ -44,17 +37,19 @@ class FadingFrameLayout : FrameLayout, View.OnClickListener {
         initialize(context, attributeSet, defStyleAttr)
     }
 
-    private var scope: CoroutineScope? = null
-    private var hide: Job? = null
-    private var delay: Long? = null
     private var touchSlop: Int = -1
     private var down: PointF? = null
+
+    /** Attributes **/
+    private var delay: Long? = null
     // Clicks on debouncers will restart the fade delay.
     private val debouncers = mutableListOf<View>()
     private var debouncerIds: List<Int>? = null
     // The View to fade in and out.
     private var fadable: View? = null
     private var fadableId: Int? = null
+
+    /** State **/
     private var isFadingEnabled: Boolean = true
 
     private fun initialize(context: Context, attributeSet: AttributeSet?, defStyleAttr: Int) {
@@ -77,6 +72,7 @@ class FadingFrameLayout : FrameLayout, View.OnClickListener {
         doOnAttach {
             debouncers += debouncerIds?.map { id -> findViewById<View>(id).requireNotNull() }.orEmpty()
             fadable = fadableId?.let { findViewById(it) }
+            fadable?.let { setFadable(it) }
         }
     }
 
@@ -86,22 +82,16 @@ class FadingFrameLayout : FrameLayout, View.OnClickListener {
 
     fun setFadable(fadable: View) {
         this.fadable = fadable
+        hide() // Kick things off
     }
 
     fun addDebouncer(debouncer: View) {
         debouncers += debouncer
     }
 
-    override fun onAttachedToWindow() {
-        super.onAttachedToWindow()
-        requireScope()
-        hide() // Kick things off
-    }
-
     override fun onDetachedFromWindow() {
         super.onDetachedFromWindow()
-        scope?.cancel()
-        scope = null
+        cancelAnimation()
     }
 
     fun setFadingEnabled(isEnabled: Boolean) {
@@ -114,37 +104,34 @@ class FadingFrameLayout : FrameLayout, View.OnClickListener {
                 hide()
             }
         } else {
-            cancelJob()
+            cancelAnimation()
         }
     }
 
     fun hide(withDelay: Boolean = true) {
-        cancelJob()
+        cancelAnimation()
 
-        fun hideAnimation() {
-            requireFadable()
-                .animate()
-                .alpha(0f)
-                .withEndAction { requireFadable().isVisible = false }
-        }
-
-        if (withDelay) {
-            hide = requireScope().launch {
-                delay(delay.requireNotNull())
-                hideAnimation()
+        requireFadable()
+            .animate()
+            .alpha(0f)
+            .apply {
+                startDelay = if (withDelay) {
+                    delay.requireNotNull()
+                } else {
+                    0L
+                }
             }
-        } else {
-            hideAnimation()
-        }
+            .withEndAction { requireFadable().isVisible = false }
     }
 
     fun show() {
-        cancelJob()
+        cancelAnimation()
 
         requireFadable()
             .animate()
             .withStartAction { requireFadable().isVisible = true }
             .alpha(1f)
+            .setStartDelay(0L)
             .withEndAction {
                 if (isFadingEnabled) {
                     hide()
@@ -152,8 +139,8 @@ class FadingFrameLayout : FrameLayout, View.OnClickListener {
             }
     }
 
-    private fun cancelJob() {
-        hide?.cancel()
+    private fun cancelAnimation() {
+        fadable?.animate()?.cancel()
     }
 
     override fun onClick(v: View?) {
@@ -188,11 +175,4 @@ class FadingFrameLayout : FrameLayout, View.OnClickListener {
     }
 
     private fun requireFadable() = fadable.requireNotNull()
-
-    private fun requireScope(): CoroutineScope {
-        if (scope == null) {
-            scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
-        }
-        return scope.requireNotNull()
-    }
 }
