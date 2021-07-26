@@ -1,4 +1,4 @@
-package player.ui.controller
+package player.test
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.test.TestCoroutineDispatcher

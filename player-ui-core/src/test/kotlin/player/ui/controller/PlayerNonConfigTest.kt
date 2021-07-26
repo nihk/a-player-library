@@ -21,6 +21,7 @@ import player.test.FakePlayerEventDelegate
 import player.test.FakePlayerEventStream
 import player.test.FakeSeekDataUpdater
 import player.ui.common.TracksState
+import player.test.CoroutinesTestRule
 
 class PlayerNonConfigTest {
     @get:Rule

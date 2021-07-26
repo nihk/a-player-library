@@ -5,5 +5,6 @@
         <attr name="debouncers" format="string" />
         <attr name="fadable" format="reference" />
         <attr name="delay" format="integer" />
+        <attr name="fade_duration" format="integer" />
     </declare-styleable>
 </resources>

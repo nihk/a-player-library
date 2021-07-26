@@ -14,8 +14,8 @@ dependencies {
     implementation(Dependencies.constraintLayout)
     implementation(Dependencies.multidex)
     implementation(Dependencies.Kotlin.coroutines)
-
-    testImplementation(Dependencies.junit)
-    testImplementation(Dependencies.ArchCore.testing)
-    testImplementation(Dependencies.Kotlin.coroutinesTest)
+    implementation(Dependencies.Kotlin.coroutinesTest)
+    implementation(Dependencies.junit)
+    implementation(Dependencies.ArchCore.testing)
+    implementation(Dependencies.Kotlin.coroutinesTest)
 }
