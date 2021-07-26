@@ -78,7 +78,7 @@ class PlayerView(
     init {
         id = View.generateViewId()
         keepScreenOn = true
-        background = ColorDrawable(Color.BLACK)
+        background = ColorDrawable(playerArguments.backgroundColor)
     }
 
     override fun onAttachedToWindow() {

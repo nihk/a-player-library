@@ -5,7 +5,6 @@
     android:id="@+id/fading_container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@android:color/holo_orange_dark"
     app:debouncers="close,play_pause,toggle_fullscreen"
     app:fadable="@+id/player_controller">
 

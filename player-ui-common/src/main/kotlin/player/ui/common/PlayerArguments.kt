@@ -1,7 +1,9 @@
 package player.ui.common
 
+import android.graphics.Color
 import android.os.Bundle
 import android.os.Parcelable
+import androidx.annotation.ColorInt
 import androidx.core.os.bundleOf
 import kotlinx.parcelize.Parcelize
 import player.common.requireNotNull
@@ -13,7 +15,8 @@ data class PlayerArguments(
     val uri: String,
     val playbackUiFactory: Class<out PlaybackUi.Factory>,
     val pipConfig: PictureInPictureConfig? = null,
-    val seekConfiguration: SeekConfiguration = SeekConfiguration.DEFAULT
+    val seekConfiguration: SeekConfiguration = SeekConfiguration.DEFAULT,
+    @ColorInt val backgroundColor: Int = Color.BLACK
 ) : Parcelable {
     @Parcelize
     data class SeekConfiguration(

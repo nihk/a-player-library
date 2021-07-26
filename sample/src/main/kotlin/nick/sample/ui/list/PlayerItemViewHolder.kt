@@ -159,7 +159,8 @@ class PlayerItemViewHolder(
         return PlayerArguments(
             id = id,
             uri = uri,
-            playbackUiFactory = InlinePlaybackUi.Factory::class.java
+            playbackUiFactory = InlinePlaybackUi.Factory::class.java,
+            backgroundColor = color
         )
     }
 }
