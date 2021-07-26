@@ -157,6 +157,7 @@
             android:layout_width="0dp"
             android:layout_height="@dimen/minimum_a11y_side"
             android:layout_margin="8dp"
+            android:animateLayoutChanges="true"
             android:orientation="horizontal"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
