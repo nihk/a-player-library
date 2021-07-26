@@ -82,7 +82,7 @@ class FadingFrameLayout : FrameLayout, View.OnClickListener {
 
     fun setFadable(fadable: View) {
         this.fadable = fadable
-        hide() // Kick things off
+        hide(withDelay = true) // Kick things off
     }
 
     fun addDebouncer(debouncer: View) {
@@ -99,16 +99,15 @@ class FadingFrameLayout : FrameLayout, View.OnClickListener {
 
         isFadingEnabled = isEnabled
         if (isEnabled) {
-            if (requireFadable().isVisible) {
-                // Restart
-                hide()
+            if (requireFadable().isVisible) { // No point in hiding something already hidden.
+                hide(withDelay = true)
             }
         } else {
             show()
         }
     }
 
-    fun hide(withDelay: Boolean = true) {
+    fun hide(withDelay: Boolean) {
         cancelAnimation()
 
         requireFadable()
@@ -134,7 +133,7 @@ class FadingFrameLayout : FrameLayout, View.OnClickListener {
             .setStartDelay(0L)
             .withEndAction {
                 if (isFadingEnabled) {
-                    hide()
+                    hide(withDelay = true)
                 }
             }
     }
