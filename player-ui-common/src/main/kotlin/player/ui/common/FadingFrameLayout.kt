@@ -104,7 +104,7 @@ class FadingFrameLayout : FrameLayout, View.OnClickListener {
                 hide()
             }
         } else {
-            cancelAnimation()
+            show()
         }
     }
 
