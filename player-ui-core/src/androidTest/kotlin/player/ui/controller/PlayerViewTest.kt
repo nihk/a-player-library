@@ -27,6 +27,7 @@ import player.test.FakePlayerViewWrapper
 import player.test.FakeSeekDataUpdater
 import player.ui.common.PictureInPictureConfig
 import player.ui.common.PlayerArguments
+import player.test.CoroutinesTestRule
 import player.ui.test.FakePipController
 import player.ui.test.FakePlaybackUi
 import player.ui.test.FakePlaybackUiFactory
@@ -189,7 +190,7 @@ class FakeErrorRenderer : ErrorRenderer {
     }
 }
 
-class TestFragment(
+internal class TestFragment(
     private val playerViewFactory: PlayerView.Factory,
     private val playerArguments: PlayerArguments
 ) : Fragment() {
