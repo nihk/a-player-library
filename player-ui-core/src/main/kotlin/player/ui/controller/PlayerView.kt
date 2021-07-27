@@ -2,6 +2,7 @@ package player.ui.controller
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.res.Configuration
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.view.View
@@ -59,7 +60,6 @@ class PlayerView(
         }.create(
             activity = activity,
             playerViewWrapperFactory = playerViewWrapperFactory,
-            pipController = pipController,
             playerController = playerNonConfig,
             playerArguments = playerArguments
         )
@@ -208,6 +208,10 @@ class PlayerView(
 
     private fun clearBackPress() {
         pipBackPress.remove()
+    }
+
+    override fun onConfigurationChanged(newConfig: Configuration?) {
+        playerNonConfig.updateControllerUsability(!pipController.isInPip())
     }
 
     class Factory(

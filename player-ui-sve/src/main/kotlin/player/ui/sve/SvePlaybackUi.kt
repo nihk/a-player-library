@@ -22,7 +22,6 @@ import player.common.SeekData
 import player.common.requireNotNull
 import player.ui.common.CloseDelegate
 import player.ui.common.DefaultSeekBarListener
-import player.ui.common.PipController
 import player.ui.common.PlaybackUi
 import player.ui.common.PlayerArguments
 import player.ui.common.PlayerController
@@ -43,7 +42,6 @@ class SvePlaybackUi(
     private val activity: ComponentActivity,
     private val seekBarListenerFactory: SeekBarListener.Factory,
     private val playerViewWrapperFactory: PlayerViewWrapper.Factory,
-    private val pipController: PipController,
     private val playerController: PlayerController,
     private val playerArguments: PlayerArguments,
     private val closeDelegate: CloseDelegate,
@@ -105,7 +103,7 @@ class SvePlaybackUi(
     }
 
     override fun onUiState(uiState: UiState) {
-        binding.playerController.isVisible = uiState.isControllerUsable && !pipController.isInPip()
+        binding.playerController.isVisible = uiState.isControllerUsable
         binding.progressBar.isVisible = uiState.showLoading
     }
 
@@ -285,7 +283,6 @@ class SvePlaybackUi(
         override fun create(
             activity: ComponentActivity,
             playerViewWrapperFactory: PlayerViewWrapper.Factory,
-            pipController: PipController,
             playerController: PlayerController,
             playerArguments: PlayerArguments,
         ): PlaybackUi {
@@ -293,7 +290,6 @@ class SvePlaybackUi(
                 activity = activity,
                 seekBarListenerFactory = DefaultSeekBarListener.Factory(),
                 playerViewWrapperFactory = playerViewWrapperFactory,
-                pipController = pipController,
                 playerController = playerController,
                 playerArguments = playerArguments,
                 closeDelegate = closeDelegate,

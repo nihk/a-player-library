@@ -205,6 +205,10 @@ class PlayerNonConfig(
         return seekData.value
     }
 
+    fun updateControllerUsability(isUsable: Boolean) {
+        uiStates.value = uiStates.value.copy(isControllerUsable = isUsable)
+    }
+
     override fun close() {
         tearDown()
         playerSavedState.clear()

@@ -27,7 +27,6 @@ interface PlaybackUi : SavedStateRegistry.SavedStateProvider {
         fun create(
             activity: ComponentActivity,
             playerViewWrapperFactory: PlayerViewWrapper.Factory,
-            pipController: PipController,
             playerController: PlayerController,
             playerArguments: PlayerArguments
         ): PlaybackUi

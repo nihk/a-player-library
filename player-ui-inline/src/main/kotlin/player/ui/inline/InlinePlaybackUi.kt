@@ -6,7 +6,6 @@ import android.view.View
 import androidx.activity.ComponentActivity
 import androidx.activity.OnBackPressedCallback
 import androidx.core.view.doOnAttach
-import androidx.core.view.isVisible
 import player.common.AppPlayer
 import player.common.PlaybackInfo
 import player.common.PlayerEvent
@@ -14,7 +13,6 @@ import player.common.PlayerViewWrapper
 import player.common.SeekData
 import player.common.VideoSize
 import player.ui.common.CloseDelegate
-import player.ui.common.PipController
 import player.ui.common.PlaybackUi
 import player.ui.common.PlayerArguments
 import player.ui.common.PlayerController
@@ -27,7 +25,6 @@ import player.ui.inline.databinding.InlinePlaybackUiBinding
 class InlinePlaybackUi(
     private val activity: ComponentActivity,
     private val playerViewWrapperFactory: PlayerViewWrapper.Factory,
-    private val pipController: PipController,
     private val playerController: PlayerController,
     private val playerArguments: PlayerArguments,
     private val closeDelegate: CloseDelegate,
@@ -144,14 +141,12 @@ class InlinePlaybackUi(
         override fun create(
             activity: ComponentActivity,
             playerViewWrapperFactory: PlayerViewWrapper.Factory,
-            pipController: PipController,
             playerController: PlayerController,
             playerArguments: PlayerArguments,
         ): PlaybackUi {
             return InlinePlaybackUi(
                 activity = activity,
                 playerViewWrapperFactory = playerViewWrapperFactory,
-                pipController = pipController,
                 playerController = playerController,
                 playerArguments = playerArguments,
                 closeDelegate = closeDelegate,
