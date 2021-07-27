@@ -60,9 +60,7 @@ class DefaultPlaybackUi(
             updateTimestamps(position, playerController.latestSeekData().duration)
         },
         seekTo = playerController::seekTo,
-        onTrackingTouchChanged = { isTracking ->
-            binding.fadingContainer.setFadingEnabled(!isTracking && isFadable())
-        }
+        onTrackingTouchChanged = { isTracking -> syncFading(!isTracking) }
     )
     private val playerViewWrapper = playerViewWrapperFactory.create(activity)
     private var activeTracksPickerType: TrackInfo.Type? = null
@@ -159,13 +157,12 @@ class DefaultPlaybackUi(
     }
 
     private fun navigateToTracksPicker(type: TrackInfo.Type) {
-        // Keep things visible in the background of the dialog - it's a bit less distracting.
-        binding.fadingContainer.setFadingEnabled(false)
         activeTracksPickerType = type
+        syncFading()
         val config = tracksPickerConfigFactory.create(type)
         navigator.toTracksPicker(config) {
             activeTracksPickerType = null
-            binding.fadingContainer.setFadingEnabled(isFadable())
+            syncFading()
         }
     }
 
@@ -223,7 +220,7 @@ class DefaultPlaybackUi(
         binding.playPause.isSelected = isPlaying
         val a11y = if (isPlaying) R.string.pause else R.string.play
         binding.playPause.contentDescription = activity.getString(a11y)
-        binding.fadingContainer.setFadingEnabled(isFadable())
+        syncFading()
     }
 
     private fun restoreState() {
@@ -237,9 +234,14 @@ class DefaultPlaybackUi(
         return bundleOf(KEY_ACTIVE_TRACKS_PICKER_TYPE to activeTracksPickerType)
     }
 
+    private fun syncFading(enable: Boolean = true) {
+        binding.fadingContainer.setFadingEnabled(enable && isFadable())
+    }
+
     private fun isFadable(): Boolean {
         // It's generally a good UX to not fade while in a paused state.
         return playerController.isPlaying()
+            // Keep things visible in the background of the dialog - it's a bit less distracting.
             && activeTracksPickerType == null
     }
 
