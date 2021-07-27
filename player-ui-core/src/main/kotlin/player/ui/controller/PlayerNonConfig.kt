@@ -51,7 +51,7 @@ class PlayerNonConfig(
     override fun playerEvents(): Flow<PlayerEvent> = playerEvents
 
     private val uiStates = MutableStateFlow(UiState.INITIAL)
-    fun uiStates(): StateFlow<UiState> = uiStates
+    override fun uiStates(): StateFlow<UiState> = uiStates
 
     private val seekData = MutableStateFlow(SeekData.INITIAL)
     fun seekData(): StateFlow<SeekData> = seekData
@@ -205,8 +205,8 @@ class PlayerNonConfig(
         return seekData.value
     }
 
-    fun updateControllerUsability(isUsable: Boolean) {
-        uiStates.value = uiStates.value.copy(isControllerUsable = isUsable)
+    fun setPipState(isInPip: Boolean) {
+        uiStates.value = uiStates.value.copy(isInPip = isInPip)
     }
 
     override fun close() {

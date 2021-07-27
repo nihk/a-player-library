@@ -3,7 +3,6 @@ package player.ui.controller
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.res.Configuration
-import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.view.View
 import androidx.activity.ComponentActivity
@@ -211,7 +210,7 @@ class PlayerView(
     }
 
     override fun onConfigurationChanged(newConfig: Configuration?) {
-        playerNonConfig.updateControllerUsability(!pipController.isInPip())
+        playerNonConfig.setPipState(pipController.isInPip())
     }
 
     class Factory(

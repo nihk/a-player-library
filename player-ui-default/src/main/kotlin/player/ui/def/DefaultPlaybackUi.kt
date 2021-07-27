@@ -104,7 +104,7 @@ class DefaultPlaybackUi(
     }
 
     override fun onUiState(uiState: UiState) {
-        binding.playerController.isVisible = uiState.isControllerUsable
+        binding.playerController.isVisible = uiState.isControllerUsable && !uiState.isInPip
         binding.progressBar.isVisible = uiState.showLoading
     }
 
@@ -241,6 +241,7 @@ class DefaultPlaybackUi(
         return playerController.isPlaying()
             // Keep things visible in the background of the dialog - it's a bit less distracting.
             && activeTracksPickerType == null
+            && !playerController.uiStates().value.isInPip
     }
 
     companion object {

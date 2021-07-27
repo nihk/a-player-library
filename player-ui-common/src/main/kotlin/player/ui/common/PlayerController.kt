@@ -1,6 +1,7 @@
 package player.ui.common
 
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.StateFlow
 import player.common.PlayerEvent
 import player.common.SeekData
 import player.common.TrackInfo
@@ -22,4 +23,5 @@ interface PlayerController {
     fun clearTrackInfos(rendererIndex: Int)
     fun setTrackInfos(trackInfos: List<TrackInfo>)
     fun playerEvents(): Flow<PlayerEvent>
+    fun uiStates(): StateFlow<UiState>
 }
