@@ -91,7 +91,6 @@ class FadingFrameLayout : FrameLayout, View.OnClickListener {
 
     fun setFadable(fadable: View) {
         this.fadable = fadable
-        hide(withDelay = true) // Kick things off
     }
 
     fun setFadeDuration(duration: Long) {
@@ -100,6 +99,11 @@ class FadingFrameLayout : FrameLayout, View.OnClickListener {
 
     fun addDebouncer(debouncer: View) {
         debouncers += debouncer
+    }
+
+    override fun onAttachedToWindow() {
+        super.onAttachedToWindow()
+        hide(withDelay = true) // Kick things off
     }
 
     override fun onDetachedFromWindow() {
