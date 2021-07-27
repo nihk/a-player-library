@@ -124,6 +124,7 @@ class FadingFrameLayout : FrameLayout, View.OnClickListener {
 
     fun hide(withDelay: Boolean) {
         cancelWork()
+        if (!isFadingEnabled) return
 
         fun hideAnimation() {
             requireFadable()
@@ -154,9 +155,7 @@ class FadingFrameLayout : FrameLayout, View.OnClickListener {
             .withStartAction { requireFadable().isVisible = true }
             .alpha(1f)
             .withEndAction {
-                if (isFadingEnabled) {
-                    hide(withDelay = true)
-                }
+                hide(withDelay = true)
             }
     }
 
