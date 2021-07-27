@@ -76,15 +76,9 @@ class TracksPickerDialog(
 
     private fun submitTrackOptions(adapter: TracksAdapter) {
         val trackInfos = queryTrackInfos()
-        requireBinding().title.isVisible = trackInfos.isNotEmpty()
-        val trackOptions = if (trackInfos.isEmpty()) {
-            // todo: this is a bit jarring when tracks update/change, which puts the player in a
-            //  temporary state where there are no tracks, but I also don't want tracks to be
-            //  selectable when none exist.
-            emptyList()
-        } else {
-            val trackOptions = trackInfos.toTrackOptions()
-            if (config.withAuto) {
+        requireBinding().loading.isVisible = trackInfos.isEmpty()
+        if (trackInfos.isNotEmpty()) {
+            val trackOptions = if (config.withAuto) {
                 val hasManuallySetOption = trackInfos.any(TrackInfo::isManuallySet)
                 val auto = TrackOption(
                     id = -1,
@@ -92,12 +86,12 @@ class TracksPickerDialog(
                     isSelected = !hasManuallySetOption,
                     action = TrackOption.Action.Clear(trackInfos.first().indices.rendererIndex) // These will all be the same
                 )
-                listOf(auto) + trackOptions
+                listOf(auto) + trackInfos.toTrackOptions()
             } else {
-                trackOptions
+                trackInfos.toTrackOptions()
             }
+            adapter.submitList(trackOptions)
         }
-        adapter.submitList(trackOptions)
     }
 
     override fun onDetachedFromWindow() {
