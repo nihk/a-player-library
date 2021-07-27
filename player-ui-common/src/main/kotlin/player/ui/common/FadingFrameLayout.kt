@@ -207,7 +207,7 @@ class FadingFrameLayout : FrameLayout, View.OnClickListener {
     private fun requireFadable() = fadable.requireNotNull()
     private fun requireScope(): CoroutineScope {
         if (scope == null) {
-            scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
+            scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
         }
         return scope.requireNotNull()
     }

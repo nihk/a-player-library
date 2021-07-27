@@ -36,7 +36,7 @@ class PlayerView(
     private val errorRenderer: ErrorRenderer,
     private val pipControllerFactory: PipController.Factory,
     private val playbackUiFactories: List<PlaybackUi.Factory>,
-    private val scopeFactory: () -> CoroutineScope = { CoroutineScope(SupervisorJob() + Dispatchers.Main) }
+    private val scopeFactory: () -> CoroutineScope = { CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate) }
 ) : CoordinatorLayout(context), LifecycleEventObserver {
     private var scope: CoroutineScope? = null
     private val playerViewModel: PlayerViewModel by lazy {
