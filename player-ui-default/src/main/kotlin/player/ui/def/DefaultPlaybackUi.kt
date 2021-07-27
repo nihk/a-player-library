@@ -61,7 +61,7 @@ class DefaultPlaybackUi(
         },
         seekTo = playerController::seekTo,
         onTrackingTouchChanged = { isTracking ->
-            binding.fadingContainer.setFadingEnabled(!isTracking && playerController.isPlaying())
+            binding.fadingContainer.setFadingEnabled(!isTracking && isFadable())
         }
     )
     private val playerViewWrapper = playerViewWrapperFactory.create(activity)
@@ -165,7 +165,7 @@ class DefaultPlaybackUi(
         val config = tracksPickerConfigFactory.create(type)
         navigator.toTracksPicker(config) {
             activeTracksPickerType = null
-            binding.fadingContainer.setFadingEnabled(playerController.isPlaying())
+            binding.fadingContainer.setFadingEnabled(isFadable())
         }
     }
 
@@ -223,8 +223,7 @@ class DefaultPlaybackUi(
         binding.playPause.isSelected = isPlaying
         val a11y = if (isPlaying) R.string.pause else R.string.play
         binding.playPause.contentDescription = activity.getString(a11y)
-        // It's generally a good UX to keep all controls visible while in a paused state.
-        binding.fadingContainer.setFadingEnabled(isPlaying)
+        binding.fadingContainer.setFadingEnabled(isFadable())
     }
 
     private fun restoreState() {
@@ -236,6 +235,12 @@ class DefaultPlaybackUi(
 
     override fun saveState(): Bundle {
         return bundleOf(KEY_ACTIVE_TRACKS_PICKER_TYPE to activeTracksPickerType)
+    }
+
+    private fun isFadable(): Boolean {
+        // It's generally a good UX to not fade while in a paused state.
+        return playerController.isPlaying()
+            && activeTracksPickerType == null
     }
 
     companion object {
