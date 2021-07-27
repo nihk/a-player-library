@@ -7,6 +7,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleRegistry
 import androidx.lifecycle.lifecycleScope
+import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -29,6 +30,9 @@ class TracksPickerDialog(
         registry.currentState = Lifecycle.State.CREATED
         binding = TracksPickerDialogBinding.inflate(layoutInflater)
         setContentView(requireBinding().root)
+
+        // On landscape orientation, show as much of the dialog as possible on the screen.
+        behavior.state = BottomSheetBehavior.STATE_EXPANDED
 
         requireBinding().title.setText(config.title)
 
