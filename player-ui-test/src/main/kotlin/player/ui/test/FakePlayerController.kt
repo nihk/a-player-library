@@ -9,10 +9,13 @@ import player.common.VideoSize
 import player.ui.common.PlayerController
 import kotlin.time.Duration
 
-class FakePlayerController : PlayerController {
+class FakePlayerController(private var isPlaying: Boolean = false) : PlayerController {
     override fun play() = Unit
     override fun pause() = Unit
-    override fun isPlaying(): Boolean = false
+    override fun isPlaying(): Boolean = isPlaying
+    fun setIsPlaying(isPlaying: Boolean) {
+        this.isPlaying = isPlaying
+    }
     override fun hasMedia(): Boolean = false
     override fun videoSize(): VideoSize? = null
     override fun seekRelative(duration: Duration) = Unit
