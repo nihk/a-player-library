@@ -103,9 +103,9 @@ class DefaultPlaybackUi(
     }
 
     override fun onUiState(uiState: UiState) {
-        val controllerVisibility = uiState.isControllerUsable && !uiState.isInPip
-        binding.playerController.isVisible = controllerVisibility
+        binding.playerController.isVisible = uiState.isControllerUsable && !uiState.isInPip
         binding.progressBar.isVisible = uiState.showLoading
+        syncFading()
     }
 
     override fun onSeekData(seekData: SeekData) {

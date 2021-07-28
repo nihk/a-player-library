@@ -105,6 +105,7 @@ class SvePlaybackUi(
     override fun onUiState(uiState: UiState) {
         binding.playerController.isVisible = uiState.isControllerUsable && !uiState.isInPip
         binding.progressBar.isVisible = uiState.showLoading
+        syncFading()
     }
 
     override fun onSeekData(seekData: SeekData) {
