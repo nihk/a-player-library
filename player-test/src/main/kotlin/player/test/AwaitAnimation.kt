@@ -24,6 +24,7 @@ class AwaitAnimation(
         var startTime = 0L
         var flag = false
         val animator = view.animate()
+
         val listener = object : AnimatorListenerAdapter() {
             override fun onAnimationCancel(animation: Animator?) {
                 animator.setListener(null)
@@ -35,10 +36,14 @@ class AwaitAnimation(
                 flag = true
             }
         }
+
         animator.setListener(listener)
+
         while (!flag && startTime <= timeout) {
             uiController.loopMainThreadForAtLeast(loopInterval)
             startTime += loopInterval
         }
+
+        animator.setListener(null)
     }
 }
