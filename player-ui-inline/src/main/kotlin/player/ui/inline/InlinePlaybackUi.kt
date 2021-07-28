@@ -116,7 +116,10 @@ class InlinePlaybackUi(
         }
     }
 
-    override fun onUiState(uiState: UiState) = Unit
+    override fun onUiState(uiState: UiState) {
+        syncFading()
+    }
+
     override fun onSeekData(seekData: SeekData) = Unit
     override fun onTracksState(tracksState: TracksState) = Unit
     override fun onPlaybackInfos(playbackInfos: List<PlaybackInfo>) = Unit
