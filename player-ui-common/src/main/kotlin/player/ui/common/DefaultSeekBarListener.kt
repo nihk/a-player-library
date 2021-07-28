@@ -27,13 +27,13 @@ class DefaultSeekBarListener(
     }
 
     override fun onStartTrackingTouch(seekBar: SeekBar) {
-        onTrackingTouchChanged(true)
         isSeekBarBeingTouched = true
+        onTrackingTouchChanged(true)
     }
 
     override fun onStopTrackingTouch(seekBar: SeekBar) {
-        onTrackingTouchChanged(false)
         isSeekBarBeingTouched = false
+        onTrackingTouchChanged(false)
         seekTo(seekToPosition)
     }
 
