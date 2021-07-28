@@ -9,7 +9,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
-import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.testing.launchFragmentInContainer
 import androidx.test.core.app.ApplicationProvider
@@ -20,10 +19,10 @@ import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
 import androidx.test.espresso.matcher.ViewMatchers.withId
 import kotlinx.coroutines.test.TestCoroutineScope
 import kotlinx.coroutines.test.runBlockingTest
-import kotlinx.coroutines.withTimeout
 import org.hamcrest.Matchers.not
 import org.junit.Rule
 import org.junit.Test
+import player.test.AwaitAnimation
 import player.test.CoroutinesTestRule
 
 class FadingFrameLayoutTest {
@@ -33,13 +32,13 @@ class FadingFrameLayoutTest {
     @Test
     fun fadableViewIsGoneAfterDelay() = fadingRobot {
         assertFadableVisibility(isVisible = true)
-        awaitFade()
+        awaitDelayAndAnimation()
         assertFadableVisibility(isVisible = false)
     }
 
     @Test
     fun tappingFadedMakesFadableReappear() = fadingRobot {
-        awaitFade()
+        awaitDelayAndAnimation()
         tapOnContainer()
         assertFadableVisibility(isVisible = true)
     }
@@ -76,6 +75,29 @@ class FadingFrameLayoutTest {
         assertFadableVisibility(isVisible = false)
     }
 
+    @Test
+    fun pausingFadingPreventsFading() = fadingRobot {
+        pauseFading()
+        awaitDelayAndAnimation()
+        assertFadableVisibility(isVisible = true)
+    }
+
+    @Test
+    fun resumingFadingResultsInAFade() = fadingRobot {
+        resumeFading()
+        awaitDelayAndAnimation()
+        assertFadableVisibility(isVisible = false)
+    }
+
+    @Test
+    fun pausingThenResumingFadingResultsInAFade() = fadingRobot {
+        pauseFading()
+        awaitDelayAndAnimation()
+        resumeFading()
+        awaitDelayAndAnimation()
+        assertFadableVisibility(isVisible = false)
+    }
+
     private fun fadingRobot(block: suspend FadingRobot.() -> Unit) = coroutinesTestRule.testDispatcher.runBlockingTest {
         FadingRobot(this)
             .apply { block() }
@@ -87,7 +109,7 @@ class FadingFrameLayoutTest {
         private val delay: Long = Long.MAX_VALUE - 1L // Intentionally long
         private val context: Context get() = ApplicationProvider.getApplicationContext()
         private val fadable: View
-        private val container: ViewGroup
+        private val container: FadingFrameLayout
         private val fadableId = View.generateViewId()
         private val debouncerId = View.generateViewId()
         private val nonDebouncerId = View.generateViewId()
@@ -139,22 +161,10 @@ class FadingFrameLayoutTest {
                 .check(matches(visibility))
         }
 
-        suspend fun awaitFade() {
+        fun awaitDelayAndAnimation() {
             testCoroutineScope.advanceUntilIdle()
-            awaitVisibility(isVisible = false)
-        }
-
-        suspend fun awaitVisible() {
-            testCoroutineScope.advanceUntilIdle()
-            awaitVisibility(isVisible = true)
-        }
-
-        private suspend fun awaitVisibility(isVisible: Boolean) {
-            // Workaround for suspendCancellableCoroutine bug on TestCoroutineScope.
-            // https://github.com/Kotlin/kotlinx.coroutines/issues/1204
-            withTimeout(5_000L) {
-                while (fadable.isVisible != isVisible) {}
-            }
+            onView(withId(fadableId))
+                .perform(AwaitAnimation())
         }
 
         fun tapOnContainer() {
@@ -170,6 +180,14 @@ class FadingFrameLayoutTest {
         fun tapOnNonDebouncable() {
             onView(withId(nonDebouncerId))
                 .perform(click())
+        }
+
+        fun pauseFading() {
+            container.pause()
+        }
+
+        fun resumeFading() {
+            container.resume()
         }
     }
 }

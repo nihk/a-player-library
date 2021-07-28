@@ -1,7 +1,6 @@
 package player.ui.def
 
 import android.view.View
-import androidx.core.view.isVisible
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.core.app.launchActivity
 import androidx.test.espresso.Espresso.onView
@@ -13,7 +12,6 @@ import androidx.test.espresso.matcher.ViewMatchers.isSelected
 import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.espresso.matcher.ViewMatchers.withText
 import kotlinx.coroutines.test.runBlockingTest
-import kotlinx.coroutines.withTimeout
 import org.hamcrest.Matcher
 import org.hamcrest.Matchers.not
 import org.junit.Assert.assertTrue
@@ -23,6 +21,7 @@ import player.common.PlaybackInfo
 import player.common.PlayerEvent
 import player.test.CoroutinesTestRule
 import player.test.FakePlayerViewWrapper
+import player.test.AwaitAnimation
 import player.ui.common.PlayerArguments
 import player.ui.common.UiState
 import player.ui.test.FakeCloseDelegate
@@ -79,14 +78,14 @@ class DefaultPlaybackUiTest {
     @Test
     fun controllerFadesAfterDelay_whenPlaying() = defaultPlaybackUi(isPlaying = true) {
         assertControllerVisibility(isVisible = true)
-        awaitFade()
+        awaitDelayAndAnimation()
         assertControllerVisibility(isVisible = false)
     }
 
     @Test
     fun controllerDoesNotFadeAfterDelay_whenPaused() = defaultPlaybackUi(isPlaying = false) {
         assertControllerVisibility(isVisible = true)
-        awaitVisible()
+        awaitDelayAndAnimation()
         assertControllerVisibility(isVisible = true)
     }
 
@@ -188,23 +187,10 @@ class DefaultPlaybackUiTest {
                 .check(matches(isVisible.toVisibilityMatcher()))
         }
 
-        suspend fun awaitFade() {
+        fun awaitDelayAndAnimation() {
             coroutinesTestRule.testDispatcher.advanceUntilIdle()
-            awaitVisibility(isVisible = false)
-        }
-
-        suspend fun awaitVisible() {
-            coroutinesTestRule.testDispatcher.advanceUntilIdle()
-            awaitVisibility(isVisible = true)
-        }
-
-        private suspend fun awaitVisibility(isVisible: Boolean) {
-            val playerController = defaultPlaybackUi.view.findViewById<View>(R.id.player_controller)
-            // Workaround for suspendCancellableCoroutine bug on TestCoroutineScope.
-            // https://github.com/Kotlin/kotlinx.coroutines/issues/1204
-            withTimeout(5_000L) {
-                while (playerController.isVisible != isVisible) {}
-            }
+            onView(withId(R.id.player_controller))
+                .perform(AwaitAnimation())
         }
 
         fun setIsPlaying(isPlaying: Boolean) {
