@@ -108,7 +108,14 @@ class FadingFrameLayout : FrameLayout, View.OnClickListener {
     }
 
     fun pause() {
-        cancelWork()
+        val isMidFadingAnimation = requireFadable().isVisible && requireFadable().alpha < 1f
+        if (isMidFadingAnimation) {
+            // Animate back to 100% alpha.
+            show(hideAtEnd = false)
+        } else {
+            // Stop any hide animation queued up.
+            cancelWork()
+        }
     }
 
     fun resume() {
@@ -139,7 +146,7 @@ class FadingFrameLayout : FrameLayout, View.OnClickListener {
         }
     }
 
-    private fun show() {
+    private fun show(hideAtEnd: Boolean = true) {
         cancelWork()
 
         requireFadable()
@@ -147,7 +154,11 @@ class FadingFrameLayout : FrameLayout, View.OnClickListener {
             .setDuration(duration.requireNotNull())
             .withStartAction { requireFadable().isVisible = true }
             .alpha(1f)
-            .withEndAction { hide(withDelay = true) }
+            .withEndAction {
+                if (hideAtEnd) {
+                    hide(withDelay = true)
+                }
+            }
     }
 
     private fun cancelWork() {
