@@ -16,11 +16,5 @@ dependencies {
     implementation(Dependencies.constraintLayout)
     implementation(Dependencies.multidex)
     implementation(Dependencies.Kotlin.coroutines)
-    implementation(Dependencies.Espresso.core)
-    implementation(Dependencies.Espresso.contrib)
-    implementation(Dependencies.AndroidTest.core)
-    implementation(Dependencies.AndroidTest.coreKtx)
-    implementation(Dependencies.AndroidTest.extJunit)
-    implementation(Dependencies.AndroidTest.runner)
-    implementation(Dependencies.AndroidTest.rules)
+    defaultAndroidTestDependencies("implementation")
 }
