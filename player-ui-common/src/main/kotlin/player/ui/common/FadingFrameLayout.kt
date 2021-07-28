@@ -53,7 +53,7 @@ class FadingFrameLayout : FrameLayout, View.OnClickListener {
 
     /** Attributes **/
     private var delay: Long? = null
-    private var duration: Long? = null
+    private var fadeDuration: Long? = null
     // Clicks on debouncers will debounce the fade delay.
     private val debouncers = mutableListOf<View>()
     private var debouncerIds: List<Int>? = null
@@ -78,7 +78,7 @@ class FadingFrameLayout : FrameLayout, View.OnClickListener {
 
             fadableId = typedArray.getResourceId(R.styleable.FadingFrameLayout_fadable, 0)
             delay = typedArray.getInteger(R.styleable.FadingFrameLayout_delay, 2_000).toLong()
-            duration = typedArray.getInteger(R.styleable.FadingFrameLayout_fade_duration, 300).toLong()
+            fadeDuration = typedArray.getInteger(R.styleable.FadingFrameLayout_fade_duration, 300).toLong()
         }
 
         doOnAttach {
@@ -94,8 +94,8 @@ class FadingFrameLayout : FrameLayout, View.OnClickListener {
         this.fadable = fadable
     }
 
-    fun setFadeDuration(duration: Long) {
-        this.duration = duration
+    fun setFadeDuration(fadeDuration: Long) {
+        this.fadeDuration = fadeDuration
     }
 
     fun addDebouncer(debouncer: View) {
@@ -125,7 +125,7 @@ class FadingFrameLayout : FrameLayout, View.OnClickListener {
     fun resume() {
         isPaused = false
 
-        // No point in hiding if the View is already not visible.
+        // No point in starting a hide animation if the View is already not visible.
         if (requireFadable().isVisible) {
             hide(withDelay = true)
         }
@@ -137,7 +137,7 @@ class FadingFrameLayout : FrameLayout, View.OnClickListener {
         fun hideAnimation() {
             requireFadable()
                 .animate()
-                .setDuration(duration.requireNotNull())
+                .setDuration(fadeDuration.requireNotNull())
                 .alpha(0f)
                 .withEndAction { requireFadable().isVisible = false }
         }
@@ -157,7 +157,7 @@ class FadingFrameLayout : FrameLayout, View.OnClickListener {
 
         requireFadable()
             .animate()
-            .setDuration(duration.requireNotNull())
+            .setDuration(fadeDuration.requireNotNull())
             .withStartAction { requireFadable().isVisible = true }
             .alpha(1f)
             .withEndAction {
