@@ -60,6 +60,8 @@ class FadingFrameLayout : FrameLayout, View.OnClickListener {
     // The View to fade in and out.
     private var fadable: View? = null
     private var fadableId: Int? = null
+    /** State **/
+    private var isPaused: Boolean = true
 
     private fun initialize(context: Context, attributeSet: AttributeSet?, defStyleAttr: Int) {
         touchSlop = ViewConfiguration.get(context).scaledTouchSlop
@@ -108,10 +110,12 @@ class FadingFrameLayout : FrameLayout, View.OnClickListener {
     }
 
     fun pause() {
+        isPaused = true
+
         val isMidFadingAnimation = requireFadable().isVisible && requireFadable().alpha < 1f
         if (isMidFadingAnimation) {
             // Animate back to 100% alpha.
-            show(hideAtEnd = false)
+            show()
         } else {
             // Stop any hide animation queued up.
             cancelWork()
@@ -119,6 +123,8 @@ class FadingFrameLayout : FrameLayout, View.OnClickListener {
     }
 
     fun resume() {
+        isPaused = false
+
         // No point in hiding if the View is already not visible.
         if (requireFadable().isVisible) {
             hide(withDelay = true)
@@ -146,7 +152,7 @@ class FadingFrameLayout : FrameLayout, View.OnClickListener {
         }
     }
 
-    private fun show(hideAtEnd: Boolean = true) {
+    private fun show() {
         cancelWork()
 
         requireFadable()
@@ -155,7 +161,7 @@ class FadingFrameLayout : FrameLayout, View.OnClickListener {
             .withStartAction { requireFadable().isVisible = true }
             .alpha(1f)
             .withEndAction {
-                if (hideAtEnd) {
+                if (!isPaused) {
                     hide(withDelay = true)
                 }
             }
