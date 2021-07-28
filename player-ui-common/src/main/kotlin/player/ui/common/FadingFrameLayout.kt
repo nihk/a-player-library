@@ -46,6 +46,8 @@ class FadingFrameLayout : FrameLayout, View.OnClickListener {
 
     private var touchSlop: Int = -1
     private var down: PointF? = null
+    // A CoroutineScope is used to manage delays rather than ViewPropertyAnimator.setDelay
+    // because it makes it easier to have fast tests, where delays can be flattened.
     private var scope: CoroutineScope? = null
     private var hide: Job? = null
 
@@ -58,9 +60,6 @@ class FadingFrameLayout : FrameLayout, View.OnClickListener {
     // The View to fade in and out.
     private var fadable: View? = null
     private var fadableId: Int? = null
-
-    /** State **/
-    private var isFadingEnabled: Boolean = true
 
     private fun initialize(context: Context, attributeSet: AttributeSet?, defStyleAttr: Int) {
         touchSlop = ViewConfiguration.get(context).scaledTouchSlop
@@ -101,11 +100,6 @@ class FadingFrameLayout : FrameLayout, View.OnClickListener {
         debouncers += debouncer
     }
 
-    override fun onAttachedToWindow() {
-        super.onAttachedToWindow()
-        hide(withDelay = true) // Kick things off
-    }
-
     override fun onDetachedFromWindow() {
         super.onDetachedFromWindow()
         scope?.cancel()
@@ -113,31 +107,26 @@ class FadingFrameLayout : FrameLayout, View.OnClickListener {
         cancelWork()
     }
 
-    fun setFadingEnabled(isEnabled: Boolean) {
-        if (isFadingEnabled == isEnabled) return
+    fun pause() {
+        cancelWork()
+    }
 
-        isFadingEnabled = isEnabled
-        if (isEnabled) {
-            if (requireFadable().isVisible) { // No point in hiding something already hidden.
-                hide(withDelay = true)
-            }
-        } else {
-            show()
+    fun resume() {
+        // No point in hiding if the View is already not visible.
+        if (requireFadable().isVisible) {
+            hide(withDelay = true)
         }
     }
 
-    fun hide(withDelay: Boolean) {
+    private fun hide(withDelay: Boolean) {
         cancelWork()
-        if (!isFadingEnabled) return
 
         fun hideAnimation() {
             requireFadable()
                 .animate()
                 .setDuration(duration.requireNotNull())
                 .alpha(0f)
-                .withEndAction {
-                    requireFadable().isVisible = false
-                }
+                .withEndAction { requireFadable().isVisible = false }
         }
 
         if (withDelay) {
@@ -150,7 +139,7 @@ class FadingFrameLayout : FrameLayout, View.OnClickListener {
         }
     }
 
-    fun show() {
+    private fun show() {
         cancelWork()
 
         requireFadable()
@@ -158,9 +147,7 @@ class FadingFrameLayout : FrameLayout, View.OnClickListener {
             .setDuration(duration.requireNotNull())
             .withStartAction { requireFadable().isVisible = true }
             .alpha(1f)
-            .withEndAction {
-                hide(withDelay = true)
-            }
+            .withEndAction { hide(withDelay = true) }
     }
 
     private fun cancelWork() {

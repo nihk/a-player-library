@@ -26,7 +26,6 @@ import player.test.FakePlayerViewWrapper
 import player.ui.common.PlayerArguments
 import player.ui.common.UiState
 import player.ui.test.FakeCloseDelegate
-import player.ui.test.FakePipController
 import player.ui.test.FakePlayerController
 import player.ui.test.FakeSeekBarListener
 import player.ui.test.FakeShareDelegate
@@ -95,7 +94,8 @@ class DefaultPlaybackUiTest {
         hasShareDelegate: Boolean = true,
         initialUiState: UiState = UiState(
             isControllerUsable = true,
-            showLoading = false
+            showLoading = false,
+            isInPip = false
         ),
         isPlaying: Boolean = false,
         block: suspend DefaultPlaybackUiRobot.() -> Unit
@@ -116,7 +116,6 @@ class DefaultPlaybackUiTest {
         private val navigator = FakeNavigator()
         private val playerViewWrapper = FakePlayerViewWrapper(ApplicationProvider.getApplicationContext())
         private val playerViewWrapperFactory = FakePlayerViewWrapper.Factory(playerViewWrapper)
-        private val pipController = FakePipController()
         private val playerController = FakePlayerController(isPlaying)
         private val tracksPickerConfigFactory = FakeTracksPickerConfigFactory()
         private val playerArguments = PlayerArguments(
@@ -134,7 +133,6 @@ class DefaultPlaybackUiTest {
                     navigator = navigator,
                     seekBarListenerFactory = seekBarListenerFactory,
                     playerViewWrapperFactory = playerViewWrapperFactory,
-                    pipController = pipController,
                     playerController = playerController,
                     playerArguments = playerArguments,
                     closeDelegate = closeDelegate,

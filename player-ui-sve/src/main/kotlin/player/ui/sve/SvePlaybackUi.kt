@@ -58,7 +58,7 @@ class SvePlaybackUi(
             updateTimestamps(position, playerController.latestSeekData().duration)
         },
         seekTo = playerController::seekTo,
-        onTrackingTouchChanged = { isTracking -> setFadingEnabled(!isTracking) }
+        onTrackingTouchChanged = { syncFading() }
     )
     private var didRestoreViewPagerState = false
     private val playerViewWrapper = playerViewWrapperFactory.create(activity)
@@ -103,7 +103,7 @@ class SvePlaybackUi(
     }
 
     override fun onUiState(uiState: UiState) {
-        binding.playerController.isVisible = uiState.isControllerUsable
+        binding.playerController.isVisible = uiState.isControllerUsable && !uiState.isInPip
         binding.progressBar.isVisible = uiState.showLoading
     }
 
@@ -183,7 +183,7 @@ class SvePlaybackUi(
 
         binding.tabLayout.setTouchStateListener(object : SveTabLayout.TouchStateListener {
             override fun onTouchState(touchState: SveTabLayout.TouchState) {
-                setFadingEnabled(touchState == SveTabLayout.TouchState.Up)
+                syncFading(touchState == SveTabLayout.TouchState.Up)
             }
         })
 
@@ -195,7 +195,7 @@ class SvePlaybackUi(
             }
 
             override fun onPageScrollStateChanged(state: Int) {
-                setFadingEnabled(state == ViewPager2.SCROLL_STATE_IDLE)
+                syncFading(state == ViewPager2.SCROLL_STATE_IDLE)
             }
 
             override fun onPageScrolled(
@@ -244,10 +244,6 @@ class SvePlaybackUi(
         }
     }
 
-    private fun setFadingEnabled(tryEnabling: Boolean) {
-        binding.fadingContainer.setFadingEnabled(tryEnabling && playerController.isPlaying())
-    }
-
     private fun updateTimestamps(
         position: Duration,
         duration: Duration
@@ -261,12 +257,27 @@ class SvePlaybackUi(
         binding.playPause.isSelected = isPlaying
         val a11y = if (isPlaying) R.string.pause else R.string.play
         binding.playPause.contentDescription = activity.getString(a11y)
-        // It's generally a good UX to keep all controls visible while in a paused state.
-        binding.fadingContainer.setFadingEnabled(isPlaying)
+        syncFading()
     }
 
     override fun saveState(): Bundle {
         return bundleOf(TAB_POSITION to binding.tabLayout.selectedTabPosition)
+    }
+
+    private fun syncFading(tryEnable: Boolean = true) {
+        val isFadable = tryEnable
+            // Prevent fading while SeekBar is being used.
+            && !seekBarListener.isSeekBarBeingTouched
+            // Controller should not be visible during PiP - it has its own controller.
+            && !playerController.uiStates().value.isInPip
+            // It's generally a good UX to not fade while in a paused state.
+            && playerController.isPlaying()
+
+        if (isFadable) {
+            binding.fadingContainer.resume()
+        } else {
+            binding.fadingContainer.pause()
+        }
     }
 
     companion object {

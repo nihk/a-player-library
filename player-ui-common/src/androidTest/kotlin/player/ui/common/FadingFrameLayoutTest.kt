@@ -123,6 +123,7 @@ class FadingFrameLayoutTest {
                 setFadeDuration(0L) // Instant animation
                 addDebouncer(debouncer)
                 setFadable(fadable)
+                resume() // Kick things off
             }
 
             launchFragmentInContainer { TestFragment(container) }

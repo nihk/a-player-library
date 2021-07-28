@@ -76,6 +76,8 @@ class InlinePlaybackUi(
         binding.close.setOnClickListener {
             closeDelegate.onClose(activity)
         }
+
+        syncFading()
     }
 
     private fun closeFullscreen() {
@@ -96,8 +98,7 @@ class InlinePlaybackUi(
         binding.playPause.isSelected = isPlaying
         val a11y = if (isPlaying) R.string.pause else R.string.play
         binding.playPause.contentDescription = activity.getString(a11y)
-        // It's generally a good UX to keep all controls visible while in a paused state.
-        binding.fadingContainer.setFadingEnabled(isPlaying)
+        syncFading()
     }
 
     override fun onPlayerEvent(playerEvent: PlayerEvent) {
@@ -130,6 +131,20 @@ class InlinePlaybackUi(
 
     private fun addBackPress() {
         activity.onBackPressedDispatcher.addCallback(view.requireViewTreeLifecycleOwner(), backPress)
+    }
+
+    private fun syncFading() {
+        val isFadable =
+            // Controller should not be visible during PiP - it has its own controller.
+            !playerController.uiStates().value.isInPip
+            // It's generally a good UX to not fade while in a paused state.
+            && playerController.isPlaying()
+
+        if (isFadable) {
+            binding.fadingContainer.resume()
+        } else {
+            binding.fadingContainer.pause()
+        }
     }
 
     class Factory(

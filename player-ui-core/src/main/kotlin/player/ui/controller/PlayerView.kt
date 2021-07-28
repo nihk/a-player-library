@@ -2,7 +2,6 @@ package player.ui.controller
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.content.res.Configuration
 import android.graphics.drawable.ColorDrawable
 import android.view.View
 import androidx.activity.ComponentActivity
@@ -104,6 +103,7 @@ class PlayerView(
             // Need to wait for View tree to be CREATED; things like the View tree's
             // SavedStateRegistry isn't available below that state.
             Lifecycle.Event.ON_CREATE -> {
+                updatePipState()
                 addPlaybackUi()
                 listenToPlayer()
             }
@@ -122,6 +122,10 @@ class PlayerView(
             LayoutParams.MATCH_PARENT,
         )
         addView(playbackUi.view, 0, layoutParams)
+    }
+
+    private fun updatePipState() {
+        playerNonConfig.setPipState(pipController.isInPip())
     }
 
     private fun start() {
@@ -207,10 +211,6 @@ class PlayerView(
 
     private fun clearBackPress() {
         pipBackPress.remove()
-    }
-
-    override fun onConfigurationChanged(newConfig: Configuration?) {
-        playerNonConfig.setPipState(pipController.isInPip())
     }
 
     class Factory(

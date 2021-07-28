@@ -18,7 +18,6 @@ import player.common.PlayerEvent
 import player.common.PlayerViewWrapper
 import player.common.SeekData
 import player.common.TrackInfo
-import player.common.requireNotNull
 import player.ui.common.CloseDelegate
 import player.ui.common.DefaultSeekBarListener
 import player.ui.common.PlaybackUi
@@ -58,7 +57,7 @@ class DefaultPlaybackUi(
             updateTimestamps(position, playerController.latestSeekData().duration)
         },
         seekTo = playerController::seekTo,
-        onTrackingTouchChanged = { isTracking -> syncFading(!isTracking) }
+        onTrackingTouchChanged = { syncFading() }
     )
     private val playerViewWrapper = playerViewWrapperFactory.create(activity)
     private var activeTracksPickerType: TrackInfo.Type? = null
@@ -104,12 +103,13 @@ class DefaultPlaybackUi(
     }
 
     override fun onUiState(uiState: UiState) {
-        binding.playerController.isVisible = uiState.isControllerUsable && !uiState.isInPip
+        val controllerVisibility = uiState.isControllerUsable && !uiState.isInPip
+        binding.playerController.isVisible = controllerVisibility
         binding.progressBar.isVisible = uiState.showLoading
     }
 
     override fun onSeekData(seekData: SeekData) {
-        if (seekBarListener.requireNotNull().isSeekBarBeingTouched) return
+        if (seekBarListener.isSeekBarBeingTouched) return
 
         binding.seekBar.update(seekData)
         updateTimestamps(seekData.position, seekData.duration)
@@ -203,6 +203,8 @@ class DefaultPlaybackUi(
         binding.close.setOnClickListener {
             closeDelegate.onClose(activity)
         }
+
+        syncFading()
     }
 
     private fun updateTimestamps(
@@ -232,16 +234,22 @@ class DefaultPlaybackUi(
         return bundleOf(KEY_ACTIVE_TRACKS_PICKER_TYPE to activeTracksPickerType)
     }
 
-    private fun syncFading(enable: Boolean = true) {
-        binding.fadingContainer.setFadingEnabled(enable && isFadable())
-    }
-
-    private fun isFadable(): Boolean {
-        // It's generally a good UX to not fade while in a paused state.
-        return playerController.isPlaying()
-            // Keep things visible in the background of the dialog - it's a bit less distracting.
-            && activeTracksPickerType == null
+    private fun syncFading(tryEnable: Boolean = true) {
+        val isFadable = tryEnable
+            // Prevent fading while SeekBar is being used.
+            && !seekBarListener.isSeekBarBeingTouched
+            // Controller should not be visible during PiP - it has its own controller.
             && !playerController.uiStates().value.isInPip
+            // Don't fade controls in the background of an open dialog - it's a bit less distracting.
+            && activeTracksPickerType == null
+            // It's generally a good UX to not fade while in a paused state.
+            && playerController.isPlaying()
+
+        if (isFadable) {
+            binding.fadingContainer.resume()
+        } else {
+            binding.fadingContainer.pause()
+        }
     }
 
     companion object {
